@@ -18,10 +18,10 @@ export const brand = {
 /** Design tokens mirrored in `src/app/globals.css` (CSS variables are the runtime source). */
 export const theme = {
   marketing: {
-    background: "#07080E",
-    surface: "#12141E",
-    mint: "#9DF6CF",
-    violet: "#AA95F2",
+    background: "#04070D",
+    surface: "#0B111E",
+    mint: "#38BDF8",
+    violet: "#7DD3FC",
     text: "#FFFFFF",
   },
   layout: { maxWidth: 1240, radiusMin: 12, radiusMax: 18, spacingUnit: 8 },
