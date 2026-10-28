@@ -17,15 +17,15 @@
   --font-display: var(--font-heading);
   --radius-card: 16px;
   --radius-ctl: 12px;
-  --shadow-pop: 0 18px 50px -20px rgb(0 0 0 / 0.75);
+  --shadow-pop: 0 18px 50px -20px rgb(0 0 0 / 0.85);
 }
 
-/* Palette: Black (#04070D), Deep Navy Blue (#0B111E / #111A2E), Slate Grey (#94A3B8), Celeste (#38BDF8 / #7DD3FC), White/Black text */
+/* Palette: Deep Black (#030509), Navy Blue (#0A101D / #10192D), Neutral Slate Grey (#94A3B8), Celeste (#38BDF8 / #7DD3FC), Pure White (#FFFFFF) & Black (#030509) text */
 :root {
-  --bg: #04070d;
-  --surface: #0b111e;
-  --surface-2: #111a2e;
-  --line: #1e2d47;
+  --bg: #030509;
+  --surface: #0a101d;
+  --surface-2: #10192d;
+  --line: #1c2942;
   --fg: #ffffff;
   --muted: #94a3b8;
   --mint: #38bdf8;
@@ -39,12 +39,11 @@
   color-scheme: dark;
 }
 
-/* Dashboard theme: deep black/blue/grey workspace */
 [data-theme="app"] {
-  --bg: #050810;
-  --surface: #0c1322;
-  --surface-2: #131d33;
-  --line: #1e2d47;
+  --bg: #04070d;
+  --surface: #0a101d;
+  --surface-2: #111b30;
+  --line: #1c2942;
   --muted: #94a3b8;
 }
 
@@ -75,19 +74,20 @@ h3,
 
 .container-page {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1160px;
   margin-inline: auto;
   padding-inline: 24px;
 }
 
-/* Hero starfield & diagonal blue/celeste light rays */
+/* Hero stage with diagonal volumetric light rays & starfield dots (Image 2) */
 .os-hero-stage {
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(ellipse 80% 55% at 50% -10%, rgba(29, 78, 216, 0.28), transparent 70%),
-    radial-gradient(ellipse 50% 35% at 80% 10%, rgba(56, 189, 248, 0.16), transparent 65%),
-    linear-gradient(180deg, #04070d 0%, #060b16 60%, #04070d 100%);
+    linear-gradient(125deg, transparent 30%, rgba(56, 189, 248, 0.05) 42%, transparent 52%),
+    linear-gradient(140deg, transparent 55%, rgba(29, 78, 216, 0.09) 68%, transparent 78%),
+    radial-gradient(ellipse 75% 45% at 50% 0%, rgba(29, 78, 216, 0.22), transparent 70%),
+    #030509;
 }
 .os-hero-stage::before {
   content: "";
@@ -95,60 +95,86 @@ h3,
   inset: 0;
   pointer-events: none;
   background-image:
-    radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px),
-    radial-gradient(rgba(56, 189, 248, 0.18) 1px, transparent 1px);
-  background-size: 48px 48px, 96px 96px;
-  background-position: 0 0, 24px 24px;
-  mask-image: radial-gradient(ellipse 75% 60% at 50% 25%, #000 30%, transparent 80%);
+    radial-gradient(rgba(255, 255, 255, 0.22) 1px, transparent 1px),
+    radial-gradient(rgba(56, 189, 248, 0.22) 1px, transparent 1px);
+  background-size: 56px 56px, 112px 112px;
+  background-position: 0 0, 28px 20px;
+  mask-image: radial-gradient(ellipse 80% 55% at 50% 22%, #000 20%, transparent 75%);
 }
 
-/* Glowing planetary horizon curve in celeste & cobalt blue */
+/* Glowing planetary horizon curve with faded left/right edges (Image 2) */
 .os-horizon-arc {
   position: relative;
-  height: 92px;
+  height: 82px;
   width: 100%;
+  max-width: 1120px;
+  margin-inline: auto;
   overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent 2%, #000 20%, #000 80%, transparent 98%);
 }
 .os-horizon-arc::before {
   content: "";
   position: absolute;
   left: 50%;
-  top: 22px;
-  width: 150%;
-  height: 460px;
+  top: 18px;
+  width: 135%;
+  height: 520px;
   transform: translateX(-50%);
   border-radius: 50%;
-  border-top: 2px solid #38bdf8;
-  background: radial-gradient(ellipse 55% 32% at 50% 0%, rgba(56, 189, 248, 0.25), rgba(29, 78, 216, 0.12) 45%, rgba(4, 7, 13, 0.96) 75%);
+  border-top: 2.5px solid #7dd3fc;
+  background: radial-gradient(
+    ellipse 52% 26% at 50% 0%,
+    rgba(56, 189, 248, 0.28) 0%,
+    rgba(29, 78, 216, 0.15) 42%,
+    rgba(3, 5, 9, 0.98) 72%
+  );
   box-shadow:
-    0 -14px 48px rgba(56, 189, 248, 0.45),
-    0 -4px 16px rgba(125, 211, 252, 0.65),
-    inset 0 12px 36px rgba(56, 189, 248, 0.22);
+    0 -16px 50px rgba(56, 189, 248, 0.55),
+    0 -3px 14px rgba(125, 211, 252, 0.85),
+    inset 0 10px 32px rgba(56, 189, 248, 0.28);
 }
 
-/* Bento & Feature cards with top-right celeste/blue corner glow */
+/* Recuadro / Bento Card with top-right blue-celeste radial glow (Image 1 & 2) */
 .os-bento-card {
   position: relative;
   overflow: hidden;
   border-radius: 20px;
-  border: 1px solid rgba(56, 189, 248, 0.18);
+  border: 1px solid rgba(148, 163, 184, 0.14);
   background:
-    radial-gradient(320px circle at 92% 6%, rgba(56, 189, 248, 0.16), rgba(30, 58, 138, 0.12) 42%, transparent 72%),
-    linear-gradient(180deg, #0b1220 0%, #070b14 100%);
-  box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.85);
+    radial-gradient(280px circle at 92% 6%, rgba(56, 189, 248, 0.17), rgba(29, 78, 216, 0.1) 45%, transparent 72%),
+    linear-gradient(180deg, #0b111e 0%, #060a12 100%);
+  box-shadow:
+    0 20px 50px -24px rgba(0, 0, 0, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
+/* Featured Card (Center Pricing & Callouts) with intense top-right celeste/blue glow */
 .os-bento-card-featured {
   position: relative;
   overflow: hidden;
   border-radius: 20px;
-  border: 1px solid rgba(56, 189, 248, 0.42);
+  border: 1px solid rgba(56, 189, 248, 0.38);
   background:
-    radial-gradient(380px circle at 88% 4%, rgba(56, 189, 248, 0.28), rgba(29, 78, 216, 0.2) 48%, transparent 78%),
-    linear-gradient(180deg, #0e182c 0%, #070c17 100%);
+    radial-gradient(340px circle at 88% 4%, rgba(56, 189, 248, 0.32), rgba(29, 78, 216, 0.22) 48%, transparent 76%),
+    linear-gradient(180deg, #0d1629 0%, #060a13 100%);
   box-shadow:
-    0 24px 60px -20px rgba(14, 165, 233, 0.25),
-    inset 0 1px 0 rgba(125, 211, 252, 0.25);
+    0 24px 60px -20px rgba(14, 165, 233, 0.28),
+    inset 0 1px 0 rgba(125, 211, 252, 0.28);
+}
+
+/* Framed Window Mockup container (Image 2 two-column mockups) */
+.os-window-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background:
+    radial-gradient(300px circle at 14% 10%, rgba(56, 189, 248, 0.15), rgba(29, 78, 216, 0.08) 48%, transparent 75%),
+    #070b14;
+  padding: 14px;
+  box-shadow:
+    0 24px 60px -20px rgba(0, 0, 0, 0.92),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 model-viewer {
