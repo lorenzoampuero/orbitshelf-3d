@@ -1,0 +1,40 @@
+import { apiError, apiJson, withUser } from "@/lib/api";
+import { fieldErrors, patchSchema } from "@/lib/schemas";
+import { store, toDto } from "@/lib/store";
+
+export const dynamic = "force-dynamic";
+type Ctx = { params: Promise<{ id: string }> };
+
+export const GET = withUser<Ctx>(async (_req, user, { params }) => {
+  const { id } = await params;
+  const m = await store.getModel(user.orgId, id);
+  return m ? apiJson({ model: toDto(m) }) : apiError(404, "not_found", "Model not found.");
+});
+
+export const PATCH = withUser<Ctx>(async (req, user, { params }) => {
+  const { id } = await params;
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return apiError(400, "invalid_json", "Invalid JSON body.");
+  }
+  const parsed = patchSchema.safeParse(body);
+  if (!parsed.success) return apiError(422, "validation", "Check the highlighted fields.", { fields: fieldErrors(parsed.error) });
+  const existing = await store.getModel(user.orgId, id);
+  if (!existing) return apiError(404, "not_found", "Model not found.");
+  const d = parsed.data;
+  const m = await store.updateModel(user.orgId, id, {
+    ...(d.title !== undefined ? { title: d.title } : {}),
+    ...("sku" in (body as object) ? { sku: d.sku } : {}),
+    ...(d.category !== undefined ? { category: d.category } : {}),
+    ...(d.dimensions ? { dimensions: d.dimensions } : {}),
+  });
+  return apiJson({ model: toDto(m!) });
+});
+
+export const DELETE = withUser<Ctx>(async (_req, user, { params }) => {
+  const { id } = await params;
+  const ok = await store.deleteModel(user.orgId, id);
+  return ok ? apiJson({ ok: true }) : apiError(404, "not_found", "Model not found.");
+});

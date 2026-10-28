@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-mint: var(--mint);
+  --color-violet: var(--violet);
+  --color-danger: var(--danger);
+  --color-warn: var(--warn);
+  --color-ok: var(--ok);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-heading);
+  --radius-card: 16px;
+  --radius-ctl: 12px;
+  --shadow-pop: 0 18px 50px -20px rgb(0 0 0 / 0.65);
+}
+
+/* Marketing theme (default): deep charcoal/navy, mint + violet. */
+:root {
+  --bg: #07080e;
+  --surface: #12141e;
+  --surface-2: #191c29;
+  --line: #262a3b;
+  --fg: #ffffff;
+  --muted: #a7adc2;
+  --mint: #9df6cf;
+  --violet: #aa95f2;
+  --danger: #ff8a8a;
+  --warn: #ffd37a;
+  --ok: #9df6cf;
+  --font-body: "DM Sans Variable", "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: dark;
+}
+
+/* Dashboard theme: neutral dark workspace, flat panels. */
+[data-theme="app"] {
+  --bg: #0d0e12;
+  --surface: #14161b;
+  --surface-2: #1b1e25;
+  --line: #2a2e38;
+  --muted: #a1a8b8;
+}
+
+html {
+  background: var(--bg);
+  scroll-behavior: smooth;
+}
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--mint);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.container-page {
+  width: 100%;
+  max-width: 1240px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+model-viewer {
+  width: 100%;
+  height: 100%;
+  --poster-color: transparent;
+  --progress-bar-color: var(--mint);
+  background: transparent;
+  touch-action: pan-y;
+}
+model-viewer:focus-visible {
+  outline-offset: -3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes os-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.os-pulse {
+  animation: os-pulse 1.6s ease-in-out infinite;
+}
