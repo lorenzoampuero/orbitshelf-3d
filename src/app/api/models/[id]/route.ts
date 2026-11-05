@@ -1,4 +1,4 @@
-import { apiError, apiJson, withUser } from "@/lib/api";
+import { apiError, apiJson, readJsonCapped, withUser } from "@/lib/api";
 import { fieldErrors, patchSchema } from "@/lib/schemas";
 import { store, toDto } from "@/lib/store";
 
@@ -13,12 +13,9 @@ export const GET = withUser<Ctx>(async (_req, user, { params }) => {
 
 export const PATCH = withUser<Ctx>(async (req, user, { params }) => {
   const { id } = await params;
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return apiError(400, "invalid_json", "Invalid JSON body.");
-  }
+  const read = await readJsonCapped(req);
+  if (!read.ok) return read.response;
+  const body = read.value;
   const parsed = patchSchema.safeParse(body);
   if (!parsed.success) return apiError(422, "validation", "Check the highlighted fields.", { fields: fieldErrors(parsed.error) });
   const existing = await store.getModel(user.orgId, id);

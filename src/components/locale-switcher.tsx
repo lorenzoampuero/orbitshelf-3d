@@ -15,7 +15,7 @@ export function LocaleSwitcher({ locale, label }: { locale: Locale; label: strin
     <div
       role="group"
       aria-label={label}
-      className="inline-flex items-center rounded-lg border border-line bg-surface-2 p-0.5 text-xs font-semibold"
+      className="inline-flex items-center rounded-full border border-line p-0.5 text-xs font-semibold"
     >
       <Link
         href={enHref}
@@ -23,8 +23,8 @@ export function LocaleSwitcher({ locale, label }: { locale: Locale; label: strin
         aria-current={locale === "en" ? "page" : undefined}
         data-testid="locale-en"
         className={cn(
-          "rounded-md px-2.5 py-1 transition-colors",
-          locale === "en" ? "bg-mint text-bg" : "text-muted hover:text-fg",
+          "rounded-full px-2.5 py-1 transition-colors",
+          locale === "en" ? "bg-accent text-ink" : "text-muted hover:text-fg",
         )}
       >
         EN
@@ -35,8 +35,8 @@ export function LocaleSwitcher({ locale, label }: { locale: Locale; label: strin
         aria-current={locale === "es" ? "page" : undefined}
         data-testid="locale-es"
         className={cn(
-          "rounded-md px-2.5 py-1 transition-colors",
-          locale === "es" ? "bg-mint text-bg" : "text-muted hover:text-fg",
+          "rounded-full px-2.5 py-1 transition-colors",
+          locale === "es" ? "bg-accent text-ink" : "text-muted hover:text-fg",
         )}
       >
         ES

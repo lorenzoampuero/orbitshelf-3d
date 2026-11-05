@@ -38,14 +38,14 @@ export default async function EmbedsPage({ params }: { params: Promise<{ locale:
         <ul className="mt-4 space-y-1.5 text-xs text-muted">
           {t.dash.embeds.bullets.map((b) => (
             <li key={b} className="flex gap-2">
-              <span className="text-mint">•</span>
+              <span className="text-accent">•</span>
               <span>{b}</span>
             </li>
           ))}
         </ul>
         <Link
           href={localePath(locale, "/dashboard/models")}
-          className="mt-5 inline-flex rounded-xl bg-mint px-4 py-2 text-xs font-semibold text-bg hover:bg-mint-strong"
+          className="mt-5 inline-flex rounded-xl bg-accent px-4 py-2 text-xs font-semibold text-bg hover:bg-accent-strong"
         >
           {t.dash.embeds.cta}
         </Link>

@@ -14,10 +14,12 @@ export async function generateMetadata({
   const { locale, id } = await params;
   if (!isLocale(locale)) return {};
   const t = getDictionary(locale);
+  const user = await currentUser();
+  const model = user ? await store.getModel(user.orgId, id) : null;
   return buildPageMetadata({
     locale,
     path: `/dashboard/models/${id}`,
-    title: t.dash.detail.viewerTitle,
+    title: model ? `${model.title} · ${t.dash.detail.viewerTitle}` : t.dash.detail.viewerTitle,
     description: t.dash.detail.reviewIntro,
     noIndex: true,
   });
@@ -37,5 +39,5 @@ export default async function ModelDetailPage({
   const row = await store.getModel(session.orgId, id);
   if (!row) notFound();
 
-  return <StudioClient locale={locale} t={t} initialModel={toDto(row)} hasSourceImage={row.hasSourceImage} />;
+  return <StudioClient locale={locale} t={t} initialModel={toDto(row)} />;
 }

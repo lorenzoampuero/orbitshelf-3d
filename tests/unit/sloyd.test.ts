@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { createImageJob, downloadResult, getJob, normalizeStatus, ProviderError, redact } from "@/lib/provider/sloyd";
+import { createImageJob, createMultiImageJob, createTextJob, downloadResult, getJob, normalizeStatus, ProviderError, redact } from "@/lib/provider/sloyd";
 import type { ProviderConfig } from "@/lib/env";
 
 const config: ProviderConfig = {
@@ -93,6 +93,74 @@ describe("createImageJob", () => {
   it("fails clearly when credentials are not configured", async () => {
     const e = await err(createImageJob({ image: png, mime: "image/png", filename: "p.png", textureResolution: "1k" }, { config: null }));
     expect(e.kind).toBe("not_configured");
+  });
+});
+
+describe("createMultiImageJob", () => {
+  const jpg = Buffer.from("jpg-bytes");
+  it("sends frontImage plus each extra view with PBR on, and only the server credentials", async () => {
+    const f = vi.fn(async (_url: string | URL | Request, _init?: RequestInit) => reply(200, { jobId: "01JZQY4YJ7KV1GQZ9G6H6H2X25" }));
+    const out = await createMultiImageJob(
+      { images: { front: { image: png, mime: "image/png" }, back: { image: jpg, mime: "image/jpeg" }, left: { image: png, mime: "image/png" } }, textureResolution: "1k" },
+      { fetch: f as unknown as typeof fetch, config },
+    );
+    expect(out.jobId).toBe("01JZQY4YJ7KV1GQZ9G6H6H2X25");
+    const [url, init] = f.mock.calls[0];
+    expect(url).toBe("https://provider.test/api/jobs/multi-image-to-3d");
+    expect((init?.headers as Record<string, string>)["x-client-secret"]).toBe(config.clientSecret);
+    const form = init?.body as FormData;
+    expect((form.get("frontImage") as File).name).toBe("front.png");
+    expect((form.get("backImage") as File).type).toBe("image/jpeg");
+    expect((form.get("leftImage") as File).name).toBe("left.png");
+    expect(form.get("rightImage")).toBeNull();
+    expect(form.get("EnablePBR")).toBe("true");
+    expect(form.get("FaceCount")).toBe("20000");
+  });
+
+  it("turns PBR off for geometry-only jobs", async () => {
+    const f = vi.fn(async (_url: string | URL | Request, _init?: RequestInit) => reply(200, { jobId: "01JZQY4YJ7KV1GQZ9G6H6H2X25" }));
+    await createMultiImageJob({ images: { front: { image: png, mime: "image/png" }, right: { image: png, mime: "image/png" } }, textureResolution: "none" }, { fetch: f as unknown as typeof fetch, config });
+    expect((f.mock.calls[0][1]?.body as FormData).get("EnablePBR")).toBe("false");
+  });
+
+  it("refuses to call the provider without a front photo and at least one more view", async () => {
+    const f = vi.fn();
+    for (const images of [{ front: { image: png, mime: "image/png" as const } }, { back: { image: png, mime: "image/png" as const }, left: { image: png, mime: "image/png" as const } }]) {
+      const e = await err(createMultiImageJob({ images, textureResolution: "1k" }, { fetch: f as unknown as typeof fetch, config }));
+      expect(e.kind).toBe("rejected");
+      expect(e.definite).toBe(true);
+    }
+    expect(f).not.toHaveBeenCalled();
+  });
+
+  it("maps provider errors like the single-photo endpoint", async () => {
+    const images = { front: { image: png, mime: "image/png" as const }, back: { image: png, mime: "image/png" as const } };
+    const e402 = await err(createMultiImageJob({ images, textureResolution: "1k" }, { fetch: (async () => reply(402, { message: "no credits" })) as unknown as typeof fetch, config }));
+    expect(e402.kind).toBe("payment_required");
+    const e500 = await err(createMultiImageJob({ images, textureResolution: "1k" }, { fetch: (async () => reply(500, { message: "boom" })) as unknown as typeof fetch, config }));
+    expect(e500.definite).toBe(false);
+  });
+});
+
+describe("createTextJob", () => {
+  it("posts JSON with the prompt, triangle topology and no T-pose", async () => {
+    const f = vi.fn(async (_url: string | URL | Request, _init?: RequestInit) => reply(200, { jobId: "01JZQY4YJ7KV1GQZ9G6H6H2X25" }));
+    const out = await createTextJob({ prompt: "a small ceramic vase", textureResolution: "2k" }, { fetch: f as unknown as typeof fetch, config });
+    expect(out.jobId).toBe("01JZQY4YJ7KV1GQZ9G6H6H2X25");
+    const [url, init] = f.mock.calls[0];
+    expect(url).toBe("https://provider.test/api/jobs/text-to-3d");
+    const headers = init?.headers as Record<string, string>;
+    expect(headers["content-type"]).toBe("application/json");
+    expect(headers["x-client-id"]).toBe(config.clientId);
+    expect(JSON.parse(String(init?.body))).toEqual({ prompt: "a small ceramic vase", textureResolution: "2k", topology: "triangles", targetFaceCount: 20000, tPose: false });
+  });
+
+  it("maps a rejected prompt to a definite failure and rejects responses without a job id", async () => {
+    const e = await err(createTextJob({ prompt: "x".repeat(20), textureResolution: "1k" }, { fetch: (async () => reply(422, { message: "prompt rejected" })) as unknown as typeof fetch, config }));
+    expect(e.kind).toBe("rejected");
+    expect(e.definite).toBe(true);
+    const bad = await err(createTextJob({ prompt: "x".repeat(20), textureResolution: "1k" }, { fetch: (async () => reply(200, {})) as unknown as typeof fetch, config }));
+    expect(bad.kind).toBe("invalid_response");
   });
 });
 

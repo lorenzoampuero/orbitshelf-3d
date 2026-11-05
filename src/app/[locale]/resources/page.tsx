@@ -26,54 +26,49 @@ export default async function ResourcesIndexPage({ params }: Props) {
   const dict = getDictionary(locale);
   const user = await currentUser();
 
+  const items = [
+    ...dict.resources.articles.map((a) => ({
+      key: a.slug,
+      href: `/resources/${a.slug}`,
+      tag: dict.resources.tags[a.tag as keyof typeof dict.resources.tags],
+      title: a.title,
+      summary: a.summary,
+    })),
+    {
+      key: "compare",
+      href: "/compare/ai-3d-vs-manual",
+      tag: dict.resources.tags.comparison,
+      title: dict.resources.compareCard.title,
+      summary: dict.resources.compareCard.summary,
+    },
+  ];
+
   return (
     <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
-      <section className="py-14 md:py-20">
-        <div className="container-page space-y-10">
-          <div className="max-w-2xl space-y-3">
-            <span className="text-xs font-semibold uppercase tracking-wider text-mint">
-              {dict.resources.eyebrow}
-            </span>
-            <h1 className="font-display text-3xl sm:text-4xl font-bold">{dict.resources.title}</h1>
-            <p className="text-base text-muted">{dict.resources.intro}</p>
+      <section className="py-14 md:py-24">
+        <div className="container-page space-y-14">
+          <div className="max-w-3xl space-y-4">
+            <span className="text-xs font-semibold uppercase tracking-wider text-accent">{dict.resources.eyebrow}</span>
+            <h1 className="font-display text-4xl font-bold leading-[1.02] md:text-6xl">{dict.resources.title}</h1>
+            <p className="text-lg leading-relaxed text-muted">{dict.resources.intro}</p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {dict.resources.articles.map((art) => (
-              <Link
-                key={art.slug}
-                href={localePath(locale, `/resources/${art.slug}`)}
-                className="flex flex-col justify-between rounded-[16px] border border-line bg-surface p-6 hover:border-mint transition-colors space-y-4"
-              >
-                <div className="space-y-2">
-                  <span className="inline-block rounded bg-surface-2 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-mint">
-                    {dict.resources.tags[art.tag as keyof typeof dict.resources.tags]}
+          <ul className="border-b border-line">
+            {items.map((it) => (
+              <li key={it.key} className="border-t border-line">
+                <Link
+                  href={localePath(locale, it.href)}
+                  className="group grid grid-cols-1 gap-2 py-6 md:grid-cols-12 md:items-baseline md:gap-8"
+                >
+                  <span className="text-xs font-semibold uppercase tracking-wider text-accent md:col-span-2">{it.tag}</span>
+                  <span className="font-display text-xl font-bold transition-colors group-hover:text-accent group-focus-visible:text-accent md:col-span-5 md:text-2xl">
+                    {it.title}
                   </span>
-                  <h2 className="font-display text-lg font-semibold text-fg">{art.title}</h2>
-                  <p className="text-xs leading-relaxed text-muted">{art.summary}</p>
-                </div>
-                <span className="text-xs font-semibold text-mint">{dict.resources.read} →</span>
-              </Link>
+                  <span className="text-sm leading-relaxed text-muted md:col-span-5">{it.summary}</span>
+                </Link>
+              </li>
             ))}
-
-            <Link
-              href={localePath(locale, "/compare/ai-3d-vs-manual")}
-              className="flex flex-col justify-between rounded-[16px] border border-line bg-surface p-6 hover:border-mint transition-colors space-y-4"
-            >
-              <div className="space-y-2">
-                <span className="inline-block rounded bg-surface-2 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-violet">
-                  {dict.resources.tags.comparison}
-                </span>
-                <h2 className="font-display text-lg font-semibold text-fg">
-                  {dict.resources.compareCard.title}
-                </h2>
-                <p className="text-xs leading-relaxed text-muted">
-                  {dict.resources.compareCard.summary}
-                </p>
-              </div>
-              <span className="text-xs font-semibold text-mint">{dict.resources.read} →</span>
-            </Link>
-          </div>
+          </ul>
         </div>
       </section>
     </MarketingShell>

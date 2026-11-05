@@ -70,13 +70,13 @@ export function LibraryClient({
           <a
             href="/api/export/jobs.csv"
             data-testid="library-export-csv"
-            className="rounded-xl border border-line bg-surface px-3.5 py-2 text-xs font-medium text-fg hover:border-mint"
+            className="rounded-xl border border-line bg-surface px-3.5 py-2 text-xs font-medium text-fg hover:border-accent"
           >
             {t.dash.library.exportCsv}
           </a>
           <Link
             href={localePath(locale, "/dashboard/create")}
-            className="rounded-xl bg-mint px-4 py-2 text-xs font-semibold text-bg hover:bg-mint-strong"
+            className="rounded-xl bg-accent px-4 py-2 text-xs font-semibold text-bg hover:bg-accent-strong"
           >
             {t.dash.library.create}
           </Link>
@@ -163,7 +163,7 @@ export function LibraryClient({
           <button
             type="button"
             onClick={clearFilters}
-            className="font-medium text-mint hover:underline"
+            className="font-medium text-accent hover:underline"
           >
             {t.dash.library.clearFilters}
           </button>
@@ -176,7 +176,7 @@ export function LibraryClient({
           <p className="mt-1 text-sm text-muted">{t.dash.library.emptyText}</p>
           <Link
             href={localePath(locale, "/dashboard/create")}
-            className="mt-4 inline-flex rounded-xl bg-mint px-4 py-2 text-xs font-semibold text-bg"
+            className="mt-4 inline-flex rounded-xl bg-accent px-4 py-2 text-xs font-semibold text-bg"
           >
             {t.dash.library.create}
           </Link>
@@ -188,7 +188,7 @@ export function LibraryClient({
           <button
             type="button"
             onClick={clearFilters}
-            className="mt-4 rounded-xl border border-line bg-bg px-4 py-2 text-xs font-medium text-fg hover:border-mint"
+            className="mt-4 rounded-xl border border-line bg-bg px-4 py-2 text-xs font-medium text-fg hover:border-accent"
           >
             {t.dash.library.clearFilters}
           </button>
@@ -203,7 +203,7 @@ export function LibraryClient({
             >
               <div>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="rounded-full border border-line bg-surface-2 px-2.5 py-0.5 text-xs font-medium text-mint">
+                  <span className="rounded-full border border-line bg-surface-2 px-2.5 py-0.5 text-xs font-medium text-accent">
                     {t.dash.provenance[m.provenance]}
                   </span>
                   <span className="rounded-full border border-line bg-bg px-2.5 py-0.5 text-xs font-medium text-fg">
@@ -240,7 +240,7 @@ export function LibraryClient({
                 <Link
                   href={localePath(locale, `/dashboard/models/${m.id}`)}
                   data-testid={`open-model-${m.id}`}
-                  className="rounded-xl bg-mint px-3.5 py-1.5 text-xs font-semibold text-bg hover:bg-mint-strong"
+                  className="rounded-xl bg-accent px-3.5 py-1.5 text-xs font-semibold text-bg hover:bg-accent-strong"
                 >
                   {t.dash.library.open}
                 </Link>
@@ -269,14 +269,14 @@ export function LibraryClient({
             <h2 id="del-modal-title" className="font-display text-base font-semibold text-fg">
               {t.dash.library.deleteTitle}
             </h2>
-            <p className="mt-1 text-xs font-medium text-mint">{deleteTarget.title}</p>
+            <p className="mt-1 text-xs font-medium text-accent">{deleteTarget.title}</p>
             <p className="mt-2 text-sm text-muted">{t.dash.library.deleteText}</p>
             <div className="mt-5 flex justify-end gap-2">
               <button
                 type="button"
                 disabled={deleting}
                 onClick={() => setDeleteTarget(null)}
-                className="rounded-xl border border-line bg-bg px-4 py-2 text-xs font-medium text-fg hover:border-mint"
+                className="rounded-xl border border-line bg-bg px-4 py-2 text-xs font-medium text-fg hover:border-accent"
               >
                 {t.dash.create.back}
               </button>
@@ -285,7 +285,7 @@ export function LibraryClient({
                 disabled={deleting}
                 onClick={confirmDelete}
                 data-testid="confirm-delete-model"
-                className="rounded-xl bg-danger px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                className="rounded-xl bg-danger px-4 py-2 text-xs font-semibold text-ink disabled:opacity-50"
               >
                 {deleting ? t.dash.library.deleting : t.dash.library.deleteConfirm}
               </button>

@@ -108,6 +108,17 @@ export type CreateImageJobInput = {
   targetFaceCount?: number;
 };
 
+async function readJobId(res: Response): Promise<{ jobId: string }> {
+  let json: { jobId?: unknown };
+  try {
+    json = (await res.json()) as { jobId?: unknown };
+  } catch {
+    throw new ProviderError("invalid_response", "The provider returned an unreadable response.", res.status);
+  }
+  if (!isValidJobId(json.jobId)) throw new ProviderError("invalid_response", "The provider did not return a valid job id.", res.status);
+  return { jobId: json.jobId };
+}
+
 /** POST /jobs/image-to-3d (multipart). Returns the provider job id. */
 export async function createImageJob(input: CreateImageJobInput, deps?: Deps): Promise<{ jobId: string }> {
   const c = cfg(deps);
@@ -118,14 +129,56 @@ export async function createImageJob(input: CreateImageJobInput, deps?: Deps): P
   form.append("topology", "triangles"); // explicit: "quads" adds provider cost, "auto" may choose it
   const res = await call(`${c.apiBase}/jobs/image-to-3d`, { method: "POST", body: form }, c, deps);
   if (!res.ok) return failFrom(res, c);
-  let json: { jobId?: unknown };
-  try {
-    json = (await res.json()) as { jobId?: unknown };
-  } catch {
-    throw new ProviderError("invalid_response", "The provider returned an unreadable response.", res.status);
+  return readJobId(res);
+}
+
+export type MultiImageView = "front" | "left" | "back" | "right";
+export type CreateMultiImageJobInput = {
+  /** `front` is required; at least one of left / back / right must accompany it (Sloyd: 2 to 4 photos of the same object). */
+  images: Partial<Record<MultiImageView, { image: Buffer; mime: "image/png" | "image/jpeg" }>>;
+  /** Sloyd's multi-image endpoint has no texture resolution: any value other than "none" turns PBR texturing on. */
+  textureResolution: TextureResolution;
+  faceCount?: number;
+};
+
+/** POST /jobs/multi-image-to-3d (multipart: frontImage + leftImage / backImage / rightImage). Returns the provider job id. */
+export async function createMultiImageJob(input: CreateMultiImageJobInput, deps?: Deps): Promise<{ jobId: string }> {
+  const c = cfg(deps);
+  const front = input.images.front;
+  const others = (["left", "back", "right"] as const).filter((v) => input.images[v]);
+  if (!front || others.length < 1) throw new ProviderError("rejected", "Multi-photo generation needs a front photo and at least one more view.", undefined, true);
+  const form = new FormData();
+  for (const view of ["front", ...others] as const) {
+    const part = input.images[view]!;
+    const ext = part.mime === "image/png" ? "png" : "jpg";
+    form.append(`${view}Image`, new Blob([new Uint8Array(part.image)], { type: part.mime }), `${view}.${ext}`);
   }
-  if (!isValidJobId(json.jobId)) throw new ProviderError("invalid_response", "The provider did not return a valid job id.", res.status);
-  return { jobId: json.jobId };
+  form.append("EnablePBR", input.textureResolution === "none" ? "false" : "true");
+  form.append("FaceCount", String(input.faceCount ?? 20000));
+  const res = await call(`${c.apiBase}/jobs/multi-image-to-3d`, { method: "POST", body: form }, c, deps);
+  if (!res.ok) return failFrom(res, c);
+  return readJobId(res);
+}
+
+export type CreateTextJobInput = {
+  prompt: string;
+  textureResolution: TextureResolution;
+  targetFaceCount?: number;
+};
+
+/** POST /jobs/text-to-3d (JSON). Returns the provider job id. */
+export async function createTextJob(input: CreateTextJobInput, deps?: Deps): Promise<{ jobId: string }> {
+  const c = cfg(deps);
+  const body = {
+    prompt: input.prompt,
+    textureResolution: input.textureResolution,
+    topology: "triangles", // explicit, same reason as image-to-3d
+    targetFaceCount: input.targetFaceCount ?? 20000,
+    tPose: false,
+  };
+  const res = await call(`${c.apiBase}/jobs/text-to-3d`, { method: "POST", body: JSON.stringify(body), headers: { "content-type": "application/json" } }, c, deps);
+  if (!res.ok) return failFrom(res, c);
+  return readJobId(res);
 }
 
 export type JobSnapshot = { status: NormalizedStatus; rawStatus: string; errorMessage: string | null };

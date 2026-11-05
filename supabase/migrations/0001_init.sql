@@ -3,14 +3,16 @@
 
 CREATE SCHEMA IF NOT EXISTS app;
 
--- Session helper: reads authenticated user UUID from request.jwt.claim.sub (Supabase)
--- or app.current_user_id session setting for local/PGlite testing.
+-- Session helper: reads the authenticated user UUID from the Supabase JWT claims
+-- (request.jwt.claims, or the legacy request.jwt.claim.sub) or, for local/PGlite tests, app.current_user_id.
 CREATE OR REPLACE FUNCTION app.current_user_id()
 RETURNS uuid
 LANGUAGE sql
 STABLE
+SET search_path = ''
 AS $$
   SELECT COALESCE(
+    NULLIF(NULLIF(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub', '')::uuid,
     NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid,
     NULLIF(current_setting('app.current_user_id', true), '')::uuid
   );
@@ -142,7 +144,10 @@ CREATE TABLE IF NOT EXISTS public.usage_ledger (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
--- Enable Row Level Security on all tenant tables
+-- Enable Row Level Security on every table exposed through the Supabase API
+ALTER TABLE public.plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.plans FORCE ROW LEVEL SECURITY;
+
 ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.organizations FORCE ROW LEVEL SECURITY;
 
@@ -177,8 +182,14 @@ CREATE POLICY org_member_select ON public.organizations
 CREATE POLICY memberships_self_select ON public.memberships
   FOR SELECT USING (user_id = app.current_user_id() OR app.is_org_member(org_id));
 
-CREATE POLICY subscriptions_org_all ON public.subscriptions
-  FOR ALL USING (app.is_org_member(org_id)) WITH CHECK (app.is_org_member(org_id));
+-- Plans are a public catalogue: anyone may read, nobody writes through the API.
+CREATE POLICY plans_public_select ON public.plans
+  FOR SELECT USING (true);
+
+-- Billing, jobs and the attempt ledger are written only by the server (service role, which bypasses RLS).
+-- Members can read their own rows but cannot grant themselves plans, attempts or job states.
+CREATE POLICY subscriptions_org_select ON public.subscriptions
+  FOR SELECT USING (app.is_org_member(org_id));
 
 CREATE POLICY products_org_all ON public.products
   FOR ALL USING (app.is_org_member(org_id)) WITH CHECK (app.is_org_member(org_id));
@@ -186,8 +197,8 @@ CREATE POLICY products_org_all ON public.products
 CREATE POLICY asset_uploads_org_all ON public.asset_uploads
   FOR ALL USING (app.is_org_member(org_id)) WITH CHECK (app.is_org_member(org_id));
 
-CREATE POLICY asset_jobs_org_all ON public.asset_jobs
-  FOR ALL USING (app.is_org_member(org_id)) WITH CHECK (app.is_org_member(org_id));
+CREATE POLICY asset_jobs_org_select ON public.asset_jobs
+  FOR SELECT USING (app.is_org_member(org_id));
 
 CREATE POLICY models_org_all ON public.models
   FOR ALL USING (app.is_org_member(org_id)) WITH CHECK (app.is_org_member(org_id));
@@ -195,8 +206,8 @@ CREATE POLICY models_org_all ON public.models
 CREATE POLICY viewers_org_all ON public.viewers
   FOR ALL USING (app.is_org_member(org_id)) WITH CHECK (app.is_org_member(org_id));
 
-CREATE POLICY usage_ledger_org_all ON public.usage_ledger
-  FOR ALL USING (app.is_org_member(org_id)) WITH CHECK (app.is_org_member(org_id));
+CREATE POLICY usage_ledger_org_select ON public.usage_ledger
+  FOR SELECT USING (app.is_org_member(org_id));
 
 -- Create an application role without BYPASSRLS so tests and connections verify policies strictly
 DO $$
@@ -210,3 +221,14 @@ $$;
 GRANT USAGE ON SCHEMA public, app TO authenticated_tenant;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA app TO authenticated_tenant;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated_tenant;
+
+-- Supabase's API roles must be able to evaluate the policy helpers (the roles do not exist in PGlite).
+-- anon always evaluates to "not a member", so it reads nothing but gets an empty result instead of an error.
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
+    GRANT USAGE ON SCHEMA app TO authenticated, anon;
+    GRANT EXECUTE ON FUNCTION app.current_user_id(), app.is_org_member(uuid) TO authenticated, anon;
+  END IF;
+END
+$$;

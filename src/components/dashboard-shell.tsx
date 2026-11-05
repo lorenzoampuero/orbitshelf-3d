@@ -96,7 +96,7 @@ export function DashboardShell({
                 className={cn(
                   "flex items-center justify-between gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
                   active
-                    ? "bg-surface-2 text-mint border border-line"
+                    ? "bg-surface-2 text-accent border border-line"
                     : "text-muted hover:bg-surface-2/60 hover:text-fg border border-transparent",
                 )}
               >
@@ -105,7 +105,7 @@ export function DashboardShell({
                   {!collapsed && <span className="truncate">{item.label}</span>}
                 </span>
                 {!collapsed && item.planned && (
-                  <span className="rounded bg-bg px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-violet">
+                  <span className="rounded bg-bg px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-accent">
                     {dict.common.planned}
                   </span>
                 )}
@@ -121,7 +121,7 @@ export function DashboardShell({
     <div data-theme="app" className="min-h-screen flex bg-bg text-fg">
       <a
         href="#dashboard-main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-mint focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-bg"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-accent focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-bg"
       >
         {dict.common.skipToContent}
       </a>
@@ -225,7 +225,7 @@ export function DashboardShell({
               data-testid="provider-mode-pill"
               className={cn(
                 "rounded-full border px-2.5 py-0.5 text-xs font-medium",
-                providerReady ? "border-mint/50 text-mint" : "border-line text-muted",
+                providerReady ? "border-accent/50 text-accent" : "border-line text-muted",
               )}
             >
               {providerReady ? dict.dash.source.sloyd : dict.dash.source.demo}

@@ -39,31 +39,26 @@ export default async function ResourceArticlePage({ params }: Props) {
 
   return (
     <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
-      <article className="py-14 md:py-20">
-        <div className="container-page max-w-3xl space-y-8">
-          <div className="space-y-3">
-            <Link
-              href={localePath(locale, "/resources")}
-              className="text-xs font-medium text-mint hover:underline"
-            >
+      <article className="py-14 md:py-24">
+        <div className="container-page max-w-3xl space-y-12">
+          <div className="space-y-4">
+            <Link href={localePath(locale, "/resources")} className="text-sm font-medium text-muted underline underline-offset-4 hover:text-fg">
               ← {dict.resources.backToResources}
             </Link>
-            <div className="flex items-center gap-2">
-              <span className="rounded bg-surface-2 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-mint">
-                {dict.resources.tags[article.tag as keyof typeof dict.resources.tags]}
-              </span>
-              <span className="text-xs text-muted">{dict.resources.updated}</span>
+            <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-wider">
+              <span className="text-accent">{dict.resources.tags[article.tag as keyof typeof dict.resources.tags]}</span>
+              <span className="text-muted">{dict.resources.updated}</span>
             </div>
-            <h1 className="font-display text-3xl sm:text-4xl font-bold">{article.title}</h1>
-            <p className="text-base text-muted">{article.summary}</p>
+            <h1 className="font-display text-4xl font-bold leading-[1.02] md:text-5xl">{article.title}</h1>
+            <p className="text-lg leading-relaxed text-muted">{article.summary}</p>
           </div>
 
-          <div className="space-y-6">
+          <div className="border-b border-line">
             {article.sections.map((s) => (
-              <section key={s.h} className="rounded-[16px] border border-line bg-surface p-6 space-y-3">
-                <h2 className="font-display text-lg font-semibold">{s.h}</h2>
+              <section key={s.h} className="space-y-3 border-t border-line py-7">
+                <h2 className="font-display text-xl font-bold">{s.h}</h2>
                 {s.p.map((para) => (
-                  <p key={para} className="text-sm leading-relaxed text-muted">
+                  <p key={para} className="text-base leading-relaxed text-muted">
                     {para}
                   </p>
                 ))}

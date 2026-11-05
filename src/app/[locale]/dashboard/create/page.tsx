@@ -4,9 +4,17 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { currentUser } from "@/lib/api";
 import { providerConfigured } from "@/lib/env";
 import { store } from "@/lib/store";
+import { buildPageMetadata } from "@/lib/seo";
 import { CreateWizard } from "./create-wizard";
 
 type Props = { params: Promise<{ locale: string }> };
+
+export async function generateMetadata({ params }: Props) {
+  const { locale } = await params;
+  if (!isLocale(locale)) return {};
+  const t = getDictionary(locale);
+  return buildPageMetadata({ locale, path: "/dashboard/create", title: t.dash.create.title, description: t.dash.create.subtitle, noIndex: true });
+}
 
 export default async function CreateModelPage({ params }: Props) {
   const { locale } = await params;

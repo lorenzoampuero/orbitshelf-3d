@@ -5,15 +5,19 @@ import path from "node:path";
 import { dataDir, maxActiveJobs, paidAttemptCap } from "@/lib/env";
 import {
   CHECKLIST_KEYS,
-  PROVIDER_CREDITS_GEOMETRY_ONLY,
-  PROVIDER_CREDITS_PER_ATTEMPT,
+  providerCreditsEstimate,
   type Checklist,
   type Dimensions,
   type FailureCode,
+  type ImageView,
   type LedgerEntryDto,
   type ModelDto,
   type UsageDto,
 } from "@/lib/types";
+
+type ImageExt = "png" | "jpg";
+/** A stored source photo for a view other than `front` (the front photo keeps the original `sourceImageExt` fields). */
+export type ExtraImage = { view: Exclude<ImageView, "front">; ext: ImageExt };
 
 /** Everything a stored model has: the client-safe DTO plus private fields. */
 export type ModelRow = ModelDto & {
@@ -21,7 +25,9 @@ export type ModelRow = ModelDto & {
   providerJobId: string | null;
   idempotencyKey: string | null;
   hasSourceImage: boolean;
-  sourceImageExt: "png" | "jpg" | null;
+  sourceImageExt: ImageExt | null;
+  /** Rows written before multi-photo support have no `extraImages`. */
+  extraImages?: ExtraImage[];
   sourceImageSha256: string | null;
   nextPollAt: string | null;
   pollCount: number;
@@ -54,6 +60,7 @@ export function toDto(row: ModelRow): ModelDto {
     idempotencyKey: _i,
     hasSourceImage: _h,
     sourceImageExt: _e,
+    extraImages: _x,
     sourceImageSha256: _s,
     nextPollAt: _n,
     pollCount: _p,
@@ -61,7 +68,14 @@ export function toDto(row: ModelRow): ModelDto {
     lastPollError: _le,
     ...dto
   } = row;
-  return { ...dto, providerJobRef: providerJobId ? "…" + providerJobId.slice(-6) : null };
+  // Rows saved before multi-photo / text support lack these fields: derive them.
+  return {
+    ...dto,
+    inputKind: row.inputKind ?? (row.source === "sloyd" ? "image" : null),
+    sourceViews: row.sourceViews ?? (row.hasSourceImage ? ["front"] : []),
+    prompt: row.prompt ?? null,
+    providerJobRef: providerJobId ? "…" + providerJobId.slice(-6) : null,
+  };
 }
 
 export function orgIdForEmail(email: string): string {
@@ -120,7 +134,12 @@ function tx<T>(fn: (db: Db) => T | Promise<T>, write = true): Promise<T> {
 }
 
 const fileFor = (orgId: string, modelId: string) => path.join(dataDir(), "files", orgId, `${modelId}.glb`);
-const sourceFor = (orgId: string, modelId: string, ext: string) => path.join(dataDir(), "uploads", orgId, `${modelId}.${ext}`);
+const sourceFor = (orgId: string, modelId: string, ext: string, view: ImageView = "front") =>
+  path.join(dataDir(), "uploads", orgId, view === "front" ? `${modelId}.${ext}` : `${modelId}.${view}.${ext}`);
+const mimeOf = (ext: string) => (ext === "jpg" ? "image/jpeg" : "image/png");
+
+/** A source photo to persist alongside a reserved job. */
+export type SourcePhoto = { view: ImageView; ext: ImageExt; buffer: Buffer };
 const assertSafeId = (id: string) => {
   if (!/^[A-Za-z0-9_-]{1,64}$/.test(id)) throw new Error("Invalid identifier.");
   return id;
@@ -196,7 +215,7 @@ export const store = {
    * Atomically: idempotency lookup → concurrency cap → balance check → ledger debit → model row insert.
    * The provider call happens afterwards, outside the lock.
    */
-  async reserveProviderJob(orgId: string, row: ModelRow, sourceImage: Buffer) {
+  async reserveProviderJob(orgId: string, row: ModelRow, photos: SourcePhoto[]) {
     assertSafeId(row.id);
     return tx((db) => {
       if (row.idempotencyKey) {
@@ -206,9 +225,11 @@ export const store = {
       if (activeJobsOf(db, orgId) >= maxActiveJobs()) return { ok: false as const, reason: "too_many_active" as const };
       if (balanceOf(db, orgId) < 1) return { ok: false as const, reason: "insufficient" as const };
       pushLedger(db, { orgId, idempotencyKey: `debit:${row.id}`, delta: -1, reason: "job_debit", modelId: row.id });
-      const dir = path.join(dataDir(), "uploads", orgId);
-      mkdirSync(dir, { recursive: true });
-      writeFileSync(sourceFor(orgId, row.id, row.sourceImageExt ?? "png"), sourceImage);
+      if (photos.length > 0) {
+        const dir = path.join(dataDir(), "uploads", orgId);
+        mkdirSync(dir, { recursive: true });
+        for (const p of photos) writeFileSync(sourceFor(orgId, row.id, p.ext, p.view), p.buffer);
+      }
       db.models.push({ ...row, attemptsDebited: 1 });
       audit(db, orgId, "job.reserved", row.id);
       return { ok: true as const, duplicate: false as const, model: db.models[db.models.length - 1] };
@@ -291,14 +312,16 @@ export const store = {
     }, false);
   },
 
-  async readSourceImage(orgId: string, modelId: string): Promise<{ data: Buffer; mime: string } | null> {
+  async readSourceImage(orgId: string, modelId: string, view: ImageView = "front"): Promise<{ data: Buffer; mime: string } | null> {
     assertSafeId(modelId);
     return tx((db) => {
       const m = db.models.find((x) => x.orgId === orgId && x.id === modelId);
-      if (!m?.hasSourceImage || !m.sourceImageExt) return null;
-      const f = sourceFor(orgId, modelId, m.sourceImageExt);
+      if (!m) return null;
+      const ext = view === "front" ? (m.hasSourceImage ? m.sourceImageExt : null) : (m.extraImages ?? []).find((e) => e.view === view)?.ext;
+      if (!ext) return null;
+      const f = sourceFor(orgId, modelId, ext, view);
       if (!existsSync(f)) return null;
-      return { data: readFileSync(f), mime: m.sourceImageExt === "jpg" ? "image/jpeg" : "image/png" };
+      return { data: readFileSync(f), mime: mimeOf(ext) };
     }, false);
   },
 
@@ -310,6 +333,7 @@ export const store = {
       const [m] = db.models.splice(idx, 1);
       rmSync(fileFor(orgId, id), { force: true });
       if (m.sourceImageExt) rmSync(sourceFor(orgId, id, m.sourceImageExt), { force: true });
+      for (const e of m.extraImages ?? []) rmSync(sourceFor(orgId, id, e.ext, e.view), { force: true });
       audit(db, orgId, "model.deleted", id); // the ledger is intentionally preserved
       return true;
     });
@@ -353,5 +377,5 @@ export const store = {
   },
 };
 
-export const estimateProviderCredits = (texture: string | null) => (texture === "none" ? PROVIDER_CREDITS_GEOMETRY_ONLY : PROVIDER_CREDITS_PER_ATTEMPT);
+export const estimateProviderCredits = providerCreditsEstimate;
 export { nowIso };

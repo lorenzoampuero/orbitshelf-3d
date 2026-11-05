@@ -1,5 +1,5 @@
 import { apiJson } from "@/lib/api";
-import { providerConfigured, localAuthAllowed } from "@/lib/env";
+import { authMode, providerConfigured } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +10,7 @@ export function GET() {
     app: "orbitshelf-3d",
     version: "0.1.0",
     storage: "local-adapter",
-    auth: localAuthAllowed() ? "local-dev-signin" : "disabled",
+    auth: { supabase: "supabase-magic-link", local: "local-dev-signin", disabled: "disabled" }[authMode()],
     provider: providerConfigured() ? "configured" : "not-configured",
     mode: providerConfigured() ? "demo+provider" : "demo-only",
   });

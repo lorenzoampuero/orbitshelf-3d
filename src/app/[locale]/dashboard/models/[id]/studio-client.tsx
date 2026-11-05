@@ -21,12 +21,10 @@ export function StudioClient({
   locale,
   t,
   initialModel,
-  hasSourceImage,
 }: {
   locale: Locale;
   t: Dictionary;
   initialModel: ModelDto;
-  hasSourceImage: boolean;
 }) {
   const router = useRouter();
   const [model, setModel] = useState<ModelDto>(initialModel);
@@ -165,7 +163,7 @@ export function StudioClient({
         <div>
           <Link
             href={localePath(locale, "/dashboard/models")}
-            className="text-xs font-medium text-mint hover:underline"
+            className="text-xs font-medium text-accent hover:underline"
           >
             ← {t.dash.detail.back}
           </Link>
@@ -173,7 +171,7 @@ export function StudioClient({
             <h1 className="font-display text-2xl sm:text-3xl font-bold" data-testid="studio-title">
               {model.title}
             </h1>
-            <span className="rounded-full border border-line bg-surface-2 px-2.5 py-0.5 text-xs font-medium text-mint">
+            <span className="rounded-full border border-line bg-surface-2 px-2.5 py-0.5 text-xs font-medium text-accent">
               {t.dash.provenance[model.provenance]}
             </span>
             <span
@@ -196,7 +194,7 @@ export function StudioClient({
             <a
               href={`/api/models/${encodeURIComponent(model.id)}/file?download=1`}
               data-testid="download-glb-btn"
-              className="rounded-xl bg-mint px-4 py-2 text-xs font-semibold text-bg hover:bg-mint-strong"
+              className="rounded-xl bg-accent px-4 py-2 text-xs font-semibold text-bg hover:bg-accent-strong"
             >
               {t.dash.detail.download}
             </a>
@@ -235,7 +233,7 @@ export function StudioClient({
               onClick={refreshStatus}
               disabled={refreshing}
               data-testid="refresh-job-btn"
-              className="rounded-xl border border-line bg-surface px-3.5 py-2 text-xs font-medium text-fg hover:border-mint disabled:opacity-50"
+              className="rounded-xl border border-line bg-surface px-3.5 py-2 text-xs font-medium text-fg hover:border-accent disabled:opacity-50"
             >
               {refreshing ? t.dash.detail.refreshing : t.dash.detail.refresh}
             </button>
@@ -289,19 +287,38 @@ export function StudioClient({
             </div>
           )}
 
-          {model.source === "sloyd" && hasSourceImage && (
+          {model.source === "sloyd" && model.sourceViews.length > 0 && (
             <div className="rounded-[16px] border border-line bg-surface p-5">
-              <h2 className="font-display text-sm font-semibold text-fg">{t.dash.detail.sourcePhoto}</h2>
+              <h2 className="font-display text-sm font-semibold text-fg">
+                {model.sourceViews.length > 1 ? t.dash.detail.sourcePhotosTitle : t.dash.detail.sourcePhoto}
+              </h2>
               <p className="mt-1 text-xs text-muted">{t.dash.detail.sourcePhotoNote}</p>
-              <div className="mt-3 overflow-hidden rounded-xl border border-line bg-bg p-2">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/api/models/${encodeURIComponent(model.id)}/source`}
-                  alt={model.title}
-                  data-testid="studio-source-photo"
-                  className="max-h-64 rounded object-contain"
-                />
+              <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {model.sourceViews.map((view) => (
+                  <figure key={view} className="space-y-1">
+                    <div className="overflow-hidden rounded-xl border border-line bg-bg p-1.5">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`/api/models/${encodeURIComponent(model.id)}/source?view=${view}`}
+                        alt={`${model.title} — ${t.dash.create.views[view]}`}
+                        data-testid={view === "front" ? "studio-source-photo" : `studio-source-photo-${view}`}
+                        className="aspect-square w-full rounded object-contain"
+                      />
+                    </div>
+                    {model.sourceViews.length > 1 && <figcaption className="text-xs text-muted">{t.dash.create.views[view]}</figcaption>}
+                  </figure>
+                ))}
               </div>
+            </div>
+          )}
+
+          {model.inputKind === "text" && model.prompt && (
+            <div className="rounded-[16px] border border-line bg-surface p-5">
+              <h2 className="font-display text-sm font-semibold text-fg">{t.dash.detail.promptTitle}</h2>
+              <p className="mt-1 text-xs text-muted">{t.dash.detail.promptNote}</p>
+              <blockquote data-testid="studio-prompt" className="mt-3 rounded-xl border border-line bg-bg p-3 text-sm leading-relaxed text-fg">
+                {model.prompt}
+              </blockquote>
             </div>
           )}
 
@@ -309,48 +326,50 @@ export function StudioClient({
           <div className="rounded-[16px] border border-line bg-surface p-5">
             <h2 className="font-display text-sm font-semibold text-fg">{t.dash.detail.details}</h2>
             <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
-              <div className="flex justify-between rounded-lg bg-bg px-3 py-2">
+              <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                 <dt className="text-muted">{t.dash.detail.statusLabel}</dt>
-                <dd className="font-medium text-fg">{t.dash.status[model.status]}</dd>
+                <dd className="font-medium text-fg">
+                  {model.status === "ready" && model.reviewState !== "pending" ? t.dash.review[model.reviewState] : t.dash.status[model.status]}
+                </dd>
               </div>
-              <div className="flex justify-between rounded-lg bg-bg px-3 py-2">
+              <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                 <dt className="text-muted">{t.dash.detail.sourceLabel}</dt>
-                <dd className="font-medium text-fg">{t.dash.source[model.source]}</dd>
+                <dd className="font-medium text-fg">{model.inputKind ? t.dash.inputKind[model.inputKind] : t.dash.source[model.source]}</dd>
               </div>
-              <div className="flex justify-between rounded-lg bg-bg px-3 py-2">
+              <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                 <dt className="text-muted">{t.dash.detail.provenanceLabel}</dt>
                 <dd className="font-medium text-fg">{t.dash.provenance[model.provenance]}</dd>
               </div>
-              <div className="flex justify-between rounded-lg bg-bg px-3 py-2">
+              <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                 <dt className="text-muted">{t.dash.detail.createdLabel}</dt>
                 <dd className="font-medium text-fg">{formatDate(model.createdAt, locale)}</dd>
               </div>
               {model.fileSize !== null && (
-                <div className="flex justify-between rounded-lg bg-bg px-3 py-2">
+                <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                   <dt className="text-muted">{t.dash.detail.sizeLabel}</dt>
                   <dd className="font-medium text-fg">{formatBytes(model.fileSize)}</dd>
                 </div>
               )}
               {model.textureResolution && (
-                <div className="flex justify-between rounded-lg bg-bg px-3 py-2">
+                <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                   <dt className="text-muted">{t.dash.detail.textureLabel}</dt>
                   <dd className="font-medium text-fg">{model.textureResolution}</dd>
                 </div>
               )}
-              <div className="flex justify-between rounded-lg bg-bg px-3 py-2">
+              <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                 <dt className="text-muted">{t.dash.detail.attemptsLabel}</dt>
                 <dd className="font-medium text-fg">
                   {model.attemptsDebited} / {model.attemptsRefunded}
                 </dd>
               </div>
-              <div className="flex justify-between rounded-lg bg-bg px-3 py-2">
+              <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                 <dt className="text-muted">{t.dash.detail.creditsLabel}</dt>
                 <dd className="font-medium text-fg">{model.providerCreditsEstimate}</dd>
               </div>
               {model.checksum && (
-                <div className="flex justify-between rounded-lg bg-bg px-3 py-2 sm:col-span-2">
+                <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2 sm:col-span-2">
                   <dt className="text-muted">{t.dash.detail.checksumLabel}</dt>
-                  <dd className="truncate font-mono text-[11px] text-fg ml-4">
+                  <dd className="truncate font-mono text-xs text-fg">
                     {model.checksum}
                   </dd>
                 </div>
@@ -374,7 +393,7 @@ export function StudioClient({
               {model.reviewState === "approved" && (
                 <div
                   data-testid="review-approved-banner"
-                  className="mt-3 rounded-xl border border-mint/40 bg-mint/10 p-3 text-xs text-mint"
+                  className="mt-3 rounded-xl border border-accent/40 bg-accent/10 p-3 text-xs text-accent"
                 >
                   {t.dash.detail.approvedBanner}
                 </div>
@@ -392,16 +411,16 @@ export function StudioClient({
                 {CHECKLIST_KEYS.map((key) => (
                   <label
                     key={key}
-                    className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-line bg-bg p-2.5 text-xs text-fg hover:border-mint"
+                    className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-line bg-bg p-2.5 text-xs text-fg hover:border-accent"
                   >
                     <input
                       type="checkbox"
                       checked={checklist[key]}
                       onChange={() => toggleChecklist(key)}
                       data-testid={`checklist-${key}`}
-                      className="mt-0.5 h-4 w-4 rounded border-line accent-mint"
+                      className="mt-0.5 h-4 w-4 rounded border-line accent-accent"
                     />
-                    <span>{t.dash.detail.checklist[key]}</span>
+                    <span>{(model.inputKind === "text" ? t.dash.detail.checklistText : t.dash.detail.checklist)[key]}</span>
                   </label>
                 ))}
               </div>
@@ -437,7 +456,7 @@ export function StudioClient({
                   disabled={!allChecked || savingReview}
                   onClick={() => submitReview("approve")}
                   data-testid="review-approve-btn"
-                  className="rounded-xl bg-mint px-3.5 py-2 text-xs font-semibold text-bg hover:bg-mint-strong disabled:opacity-50"
+                  className="rounded-xl bg-accent px-3.5 py-2 text-xs font-semibold text-bg hover:bg-accent-strong disabled:opacity-50"
                 >
                   {t.dash.detail.approve}
                 </button>
@@ -455,7 +474,7 @@ export function StudioClient({
                   disabled={savingReview}
                   onClick={() => submitReview("save")}
                   data-testid="review-save-btn"
-                  className="rounded-xl border border-line bg-bg px-3.5 py-2 text-xs font-medium text-fg hover:border-mint disabled:opacity-50"
+                  className="rounded-xl border border-line bg-bg px-3.5 py-2 text-xs font-medium text-fg hover:border-accent disabled:opacity-50"
                 >
                   {t.dash.detail.saveProgress}
                 </button>
@@ -465,7 +484,7 @@ export function StudioClient({
                     disabled={savingReview}
                     onClick={() => submitReview("reset")}
                     data-testid="review-reset-btn"
-                    className="rounded-xl border border-line bg-bg px-3.5 py-2 text-xs font-medium text-fg hover:border-mint disabled:opacity-50"
+                    className="rounded-xl border border-line bg-bg px-3.5 py-2 text-xs font-medium text-fg hover:border-accent disabled:opacity-50"
                   >
                     {t.dash.detail.reset}
                   </button>
@@ -579,11 +598,11 @@ export function StudioClient({
                   type="submit"
                   disabled={savingMeta}
                   data-testid="save-meta-btn"
-                  className="rounded-xl bg-mint px-3.5 py-2 text-xs font-semibold text-bg hover:bg-mint-strong disabled:opacity-50"
+                  className="rounded-xl bg-accent px-3.5 py-2 text-xs font-semibold text-bg hover:bg-accent-strong disabled:opacity-50"
                 >
                   {t.dash.detail.saveMeta}
                 </button>
-                {metaSaved && <span className="text-xs text-mint">✓</span>}
+                {metaSaved && <span className="text-xs text-accent">✓</span>}
               </div>
             </form>
           </section>
@@ -607,7 +626,7 @@ export function StudioClient({
                 type="button"
                 disabled={deleting}
                 onClick={() => setConfirmDelete(false)}
-                className="rounded-xl border border-line bg-bg px-4 py-2 text-xs font-medium text-fg hover:border-mint"
+                className="rounded-xl border border-line bg-bg px-4 py-2 text-xs font-medium text-fg hover:border-accent"
               >
                 {t.dash.create.back}
               </button>
@@ -616,7 +635,7 @@ export function StudioClient({
                 disabled={deleting}
                 onClick={handleDelete}
                 data-testid="studio-confirm-delete-btn"
-                className="rounded-xl bg-danger px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                className="rounded-xl bg-danger px-4 py-2 text-xs font-semibold text-ink disabled:opacity-50"
               >
                 {deleting ? t.dash.library.deleting : t.dash.library.deleteConfirm}
               </button>

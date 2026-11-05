@@ -29,7 +29,7 @@ beforeEach(() => {
 });
 afterAll(() => rmSync(tmpRoot, { recursive: true, force: true }));
 
-const input = async (key: string | null = null) => ({ title: "Vase", sku: "SKU-1", category: "home-decor" as const, textureResolution: "1k" as const, idempotencyKey: key, image: await image() });
+const input = async (key: string | null = null) => ({ title: "Vase", sku: "SKU-1", category: "home-decor" as const, textureResolution: "1k" as const, idempotencyKey: key, source: { kind: "image" as const, image: await image() } });
 
 describe("workspaces and demo models", () => {
   it("signs in once per email, grants the local cap once, and isolates tenants", async () => {
@@ -76,6 +76,71 @@ describe("provider job lifecycle (fake provider)", () => {
     expect(row?.providerJobId).toBe(JOB);
     expect(row?.status).toBe("processing");
     expect(row?.rightsAffirmed).toBe(true);
+  });
+
+  it("multi-photo: stores every view privately, calls the multi-image endpoint, estimates 30 credits", async () => {
+    const { org } = await store.signIn("mp@example.com");
+    const urls: string[] = [];
+    const deps = fake((u) => (urls.push(u), json(200, { jobId: JOB })));
+    const front = await image();
+    const back = await image();
+    const r = await createProviderModel(
+      org.id,
+      { title: "Hoodie", sku: null, category: "apparel", textureResolution: "1k", idempotencyKey: null, source: { kind: "multi-image", images: { front, back } } },
+      deps,
+    );
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(urls[0]).toMatch(/\/jobs\/multi-image-to-3d$/);
+    expect(r.model.inputKind).toBe("multi-image");
+    expect(r.model.sourceViews).toEqual(["front", "back"]);
+    expect(r.model.providerCreditsEstimate).toBe(30);
+    expect((await store.readSourceImage(org.id, r.model.id, "front"))?.mime).toBe("image/jpeg");
+    expect((await store.readSourceImage(org.id, r.model.id, "back"))?.data.length).toBeGreaterThan(0);
+    expect(await store.readSourceImage(org.id, r.model.id, "left")).toBeNull();
+    expect((await store.usage(org.id)).debited).toBe(1); // one attempt, whatever the mode
+    // other tenants cannot read the photos
+    const other = await store.signIn("mp2@example.com");
+    expect(await store.readSourceImage(other.org.id, r.model.id, "back")).toBeNull();
+    // deleting the model removes every stored photo
+    const dir = path.join(process.env.DATA_DIR!, "uploads", org.id);
+    expect(existsSync(path.join(dir, `${r.model.id}.back.jpg`))).toBe(true);
+    expect(await store.deleteModel(org.id, r.model.id)).toBe(true);
+    expect(existsSync(path.join(dir, `${r.model.id}.back.jpg`))).toBe(false);
+    expect(existsSync(path.join(dir, `${r.model.id}.jpg`))).toBe(false);
+  });
+
+  it("text: stores the prompt and no photos, estimates 25 credits", async () => {
+    const { org } = await store.signIn("tx@example.com");
+    const urls: string[] = [];
+    const deps = fake((u) => (urls.push(u), json(200, { jobId: JOB })));
+    const r = await createProviderModel(
+      org.id,
+      { title: "Fox", sku: null, category: "other", textureResolution: "1k", idempotencyKey: null, source: { kind: "text", prompt: "a low-poly fox sitting" } },
+      deps,
+    );
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(urls[0]).toMatch(/\/jobs\/text-to-3d$/);
+    expect(r.model.inputKind).toBe("text");
+    expect(r.model.prompt).toBe("a low-poly fox sitting");
+    expect(r.model.sourceViews).toEqual([]);
+    expect(r.model.hasSourceImage).toBe(false);
+    expect(r.model.providerCreditsEstimate).toBe(25);
+    expect(await store.readSourceImage(org.id, r.model.id)).toBeNull();
+  });
+
+  it("a rejected text prompt refunds the attempt", async () => {
+    const { org } = await store.signIn("tx2@example.com");
+    const r = await createProviderModel(
+      org.id,
+      { title: "Bad", sku: null, category: "other", textureResolution: "1k", idempotencyKey: null, source: { kind: "text", prompt: "something the provider refuses" } },
+      fake(() => json(422, { message: "prompt rejected" })),
+    );
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.code).toBe("provider_rejected");
+    expect((await store.usage(org.id)).balance).toBe(3);
   });
 
   it("HTTP 402 at creation: no job, attempt refunded, failure code payment_required", async () => {

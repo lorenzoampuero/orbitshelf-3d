@@ -71,3 +71,30 @@ export async function readBodyCapped(req: Request, maxBytes: number): Promise<Bu
   }
   return Buffer.concat(chunks);
 }
+
+export const MAX_JSON_BYTES = 16 * 1024;
+
+/** Capped JSON body read: returns the parsed value, or a ready-made 413/400 error response. */
+export async function readJsonCapped(req: Request, maxBytes = MAX_JSON_BYTES): Promise<{ ok: true; value: unknown } | { ok: false; response: Response }> {
+  const raw = await readBodyCapped(req, maxBytes);
+  if (!raw) return { ok: false, response: apiError(413, "too_large", "Request body is too large.") };
+  try {
+    return { ok: true, value: JSON.parse(raw.toString("utf8")) };
+  } catch {
+    return { ok: false, response: apiError(400, "invalid_json", "Invalid JSON body.") };
+  }
+}
+
+/**
+ * Client IP for rate limiting. Forwarding headers are client-controlled unless a trusted proxy overwrites them,
+ * so they are only read when TRUSTED_IP_HEADER names the header your platform sets (e.g. "x-real-ip").
+ * Without it every client shares one bucket: stricter, but impossible to bypass by spoofing a header.
+ */
+export function clientIp(req: Request): string {
+  const header = process.env.TRUSTED_IP_HEADER?.trim().toLowerCase();
+  if (!header) return "shared";
+  const value = req.headers.get(header);
+  // For x-forwarded-for the trusted proxy appends the real address last; earlier entries are client-supplied.
+  const ip = value?.split(",").pop()?.trim();
+  return ip && ip.length <= 64 ? ip : "unknown";
+}

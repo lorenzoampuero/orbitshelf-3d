@@ -16,7 +16,7 @@ export function SignOutButton({ locale, label }: { locale: Locale; label: string
       type="button"
       onClick={handleSignOut}
       data-testid="settings-signout-btn"
-      className="rounded-xl border border-line bg-bg px-4 py-2 text-xs font-medium text-fg hover:border-mint"
+      className="rounded-xl border border-line bg-bg px-4 py-2 text-xs font-medium text-fg hover:border-accent"
     >
       {label}
     </button>

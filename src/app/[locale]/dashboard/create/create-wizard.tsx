@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { localePath } from "@/i18n/config";
@@ -8,17 +8,26 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 import {
   CATEGORIES,
   DEMO_ASSETS,
-  PROVIDER_CREDITS_GEOMETRY_ONLY,
-  PROVIDER_CREDITS_PER_ATTEMPT,
+  IMAGE_VIEWS,
+  MAX_PROMPT_CHARS,
   PROVIDER_CREDITS_PER_USD,
   TEXTURE_RESOLUTIONS,
+  providerCreditsEstimate,
   type Category,
   type DemoAsset,
+  type ImageView,
   type Locale,
-  type ModelSource,
   type TextureResolution,
 } from "@/lib/types";
 import { ModelViewerBox } from "@/components/model-viewer-box";
+
+type Mode = "photos" | "text" | "demo";
+type ApiFailure = {
+  model?: { id: string };
+  imageCode?: keyof Dictionary["dash"]["imageErrors"];
+  fields?: Record<string, string>;
+  error?: { code?: string; message?: string };
+};
 
 export function CreateWizard({
   locale,
@@ -34,22 +43,82 @@ export function CreateWizard({
   const router = useRouter();
   const c = dict.dash.create;
 
-  const [title, setTitle] = useState("Ceramic vase");
-  const [sku, setSku] = useState("VASE-001");
-  const [category, setCategory] = useState<Category>("home-decor");
-  const [source, setSource] = useState<ModelSource>("demo");
+  const [mode, setMode] = useState<Mode>(providerReady ? "photos" : "demo");
+  const [title, setTitle] = useState(providerReady ? "" : c.demoObjects.vase);
+  const [sku, setSku] = useState("");
+  const [category, setCategory] = useState<Category>(providerReady ? "apparel" : "home-decor");
   const [demoAsset, setDemoAsset] = useState<DemoAsset>("vase");
   const [textureResolution, setTextureResolution] = useState<TextureResolution>("1k");
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<Partial<Record<ImageView, File>>>({});
+  const [resets, setResets] = useState<Partial<Record<ImageView, number>>>({});
+  const [prompt, setPrompt] = useState("");
   const [confirmPaid, setConfirmPaid] = useState(false);
   const [rightsAffirmed, setRightsAffirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [failedModelId, setFailedModelId] = useState<string | null>(null);
 
-  const credits =
-    textureResolution === "none" ? PROVIDER_CREDITS_GEOMETRY_ONLY : PROVIDER_CREDITS_PER_ATTEMPT;
+  const photoCount = IMAGE_VIEWS.filter((v) => files[v]).length;
+  const kind = mode === "text" ? "text" : photoCount >= 2 ? "multi-image" : "image";
+  const credits = providerCreditsEstimate(textureResolution, kind);
   const usd = (credits / PROVIDER_CREDITS_PER_USD).toFixed(2);
+
+  // Object URLs for the photo thumbnails. They are revoked when the selection changes or the form unmounts.
+  const previews = useMemo(() => {
+    const out: Partial<Record<ImageView, string>> = {};
+    for (const v of IMAGE_VIEWS) {
+      const f = files[v];
+      if (f) out[v] = URL.createObjectURL(f);
+    }
+    return out;
+  }, [files]);
+  useEffect(() => () => Object.values(previews).forEach((u) => URL.revokeObjectURL(u)), [previews]);
+
+  function chooseMode(next: Mode) {
+    setMode(next);
+    setError(null);
+    if (next === "demo" && !title.trim()) setTitle(c.demoObjects[demoAsset]);
+  }
+
+  function setView(view: ImageView, file: File | null) {
+    setFiles((prev) => {
+      const next = { ...prev };
+      if (file) next[view] = file;
+      else delete next[view];
+      return next;
+    });
+  }
+
+  function showFailure(data: ApiFailure) {
+    if (data.imageCode && data.imageCode in dict.dash.imageErrors) {
+      setError(dict.dash.imageErrors[data.imageCode]);
+    } else if (data.fields?.prompt) {
+      setError(c.errors.prompt);
+    } else if (data.error?.code && data.error.code in dict.dash.failures) {
+      setError(dict.dash.failures[data.error.code as keyof typeof dict.dash.failures]);
+    } else {
+      setError(data.error?.message || dict.common.somethingWrong);
+    }
+    if (data.model?.id) setFailedModelId(data.model.id);
+  }
+
+  async function send(init: RequestInit) {
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/models", { method: "POST", ...init });
+      const data = (await res.json()) as ApiFailure;
+      if (!res.ok || !data.model) {
+        showFailure(data);
+        return;
+      }
+      router.push(localePath(locale, `/dashboard/models/${data.model.id}`));
+      router.refresh();
+    } catch {
+      setError(dict.common.networkError);
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -66,41 +135,20 @@ export function CreateWizard({
       return;
     }
 
-    if (source === "demo") {
-      setSubmitting(true);
-      try {
-        const res = await fetch("/api/models", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            source: "demo",
-            title: cleanTitle,
-            sku: sku.trim() || null,
-            category,
-            demoAsset,
-          }),
-        });
-        const data = (await res.json()) as {
-          model?: { id: string };
-          error?: { code?: string; message?: string };
-        };
-        if (!res.ok || !data.model) {
-          setError(data.error?.message || dict.common.somethingWrong);
-          return;
-        }
-        router.push(localePath(locale, `/dashboard/models/${data.model.id}`));
-        router.refresh();
-      } catch {
-        setError(dict.common.networkError);
-      } finally {
-        setSubmitting(false);
-      }
+    if (mode === "demo") {
+      await send({
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source: "demo", title: cleanTitle, sku: sku.trim() || null, category, demoAsset }),
+      });
       return;
     }
 
-    // Sloyd AI job
-    if (!file) {
+    if (mode === "photos" && !files.front) {
       setError(c.errors.photo);
+      return;
+    }
+    if (mode === "text" && prompt.replace(/\s+/g, " ").trim().length < 10) {
+      setError(c.errors.prompt);
       return;
     }
     if (!confirmPaid || !rightsAffirmed) {
@@ -108,62 +156,64 @@ export function CreateWizard({
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const form = new FormData();
-      form.set("source", "sloyd");
-      form.set("title", cleanTitle);
-      form.set("sku", sku.trim());
-      form.set("category", category);
-      form.set("textureResolution", textureResolution);
-      form.set("confirmPaid", "true");
-      form.set("rightsAffirmed", "true");
-      form.set("file", file);
-
-      const res = await fetch("/api/models", {
-        method: "POST",
-        body: form,
+    if (mode === "text") {
+      await send({
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: "sloyd-text",
+          title: cleanTitle,
+          sku: sku.trim() || null,
+          category,
+          textureResolution,
+          prompt,
+          confirmPaid: true,
+          rightsAffirmed: true,
+        }),
       });
-      const data = (await res.json()) as {
-        model?: { id: string };
-        imageCode?: keyof Dictionary["dash"]["imageErrors"];
-        error?: { code?: string; message?: string };
-      };
-
-      if (!res.ok) {
-        if (data.imageCode && data.imageCode in dict.dash.imageErrors) {
-          setError(dict.dash.imageErrors[data.imageCode]);
-        } else if (data.error?.code && data.error.code in dict.dash.failures) {
-          setError(
-            dict.dash.failures[data.error.code as keyof typeof dict.dash.failures],
-          );
-        } else {
-          setError(data.error?.message || dict.common.somethingWrong);
-        }
-        if (data.model?.id) {
-          setFailedModelId(data.model.id);
-        }
-        return;
-      }
-
-      if (data.model?.id) {
-        router.push(localePath(locale, `/dashboard/models/${data.model.id}`));
-        router.refresh();
-      }
-    } catch {
-      setError(dict.common.networkError);
-    } finally {
-      setSubmitting(false);
+      return;
     }
+
+    const form = new FormData();
+    form.set("source", "sloyd");
+    form.set("title", cleanTitle);
+    form.set("sku", sku.trim());
+    form.set("category", category);
+    form.set("textureResolution", textureResolution);
+    form.set("confirmPaid", "true");
+    form.set("rightsAffirmed", "true");
+    for (const v of IMAGE_VIEWS) {
+      const f = files[v];
+      if (f) form.set(`${v}Image`, f);
+    }
+    await send({ body: form });
   }
+
+  const modeCard = (value: Mode, label: string, text: string, testId: string, disabled = false) => (
+    <label
+      className={`flex items-start gap-3 rounded-xl border bg-bg p-3.5 ${mode === value ? "border-accent" : "border-line"} ${
+        disabled ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
+      }`}
+    >
+      <input
+        type="radio"
+        name="source"
+        value={value}
+        disabled={disabled}
+        checked={mode === value}
+        onChange={() => chooseMode(value)}
+        data-testid={testId}
+        className="mt-1"
+      />
+      <div className="space-y-1 text-xs">
+        <div className="font-semibold text-fg">{label}</div>
+        <p className="text-muted leading-relaxed">{text}</p>
+      </div>
+    </label>
+  );
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
-      <form
-        onSubmit={onSubmit}
-        noValidate
-        className="lg:col-span-7 rounded-[16px] border border-line bg-surface p-6 space-y-6"
-      >
+      <form onSubmit={onSubmit} noValidate className="lg:col-span-7 rounded-[16px] border border-line bg-surface p-6 space-y-6">
         {/* 1. Product */}
         <fieldset className="space-y-4">
           <legend className="font-display text-lg font-semibold">{c.productTitle}</legend>
@@ -226,48 +276,13 @@ export function CreateWizard({
         {/* 2. Source */}
         <fieldset className="space-y-4">
           <legend className="font-display text-lg font-semibold">{c.sourceTitle}</legend>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="flex items-start gap-3 rounded-xl border border-line bg-bg p-3.5 cursor-pointer">
-              <input
-                type="radio"
-                name="source"
-                value="demo"
-                checked={source === "demo"}
-                onChange={() => setSource("demo")}
-                data-testid="source-demo-radio"
-                className="mt-1"
-              />
-              <div className="space-y-1 text-xs">
-                <div className="font-semibold text-fg">{c.sourceDemo}</div>
-                <p className="text-muted leading-relaxed">{c.sourceDemoText}</p>
-              </div>
-            </label>
-
-            <label
-              className={`flex items-start gap-3 rounded-xl border border-line bg-bg p-3.5 ${
-                providerReady ? "cursor-pointer" : "opacity-60 cursor-not-allowed"
-              }`}
-            >
-              <input
-                type="radio"
-                name="source"
-                value="sloyd"
-                disabled={!providerReady}
-                checked={source === "sloyd"}
-                onChange={() => setSource("sloyd")}
-                data-testid="source-sloyd-radio"
-                className="mt-1"
-              />
-              <div className="space-y-1 text-xs">
-                <div className="font-semibold text-fg">{c.sourceAi}</div>
-                <p className="text-muted leading-relaxed">
-                  {providerReady ? c.sourceAiText : c.sourceAiUnavailable}
-                </p>
-              </div>
-            </label>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {modeCard("photos", c.sourceAi, providerReady ? c.sourceAiText : c.sourceAiUnavailable, "source-sloyd-radio", !providerReady)}
+            {modeCard("text", c.sourceText, providerReady ? c.sourceTextText : c.sourceAiUnavailable, "source-text-radio", !providerReady)}
+            {modeCard("demo", c.sourceDemo, c.sourceDemoText, "source-demo-radio")}
           </div>
 
-          {source === "demo" ? (
+          {mode === "demo" && (
             <div className="space-y-2">
               <label htmlFor="create-demo-asset" className="block text-xs font-medium text-fg">
                 {c.demoObject}
@@ -287,24 +302,76 @@ export function CreateWizard({
               </select>
               <p className="text-xs text-muted">{c.demoNote}</p>
             </div>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="create-photo" className="block text-xs font-medium text-fg mb-1.5">
-                  {c.photo} *
-                </label>
-                <input
-                  id="create-photo"
-                  name="file"
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                  data-testid="create-photo-input"
-                  className="block w-full rounded-xl border border-line bg-bg px-3.5 py-2 text-xs text-fg file:mr-3 file:rounded-lg file:border-0 file:bg-mint file:px-3 file:py-1 file:text-xs file:font-semibold file:text-bg"
-                />
-                <p className="mt-1 text-xs text-muted">{c.photoHint}</p>
-              </div>
+          )}
 
+          {mode === "photos" && (
+            <div className="space-y-3">
+              <p className="text-xs text-muted leading-relaxed">{c.photosGuide}</p>
+              <div className="grid grid-cols-2 gap-3">
+                {IMAGE_VIEWS.map((view) => (
+                  <div key={view} className="space-y-1.5">
+                    <label htmlFor={`create-photo-${view}`} className="block text-xs font-medium text-fg">
+                      {c.views[view]} {view === "front" ? "*" : `(${c.viewsOptional})`}
+                    </label>
+                    {/* The key remounts the input when a photo is removed, which clears the browser's own file selection. */}
+                    <input
+                      key={`${view}-${resets[view] ?? 0}`}
+                      id={`create-photo-${view}`}
+                      name={`${view}Image`}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={(e) => setView(view, e.target.files?.[0] ?? null)}
+                      data-testid={view === "front" ? "create-photo-input" : `create-photo-input-${view}`}
+                      className="block w-full rounded-xl border border-line bg-bg px-2.5 py-2 text-xs text-fg file:mr-2 file:rounded-lg file:border-0 file:bg-accent file:px-2.5 file:py-1 file:text-xs file:font-semibold file:text-bg"
+                    />
+                    {previews[view] && (
+                      <div className="flex items-center gap-2 rounded-xl border border-line bg-bg p-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element -- local object URL preview, not optimizable */}
+                        <img src={previews[view]} alt="" className="h-12 w-12 rounded-lg object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setView(view, null);
+                            setResets((r) => ({ ...r, [view]: (r[view] ?? 0) + 1 }));
+                          }}
+                          className="text-xs font-semibold text-fg underline"
+                        >
+                          {c.photoRemove}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted">{c.photoHint}</p>
+            </div>
+          )}
+
+          {mode === "text" && (
+            <div className="space-y-1.5">
+              <label htmlFor="create-prompt" className="block text-xs font-medium text-fg">
+                {c.prompt} *
+              </label>
+              <textarea
+                id="create-prompt"
+                name="prompt"
+                rows={5}
+                maxLength={MAX_PROMPT_CHARS}
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder={c.promptPlaceholder}
+                data-testid="create-prompt-input"
+                className="w-full rounded-xl border border-line bg-bg px-3.5 py-2 text-sm text-fg"
+              />
+              <div className="flex items-start justify-between gap-3 text-xs text-muted">
+                <p>{c.promptHint}</p>
+                <span className="shrink-0 tabular-nums">{c.promptCount.replace("{n}", String(prompt.length)).replace("{max}", String(MAX_PROMPT_CHARS))}</span>
+              </div>
+            </div>
+          )}
+
+          {mode !== "demo" && (
+            <div className="space-y-4">
               <div>
                 <label htmlFor="create-texture" className="block text-xs font-medium text-fg mb-1.5">
                   {c.texture}
@@ -326,12 +393,10 @@ export function CreateWizard({
 
               <div className="rounded-xl border border-line bg-surface-2 p-4 space-y-2 text-xs">
                 <div className="font-semibold text-fg">{c.costTitle}</div>
-                <p className="text-muted leading-relaxed">
+                <p className="text-muted leading-relaxed" data-testid="create-cost-text">
                   {c.costText.replace("{credits}", String(credits)).replace("{usd}", usd)}
                 </p>
-                <div className="font-medium text-mint">
-                  {c.attemptsLeft.replace("{n}", String(attemptsLeft))}
-                </div>
+                <div className="font-medium text-accent">{c.attemptsLeft.replace("{n}", String(attemptsLeft))}</div>
               </div>
 
               <div className="space-y-2.5 text-xs">
@@ -361,17 +426,10 @@ export function CreateWizard({
         </fieldset>
 
         {error && (
-          <div
-            role="alert"
-            data-testid="create-error-alert"
-            className="rounded-xl border border-danger/50 bg-danger/10 p-3.5 text-xs text-danger space-y-2"
-          >
+          <div role="alert" data-testid="create-error-alert" className="rounded-xl border border-danger/50 bg-danger/10 p-3.5 text-xs text-danger space-y-2">
             <div>{error}</div>
             {failedModelId && (
-              <Link
-                href={localePath(locale, `/dashboard/models/${failedModelId}`)}
-                className="inline-block font-semibold underline"
-              >
+              <Link href={localePath(locale, `/dashboard/models/${failedModelId}`)} className="inline-block font-semibold underline">
                 {c.viewJob} →
               </Link>
             )}
@@ -382,9 +440,9 @@ export function CreateWizard({
           type="submit"
           disabled={submitting}
           data-testid="create-submit-btn"
-          className="w-full rounded-xl bg-mint px-5 py-3 text-sm font-semibold text-bg disabled:opacity-50"
+          className="w-full rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-bg disabled:opacity-50"
         >
-          {submitting ? c.submitting : source === "demo" ? c.submitDemo : c.submitAi}
+          {submitting ? c.submitting : mode === "demo" ? c.submitDemo : c.submitAi}
         </button>
       </form>
 

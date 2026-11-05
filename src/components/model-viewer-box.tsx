@@ -15,6 +15,10 @@ type Props = {
   loadingLabel?: string;
   errorLabel?: string;
   testId?: string;
+  /** When false the wheel scrolls the page instead of zooming (marketing pages). */
+  wheelZoom?: boolean;
+  /** Frameless variant for use on a coloured field: transparent, no controls bar, no hint. Drag to rotate only. */
+  bare?: boolean;
 };
 
 type ModelViewerEl = HTMLElement & {
@@ -36,6 +40,8 @@ export function ModelViewerBox({
   loadingLabel = "Loading 3D model…",
   errorLabel = "3D preview unavailable",
   testId = "model-viewer-box",
+  wheelZoom = true,
+  bare = false,
 }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<ModelViewerEl | null>(null);
@@ -160,46 +166,48 @@ export function ModelViewerBox({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
-      onWheel={onWheel}
-      className={`relative flex flex-col justify-between overflow-hidden rounded-[16px] border border-line bg-gradient-to-b from-surface to-bg select-none ${heightClass}`}
+      onWheel={wheelZoom ? onWheel : undefined}
+      className={`relative flex flex-col justify-between select-none ${bare ? "" : "overflow-hidden rounded-xl border border-line bg-surface"} ${heightClass}`}
     >
+      {!bare && (
       <div className="pointer-events-none z-10 flex items-center justify-between gap-2 p-3">
         {provenanceBadge ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-bg/85 px-2.5 py-1 text-xs font-medium text-mint backdrop-blur-sm">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-bg px-2.5 py-1 text-xs font-medium text-accent">
             <Box className="h-3.5 w-3.5" aria-hidden="true" />
             {provenanceBadge}
           </span>
         ) : (
           <span />
         )}
-        <div className="pointer-events-auto flex items-center gap-1.5">
+        <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-1.5">
           {!reducedMotion && (
             <button
               type="button"
               onClick={() => setAutoRotate((v) => !v)}
               aria-pressed={autoRotate}
               aria-label={autoRotate ? autoRotateOffLabel : autoRotateLabel}
-              className="inline-flex items-center gap-1 rounded-lg border border-line bg-bg/85 px-2.5 py-1 text-xs font-medium text-fg hover:border-mint"
+              className="inline-flex items-center gap-1 rounded-full border border-line bg-bg px-2.5 py-1 text-xs font-medium text-fg hover:border-accent"
             >
               {autoRotate ? <Pause className="h-3 w-3" aria-hidden="true" /> : <Play className="h-3 w-3" aria-hidden="true" />}
-              <span>{autoRotate ? autoRotateOffLabel : autoRotateLabel}</span>
+              <span className="hidden sm:inline">{autoRotate ? autoRotateOffLabel : autoRotateLabel}</span>
             </button>
           )}
           <button
             type="button"
             onClick={resetCamera}
             aria-label={resetLabel}
-            className="inline-flex items-center gap-1 rounded-lg border border-line bg-bg/85 px-2.5 py-1 text-xs font-medium text-fg hover:border-mint"
+            className="inline-flex items-center gap-1 rounded-full border border-line bg-bg px-2.5 py-1 text-xs font-medium text-fg hover:border-accent"
           >
             <RotateCcw className="h-3 w-3" aria-hidden="true" />
-            <span>{resetLabel}</span>
+            <span className="hidden sm:inline">{resetLabel}</span>
           </button>
         </div>
       </div>
+      )}
 
       <div className="relative flex-1 min-h-0">
         {status === "loading" && (
-          <div className="absolute inset-0 flex items-center justify-center text-xs text-muted">
+          <div className={`absolute inset-0 flex items-center justify-center text-xs ${bare ? "text-ink" : "text-muted"}`}>
             {loadingLabel}
           </div>
         )}
@@ -217,8 +225,10 @@ export function ModelViewerBox({
             src={src}
             alt={alt}
             camera-controls=""
+            disable-zoom={wheelZoom ? undefined : ""}
             camera-orbit={orbit}
-            shadow-intensity="0.6"
+            shadow-intensity={bare ? "0.7" : "0.6"}
+            shadow-softness={bare ? "1" : undefined}
             exposure="1.0"
             interaction-prompt="none"
             style={{ width: "100%", height: "100%" }}
@@ -226,10 +236,9 @@ export function ModelViewerBox({
         )}
       </div>
 
-      {hint && (
-        <div className="z-10 flex items-center justify-between border-t border-line/70 bg-bg/75 px-3.5 py-2 text-xs text-muted">
+      {hint && !bare && (
+        <div className="z-10 flex items-center justify-between border-t border-line bg-bg px-3.5 py-2 text-xs text-muted">
           <span>{hint}</span>
-          <span className="font-mono text-[11px] text-muted">{orbit}</span>
         </div>
       )}
     </div>

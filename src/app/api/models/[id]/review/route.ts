@@ -1,4 +1,4 @@
-import { apiError, apiJson, withUser } from "@/lib/api";
+import { apiError, apiJson, readJsonCapped, withUser } from "@/lib/api";
 import { fieldErrors, reviewSchema } from "@/lib/schemas";
 import { nowIso, store, toDto } from "@/lib/store";
 import { CHECKLIST_KEYS } from "@/lib/types";
@@ -8,13 +8,9 @@ type Ctx = { params: Promise<{ id: string }> };
 
 export const POST = withUser<Ctx>(async (req, user, { params }) => {
   const { id } = await params;
-  let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return apiError(400, "invalid_json", "Invalid JSON body.");
-  }
-  const parsed = reviewSchema.safeParse(body);
+  const read = await readJsonCapped(req);
+  if (!read.ok) return read.response;
+  const parsed = reviewSchema.safeParse(read.value);
   if (!parsed.success) return apiError(422, "validation", "Invalid review payload.", { fields: fieldErrors(parsed.error) });
   const model = await store.getModel(user.orgId, id);
   if (!model) return apiError(404, "not_found", "Model not found.");

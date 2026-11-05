@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { MailCheck } from "lucide-react";
 import { localePath } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { Locale } from "@/lib/types";
@@ -10,15 +11,19 @@ export function LoginForm({
   locale,
   dict,
   nextPath,
+  magicLink,
 }: {
   locale: Locale;
   dict: Dictionary["login"];
   nextPath?: string;
+  /** Supabase magic-link mode: the form emails a link instead of opening the workspace. */
+  magicLink: boolean;
 }) {
   const router = useRouter();
-  const [email, setEmail] = useState("merchant@example.com");
+  const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sentTo, setSentTo] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -28,11 +33,24 @@ export function LoginForm({
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, locale }),
       });
-      const data = (await res.json()) as { ok?: boolean; error?: { code?: string; message?: string } };
+      const data = (await res.json()) as { ok?: boolean; magicLink?: boolean; error?: { code?: string } };
       if (!res.ok || !data.ok) {
-        setError(data.error?.code === "auth_disabled" ? dict.disabled : dict.invalidEmail);
+        const code = data.error?.code;
+        setError(
+          code === "auth_disabled"
+            ? dict.disabled
+            : code === "rate_limited" || code === "email_rate_limited"
+              ? dict.rateLimited
+              : code === "email_failed"
+                ? dict.sendFailed
+                : dict.invalidEmail,
+        );
+        return;
+      }
+      if (data.magicLink) {
+        setSentTo(email.trim());
         return;
       }
       const target =
@@ -42,16 +60,31 @@ export function LoginForm({
       router.push(target);
       router.refresh();
     } catch {
-      setError(dict.invalidEmail);
+      setError(magicLink ? dict.sendFailed : dict.invalidEmail);
     } finally {
       setSubmitting(false);
     }
   }
 
+  if (sentTo) {
+    return (
+      <div role="status" className="space-y-4 rounded-xl border border-accent/40 bg-accent/10 p-4" data-testid="login-check-email">
+        <div className="flex items-center gap-2 font-display text-base font-semibold text-fg">
+          <MailCheck className="h-5 w-5 text-accent" aria-hidden="true" />
+          {dict.checkEmailTitle}
+        </div>
+        <p className="text-sm text-muted leading-relaxed">{dict.checkEmailText.replace("{email}", sentTo)}</p>
+        <button type="button" onClick={() => setSentTo(null)} className="text-sm font-semibold text-accent hover:underline">
+          {dict.useAnotherEmail}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
       <div>
-        <label htmlFor="login-email" className="block text-xs font-medium text-fg mb-1.5">
+        <label htmlFor="login-email" className="block text-sm font-medium text-fg mb-1.5">
           {dict.emailLabel}
         </label>
         <input
@@ -68,7 +101,7 @@ export function LoginForm({
       </div>
 
       {error && (
-        <div role="alert" className="rounded-xl border border-danger/50 bg-danger/10 px-3.5 py-2.5 text-xs text-danger">
+        <div role="alert" className="rounded-xl border border-danger/50 bg-danger/10 px-3.5 py-2.5 text-sm text-danger">
           {error}
         </div>
       )}
@@ -77,12 +110,12 @@ export function LoginForm({
         type="submit"
         disabled={submitting}
         data-testid="login-submit"
-        className="w-full rounded-xl bg-mint px-4 py-2.5 text-sm font-semibold text-bg disabled:opacity-50"
+        className="w-full rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-bg disabled:opacity-50"
       >
-        {submitting ? dict.submitting : dict.submit}
+        {submitting ? (magicLink ? dict.sending : dict.submitting) : magicLink ? dict.submitMagic : dict.submit}
       </button>
 
-      <p className="text-xs text-muted">{dict.workspaceNote}</p>
+      <p className="text-sm text-muted">{dict.workspaceNote}</p>
     </form>
   );
 }

@@ -6,8 +6,16 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { currentUser } from "@/lib/api";
 import { store, toDto } from "@/lib/store";
 import { formatDate } from "@/lib/utils";
+import { buildPageMetadata } from "@/lib/seo";
 
 type Props = { params: Promise<{ locale: string }> };
+
+export async function generateMetadata({ params }: Props) {
+  const { locale } = await params;
+  if (!isLocale(locale)) return {};
+  const t = getDictionary(locale);
+  return buildPageMetadata({ locale, path: "/dashboard", title: t.dash.overview.title, description: t.dash.overview.subtitle, noIndex: true });
+}
 
 export default async function DashboardOverviewPage({ params }: Props) {
   const { locale } = await params;
@@ -31,7 +39,7 @@ export default async function DashboardOverviewPage({ params }: Props) {
         <Link
           href={localePath(locale, "/dashboard/create")}
           data-testid="overview-create-cta"
-          className="inline-flex items-center gap-2 rounded-xl bg-mint px-4 py-2.5 text-sm font-semibold text-bg shrink-0"
+          className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-bg shrink-0"
         >
           <Plus className="h-4 w-4" aria-hidden="true" />
           <span>{dict.dash.overview.cta}</span>
@@ -48,7 +56,7 @@ export default async function DashboardOverviewPage({ params }: Props) {
         </div>
         <div className="rounded-[14px] border border-line bg-surface p-4">
           <div className="text-xs text-muted">{dict.dash.overview.stats.toReview}</div>
-          <div className="mt-1 font-display text-2xl font-bold text-mint">{readyToReview}</div>
+          <div className="mt-1 font-display text-2xl font-bold text-accent">{readyToReview}</div>
         </div>
         <div className="rounded-[14px] border border-line bg-surface p-4">
           <div className="text-xs text-muted">{dict.dash.overview.stats.approved}</div>
@@ -69,7 +77,7 @@ export default async function DashboardOverviewPage({ params }: Props) {
         <section className="lg:col-span-8 rounded-[16px] border border-line bg-surface p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-lg font-semibold">{dict.dash.overview.recent}</h2>
-            <Link href={localePath(locale, "/dashboard/models")} className="text-xs font-medium text-mint hover:underline">
+            <Link href={localePath(locale, "/dashboard/models")} className="text-xs font-medium text-accent hover:underline">
               {dict.dash.overview.viewAll} →
             </Link>
           </div>
@@ -80,7 +88,7 @@ export default async function DashboardOverviewPage({ params }: Props) {
               <p className="text-xs text-muted max-w-md mx-auto">{dict.dash.overview.emptyText}</p>
               <Link
                 href={localePath(locale, "/dashboard/create")}
-                className="inline-flex items-center rounded-xl bg-mint px-4 py-2 text-xs font-semibold text-bg"
+                className="inline-flex items-center rounded-xl bg-accent px-4 py-2 text-xs font-semibold text-bg"
               >
                 {dict.dash.overview.cta}
               </Link>
@@ -105,7 +113,7 @@ export default async function DashboardOverviewPage({ params }: Props) {
                     </span>
                     <Link
                       href={localePath(locale, `/dashboard/models/${m.id}`)}
-                      className="rounded-lg border border-line px-3 py-1 text-xs font-medium hover:border-mint"
+                      className="rounded-lg border border-line px-3 py-1 text-xs font-medium hover:border-accent"
                     >
                       {dict.common.open}
                     </Link>
@@ -122,7 +130,7 @@ export default async function DashboardOverviewPage({ params }: Props) {
             <ol className="space-y-2 text-xs text-muted">
               {dict.dash.overview.flow.map((step, i) => (
                 <li key={step} className="flex items-center gap-2.5">
-                  <span className="font-mono font-semibold text-mint">0{i + 1}</span>
+                  <span className="font-mono font-semibold text-accent">0{i + 1}</span>
                   <span>{step}</span>
                 </li>
               ))}

@@ -37,7 +37,7 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{t.dash.billing.plannedText}</p>
         <Link
           href={localePath(locale, "/pricing")}
-          className="mt-5 inline-flex rounded-xl bg-mint px-4 py-2 text-xs font-semibold text-bg hover:bg-mint-strong"
+          className="mt-5 inline-flex rounded-xl bg-accent px-4 py-2 text-xs font-semibold text-bg hover:bg-accent-strong"
         >
           {t.dash.billing.seePricing}
         </Link>

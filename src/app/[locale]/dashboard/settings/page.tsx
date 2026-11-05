@@ -60,7 +60,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
           <div className="rounded-xl border border-line bg-bg p-4">
             <div className="flex items-center justify-between">
               <span className="font-semibold text-fg">{t.dash.settings.provider}</span>
-              <span className="rounded-full border border-line bg-surface px-2.5 py-0.5 font-medium text-mint">
+              <span className="rounded-full border border-line bg-surface px-2.5 py-0.5 font-medium text-accent">
                 {configured ? "Configured" : "Demo only"}
               </span>
             </div>

@@ -12,6 +12,17 @@ type JobMeta = {
   outcome: "success" | "error";
 };
 
+const CREATE_ENDPOINTS = new Set(["/api/jobs/image-to-3d", "/api/jobs/multi-image-to-3d", "/api/jobs/text-to-3d"]);
+const created: { endpoint: string; parts: string[]; prompt?: string }[] = [];
+function safePrompt(body: string): string | undefined {
+  try {
+    const p = (JSON.parse(body) as { prompt?: unknown }).prompt;
+    return typeof p === "string" ? p : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 const jobs = new Map<string, JobMeta>();
 let nextCreateStatus: number | null = null;
 let nextJobOutcome: "success" | "error" = "success";
@@ -44,16 +55,27 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  if (req.method === "POST" && url.pathname === "/api/jobs/image-to-3d") {
+  if (req.method === "GET" && url.pathname === "/__created") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ created }));
+    return;
+  }
+
+  if (req.method === "POST" && CREATE_ENDPOINTS.has(url.pathname)) {
     if (!hasValidAuth(req.headers)) {
       res.writeHead(401, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ message: "Unauthorized credentials" }));
       return;
     }
     // Drain request body
-    for await (const _chunk of req) {
-      /* consume multipart stream */
+    const bodyChunks: Buffer[] = [];
+    for await (const chunk of req) {
+      bodyChunks.push(chunk as Buffer);
     }
+    const bodyText = Buffer.concat(bodyChunks).toString("latin1");
+    // Which multipart parts (or JSON prompt) the app really sent, so E2E can assert the right endpoint and fields were used.
+    const parts = [...bodyText.matchAll(/name="([A-Za-z]+)"/g)].map((m) => m[1]);
+    created.push({ endpoint: url.pathname.replace("/api/jobs/", ""), parts, ...(url.pathname.endsWith("text-to-3d") ? { prompt: safePrompt(bodyText) } : {}) });
     if (nextCreateStatus !== null) {
       const code = nextCreateStatus;
       nextCreateStatus = null;

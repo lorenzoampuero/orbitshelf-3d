@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CATEGORIES, CHECKLIST_KEYS, DEMO_ASSETS, TEXTURE_RESOLUTIONS } from "@/lib/types";
+import { CATEGORIES, CHECKLIST_KEYS, DEMO_ASSETS, MAX_PROMPT_CHARS, TEXTURE_RESOLUTIONS } from "@/lib/types";
 
 const noControl = (s: string) => !/[\u0000-\u001f\u007f]/.test(s);
 
@@ -35,6 +35,21 @@ export const providerFieldsSchema = z.object({
   textureResolution: z.enum(TEXTURE_RESOLUTIONS),
   confirmPaid: z.literal("true", { error: "confirm_paid_required" }),
   rightsAffirmed: z.literal("true", { error: "rights_required" }),
+});
+
+/** Text-to-3D request (JSON). Whitespace is collapsed, so line breaks cannot smuggle control characters. */
+export const textCreateSchema = z.object({
+  source: z.literal("sloyd-text"),
+  title,
+  sku,
+  category,
+  textureResolution: z.enum(TEXTURE_RESOLUTIONS),
+  prompt: z
+    .string()
+    .transform((s) => s.replace(/\s+/g, " ").trim())
+    .pipe(z.string().min(10, "too_short").max(MAX_PROMPT_CHARS, "too_long").refine(noControl, "invalid_chars")),
+  confirmPaid: z.literal(true, { error: "confirm_paid_required" }),
+  rightsAffirmed: z.literal(true, { error: "rights_required" }),
 });
 
 const mm = z.number().min(0).max(100_000).nullable();

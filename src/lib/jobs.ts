@@ -4,9 +4,9 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { validateGlb, GlbError } from "@/lib/glb";
 import type { NormalizedImage } from "@/lib/image";
-import { createImageJob, downloadResult, getJob, ProviderError, redact, type Deps } from "@/lib/provider/sloyd";
-import { emptyChecklist, emptyDimensions, estimateProviderCredits, nowIso, store, type ModelRow } from "@/lib/store";
-import type { Category, DemoAsset, FailureCode, TextureResolution } from "@/lib/types";
+import { createImageJob, createMultiImageJob, createTextJob, downloadResult, getJob, ProviderError, redact, type Deps } from "@/lib/provider/sloyd";
+import { emptyChecklist, emptyDimensions, estimateProviderCredits, nowIso, store, type ExtraImage, type ModelRow, type SourcePhoto } from "@/lib/store";
+import type { Category, DemoAsset, FailureCode, ImageView, InputKind, TextureResolution } from "@/lib/types";
 
 const POLL_FIRST_MS = 5_000;
 const POLL_MAX_MS = 30_000;
@@ -23,6 +23,9 @@ function baseRow(orgId: string, v: Pick<ModelRow, "title" | "sku" | "category" |
     category: v.category,
     source: v.source,
     provenance: v.provenance,
+    inputKind: null,
+    sourceViews: [],
+    prompt: null,
     demoAsset: null,
     status: "processing",
     jobState: "queued",
@@ -70,6 +73,12 @@ export type CreateProviderResult =
   | { ok: true; model: ModelRow; duplicate: boolean }
   | { ok: false; code: "insufficient_attempts" | "too_many_active" | FailureCode; message: string; model?: ModelRow; httpStatus: number };
 
+/** What the paid generation starts from: one photo, 2–4 photos of the same object (front is required), or a text description. */
+export type ProviderInput =
+  | { kind: "image"; image: NormalizedImage }
+  | { kind: "multi-image"; images: Partial<Record<ImageView, NormalizedImage>> }
+  | { kind: "text"; prompt: string };
+
 export async function createProviderModel(
   orgId: string,
   input: {
@@ -78,21 +87,37 @@ export async function createProviderModel(
     category: Category;
     textureResolution: TextureResolution;
     idempotencyKey: string | null;
-    image: NormalizedImage;
+    source: ProviderInput;
   },
   deps?: Deps,
 ): Promise<CreateProviderResult> {
   const row = baseRow(orgId, { title: input.title, sku: input.sku, category: input.category, source: "sloyd", provenance: "ai-generated" });
+  const kind: InputKind = input.source.kind;
+  const photos: SourcePhoto[] = [];
+  if (input.source.kind === "image") photos.push({ view: "front", ext: input.source.image.ext, buffer: input.source.image.buffer });
+  if (input.source.kind === "multi-image") {
+    for (const view of ["front", "left", "back", "right"] as const) {
+      const img = input.source.images[view];
+      if (img) photos.push({ view, ext: img.ext, buffer: img.buffer });
+    }
+  }
+  const front = photos.find((p) => p.view === "front");
+  const extraImages: ExtraImage[] = photos.filter((p) => p.view !== "front").map((p) => ({ view: p.view as ExtraImage["view"], ext: p.ext }));
+  const frontImage = input.source.kind === "image" ? input.source.image : input.source.kind === "multi-image" ? input.source.images.front : undefined;
   Object.assign(row, {
+    inputKind: kind,
+    sourceViews: photos.map((p) => p.view),
+    prompt: input.source.kind === "text" ? input.source.prompt : null,
     textureResolution: input.textureResolution,
-    providerCreditsEstimate: estimateProviderCredits(input.textureResolution),
+    providerCreditsEstimate: estimateProviderCredits(input.textureResolution, kind),
     idempotencyKey: input.idempotencyKey,
     rightsAffirmed: true,
-    hasSourceImage: true,
-    sourceImageExt: input.image.ext,
-    sourceImageSha256: input.image.sha256,
+    hasSourceImage: Boolean(front),
+    sourceImageExt: front?.ext ?? null,
+    extraImages,
+    sourceImageSha256: frontImage?.sha256 ?? null,
   });
-  const reserved = await store.reserveProviderJob(orgId, row, input.image.buffer);
+  const reserved = await store.reserveProviderJob(orgId, row, photos);
   if (!reserved.ok) {
     return reserved.reason === "insufficient"
       ? { ok: false, code: "insufficient_attempts", message: "No paid generation attempts left under the local cap.", httpStatus: 402 }
@@ -101,10 +126,19 @@ export async function createProviderModel(
   if (reserved.duplicate) return { ok: true, model: reserved.model, duplicate: true };
 
   try {
-    const { jobId } = await createImageJob(
-      { image: input.image.buffer, mime: input.image.mime, filename: `product.${input.image.ext}`, textureResolution: input.textureResolution },
-      deps,
-    );
+    const src = input.source;
+    const { jobId } =
+      src.kind === "image"
+        ? await createImageJob({ image: src.image.buffer, mime: src.image.mime, filename: `product.${src.image.ext}`, textureResolution: input.textureResolution }, deps)
+        : src.kind === "multi-image"
+          ? await createMultiImageJob(
+              {
+                images: Object.fromEntries(Object.entries(src.images).map(([v, img]) => [v, { image: img.buffer, mime: img.mime }])),
+                textureResolution: input.textureResolution,
+              },
+              deps,
+            )
+          : await createTextJob({ prompt: src.prompt, textureResolution: input.textureResolution }, deps);
     const updated = await store.updateModel(orgId, row.id, {
       providerJobId: jobId,
       jobState: "pending",

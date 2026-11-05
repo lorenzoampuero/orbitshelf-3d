@@ -77,7 +77,7 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await page.setViewportSize({ width: 1280, height: 840 });
     await page.goto("/es");
     await expect(page.locator("html")).toHaveAttribute("lang", "es");
-    await expect(page.locator("h1")).toContainText("Dale a cada producto otra dimensión");
+    await expect(page.locator("h1")).toContainText("Una foto muestra un ángulo");
 
     await page.goto("/es/pricing");
     await expect(page.locator("h1")).toContainText("Planes por intentos, sin promesas de ilimitado");
@@ -274,6 +274,7 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
 
     // 5a. Reject SVG upload disguised as PNG
     await page.goto("/dashboard/create");
+    await page.fill("#create-title", "Brushed Brass Lamp");
     await page.getByTestId("source-sloyd-radio").check();
     await page.getByTestId("confirm-paid-checkbox").check();
     await page.getByTestId("confirm-rights-checkbox").check();
@@ -365,5 +366,112 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
 
     const usageAfterJobError = await (await page.request.get("/api/usage")).json();
     expect(usageAfterJobError.usage.balance).toBe(4);
+  });
+
+  test("6. Several photos: front + back + left go to the multi-image endpoint, one attempt, every photo shown in the studio", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 840 });
+    await page.goto("/login");
+    await page.fill("#login-email", "multi-photo@merchant.test");
+    await page.getByTestId("login-submit").click();
+    await page.waitForURL("**/dashboard");
+
+    await page.goto("/dashboard/create");
+    await page.fill("#create-title", "Grey Hoodie");
+    await page.selectOption("#create-category", "apparel");
+    await page.getByTestId("source-sloyd-radio").check();
+    const png = await makeTestPng(320, 320);
+    await page.getByTestId("create-photo-input").setInputFiles({ name: "front.png", mimeType: "image/png", buffer: png });
+    // One photo costs 20 credits; adding views switches the estimate to the 30-credit multi-photo price.
+    await expect(page.getByTestId("create-cost-text")).toContainText("20 provider credits");
+    await page.getByTestId("create-photo-input-back").setInputFiles({ name: "back.png", mimeType: "image/png", buffer: png });
+    await page.getByTestId("create-photo-input-left").setInputFiles({ name: "left.png", mimeType: "image/png", buffer: png });
+    await expect(page.getByTestId("create-cost-text")).toContainText("30 provider credits");
+    await page.getByTestId("confirm-paid-checkbox").check();
+    await page.getByTestId("confirm-rights-checkbox").check();
+    await page.getByTestId("create-submit-btn").click();
+    await page.waitForURL("**/dashboard/models/*");
+
+    const created = ((await (await page.request.get("http://127.0.0.1:3999/__created")).json()) as { created: { endpoint: string; parts: string[] }[] }).created;
+    const call = created.filter((c) => c.endpoint === "multi-image-to-3d").at(-1);
+    expect(call?.parts).toEqual(expect.arrayContaining(["frontImage", "backImage", "leftImage", "EnablePBR"]));
+    expect(call?.parts).not.toContain("rightImage");
+
+    await expect(async () => {
+      const refreshBtn = page.getByTestId("refresh-job-btn");
+      if (await refreshBtn.isVisible()) await refreshBtn.click();
+      await expect(page.getByTestId("studio-viewer")).toHaveAttribute("data-status", "ready", { timeout: 2500 });
+    }).toPass({ timeout: 15_000 });
+
+    await expect(page.getByTestId("studio-source-photo")).toBeVisible();
+    await expect(page.getByTestId("studio-source-photo-back")).toBeVisible();
+    await expect(page.getByTestId("studio-source-photo-left")).toBeVisible();
+    await expect(page.getByTestId("studio-source-photo-right")).toHaveCount(0);
+
+    const usage = await (await page.request.get("/api/usage")).json();
+    expect(usage.usage.debited).toBe(1); // one attempt, whatever the number of photos
+  });
+
+  test("7. Text to 3D: prompt validation, text endpoint, prompt shown in the studio, and a refund when the provider refuses", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 840 });
+    await page.goto("/login");
+    await page.fill("#login-email", "text-to-3d@merchant.test");
+    await page.getByTestId("login-submit").click();
+    await page.waitForURL("**/dashboard");
+
+    await page.goto("/dashboard/create");
+    await page.fill("#create-title", "Low-poly fox");
+    await page.getByTestId("source-text-radio").check();
+    await page.getByTestId("confirm-paid-checkbox").check();
+    await page.getByTestId("confirm-rights-checkbox").check();
+
+    // Too-short prompt is refused before anything is charged
+    await page.getByTestId("create-prompt-input").fill("fox");
+    await page.getByTestId("create-submit-btn").click();
+    await expect(page.getByTestId("create-error-alert")).toContainText(/10 characters|10 caracteres/);
+    expect((await (await page.request.get("/api/usage")).json()).usage.debited).toBe(0);
+
+    // Provider refuses at creation: attempt is refunded
+    await page.request.post("http://127.0.0.1:3999/__control", { data: { nextCreateStatus: 402 } });
+    await page.getByTestId("create-prompt-input").fill("A low-poly red fox sitting, stylized");
+    await page.getByTestId("create-submit-btn").click();
+    await expect(page.getByTestId("create-error-alert")).toContainText(/prepaid credits|refunded/i);
+    const afterRefusal = (await (await page.request.get("/api/usage")).json()).usage;
+    expect(afterRefusal.debited).toBe(1);
+    expect(afterRefusal.refunded).toBe(1);
+
+    // Happy path
+    await page.getByTestId("create-submit-btn").click();
+    await page.waitForURL("**/dashboard/models/*");
+    const created = ((await (await page.request.get("http://127.0.0.1:3999/__created")).json()) as { created: { endpoint: string; prompt?: string }[] }).created;
+    expect(created.filter((c) => c.endpoint === "text-to-3d").at(-1)?.prompt).toBe("A low-poly red fox sitting, stylized");
+
+    await expect(async () => {
+      const refreshBtn = page.getByTestId("refresh-job-btn");
+      if (await refreshBtn.isVisible()) await refreshBtn.click();
+      await expect(page.getByTestId("studio-viewer")).toHaveAttribute("data-status", "ready", { timeout: 2500 });
+    }).toPass({ timeout: 15_000 });
+    await expect(page.getByTestId("studio-prompt")).toContainText("low-poly red fox");
+    await expect(page.getByTestId("studio-source-photo")).toHaveCount(0);
+  });
+
+  test("8. Marketing pages: accessible (axe), no horizontal overflow at 375 px, and no sub-12px text", async ({ page }) => {
+    const paths = ["/", "/examples", "/how-it-works", "/pricing", "/resources", "/resources/photograph-clothing-for-3d", "/compare/ai-3d-vs-manual", "/privacy", "/es/examples", "/es/pricing"];
+    for (const width of [1280, 375]) {
+      await page.setViewportSize({ width, height: 840 });
+      for (const p of paths) {
+        await page.goto(p);
+        await expect(page.locator("h1")).toHaveCount(1);
+        const a11y = await new AxeBuilder({ page }).exclude("model-viewer").withTags(["wcag2a", "wcag2aa"]).analyze();
+        expect(a11y.violations, `axe violations on ${p} at ${width}px`).toEqual([]);
+        const metrics = await page.evaluate(() => ({
+          overflow: document.documentElement.scrollWidth - window.innerWidth,
+          small: [...document.querySelectorAll("main p, main li, main span, main a, main h1, main h2, main h3, main th, main td, main summary, main dd, main dt")]
+            .filter((el) => el.children.length === 0 && (el.textContent ?? "").trim() && parseFloat(getComputedStyle(el).fontSize) < 12)
+            .map((el) => (el.textContent ?? "").trim().slice(0, 40)),
+        }));
+        expect(metrics.overflow, `horizontal overflow on ${p} at ${width}px`).toBeLessThanOrEqual(0);
+        expect(metrics.small, `text under 12px on ${p} at ${width}px`).toEqual([]);
+      }
+    }
   });
 });

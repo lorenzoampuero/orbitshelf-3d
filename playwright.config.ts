@@ -36,6 +36,7 @@ export default defineConfig({
         ...process.env,
         NODE_ENV: "production",
         ALLOW_LOCAL_AUTH: "true",
+        AUTH_MODE: "local",
         SESSION_SECRET: "playwright-e2e-session-secret-32-chars-minimum",
         SLOYD_CLIENT_ID: "test-client-id-secret-check",
         SLOYD_CLIENT_SECRET: "test-client-secret-never-leak",

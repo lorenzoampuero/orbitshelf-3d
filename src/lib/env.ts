@@ -22,6 +22,20 @@ export function localAuthAllowed(): boolean {
   return process.env.ALLOW_LOCAL_AUTH === "true";
 }
 
+export type SupabaseConfig = { url: string; publishableKey: string };
+
+/** Supabase Auth (magic link). Null → no Supabase; AUTH_MODE=local forces the local sign-in (tests, offline dev). */
+export function supabaseConfig(): SupabaseConfig | null {
+  if (process.env.AUTH_MODE === "local") return null;
+  const url = process.env.SUPABASE_URL?.trim().replace(/\/+$/, "");
+  const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY?.trim();
+  if (!url || !publishableKey || !url.startsWith("https://")) return null;
+  return { url, publishableKey };
+}
+
+export type AuthMode = "supabase" | "local" | "disabled";
+export const authMode = (): AuthMode => (supabaseConfig() ? "supabase" : localAuthAllowed() ? "local" : "disabled");
+
 export type ProviderConfig = {
   clientId: string;
   clientSecret: string;

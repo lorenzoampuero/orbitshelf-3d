@@ -1,9 +1,9 @@
-import "@fontsource-variable/space-grotesk";
-import "@fontsource-variable/dm-sans";
+import "@fontsource-variable/instrument-sans";
 import "../globals.css";
 import { notFound } from "next/navigation";
 import { isLocale, LOCALES } from "@/i18n/config";
 import type { Locale } from "@/lib/types";
+import { AuthHashRedirect } from "@/components/auth-hash-redirect";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -22,7 +22,10 @@ export default async function LocaleRootLayout({
 
   return (
     <html lang={typedLocale}>
-      <body className="min-h-screen bg-bg text-fg antialiased">{children}</body>
+      <body className="min-h-screen bg-bg text-fg antialiased">
+        <AuthHashRedirect />
+        {children}
+      </body>
     </html>
   );
 }

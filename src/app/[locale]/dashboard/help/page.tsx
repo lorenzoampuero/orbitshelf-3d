@@ -42,7 +42,7 @@ export default async function HelpPage({ params }: { params: Promise<{ locale: s
         <h2 className="font-display text-sm font-semibold text-fg">{t.dash.help.moreTitle}</h2>
         <Link
           href={localePath(locale, "/resources")}
-          className="mt-3 inline-flex rounded-xl bg-mint px-4 py-2 text-xs font-semibold text-bg hover:bg-mint-strong"
+          className="mt-3 inline-flex rounded-xl bg-accent px-4 py-2 text-xs font-semibold text-bg hover:bg-accent-strong"
         >
           {t.dash.help.moreLink}
         </Link>

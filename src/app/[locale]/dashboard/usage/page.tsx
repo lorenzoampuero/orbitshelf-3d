@@ -41,7 +41,7 @@ export default async function UsagePage({ params }: { params: Promise<{ locale: 
         </div>
         <a
           href="/api/export/jobs.csv"
-          className="rounded-xl border border-line bg-surface px-3.5 py-2 text-xs font-medium text-fg hover:border-mint"
+          className="rounded-xl border border-line bg-surface px-3.5 py-2 text-xs font-medium text-fg hover:border-accent"
         >
           {t.dash.usage.exportCsv}
         </a>
@@ -50,7 +50,7 @@ export default async function UsagePage({ params }: { params: Promise<{ locale: 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div className="rounded-[14px] border border-line bg-surface p-4">
           <div className="text-xs font-medium text-muted">{t.dash.usage.balance}</div>
-          <div className="mt-2 font-display text-2xl font-bold text-mint" data-testid="usage-balance">
+          <div className="mt-2 font-display text-2xl font-bold text-accent" data-testid="usage-balance">
             {usage.balance}
           </div>
         </div>
@@ -139,7 +139,7 @@ export default async function UsagePage({ params }: { params: Promise<{ locale: 
                     </td>
                     <td
                       className={`py-2.5 pr-4 font-mono font-semibold ${
-                        entry.delta >= 0 ? "text-mint" : "text-fg"
+                        entry.delta >= 0 ? "text-accent" : "text-fg"
                       }`}
                     >
                       {entry.delta > 0 ? `+${entry.delta}` : entry.delta}
