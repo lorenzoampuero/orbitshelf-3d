@@ -2,24 +2,10 @@ import "server-only";
 import { providerConfig, type ProviderConfig } from "@/lib/env";
 import { MAX_GLB_BYTES } from "@/lib/glb";
 import type { TextureResolution } from "@/lib/types";
+import { ProviderError, type Deps, type JobSnapshot, type ModelAdapter, type NormalizedStatus } from "./types";
 
-export type ProviderErrorKind = "payment_required" | "auth" | "rate_limited" | "rejected" | "server" | "network" | "timeout" | "not_ready" | "not_configured" | "invalid_response";
-
-export class ProviderError extends Error {
-  constructor(
-    public kind: ProviderErrorKind,
-    message: string,
-    public status?: number,
-    /** True when the provider definitely did NOT start (or has refunded) the job → safe to refund locally. */
-    public definite = false,
-  ) {
-    super(message);
-    this.name = "ProviderError";
-  }
-}
-
-export type NormalizedStatus = "pending" | "running" | "success" | "error";
-export type Deps = { fetch?: typeof fetch; config?: ProviderConfig | null; timeoutMs?: number };
+export { ProviderError, type Deps, type JobSnapshot, type NormalizedStatus };
+export type { ProviderErrorKind } from "./types";
 
 const JOB_ID = /^[A-Za-z0-9_-]{8,80}$/;
 export const isValidJobId = (id: unknown): id is string => typeof id === "string" && JOB_ID.test(id);
@@ -36,8 +22,11 @@ export function normalizeStatus(raw: unknown): NormalizedStatus {
 /** Removes any credential material from text that might be logged or shown. */
 export function redact(text: string, config: ProviderConfig | null = providerConfig()): string {
   let out = text;
-  for (const secret of [config?.clientSecret, config?.clientId]) if (secret && secret.length >= 4) out = out.split(secret).join("[redacted]");
-  return out.replace(/x-client-(id|secret)\s*[:=]\s*\S+/gi, "x-client-$1: [redacted]").slice(0, 400);
+  for (const secret of [config?.clientSecret, config?.clientId, process.env.FAL_KEY]) if (secret && secret.length >= 4) out = out.split(secret).join("[redacted]");
+  return out
+    .replace(/x-client-(id|secret)\s*[:=]\s*\S+/gi, "x-client-$1: [redacted]")
+    .replace(/authorization\s*[:=]\s*key\s+\S+/gi, "authorization: [redacted]")
+    .slice(0, 400);
 }
 
 function cfg(deps?: Deps): ProviderConfig {
@@ -181,8 +170,6 @@ export async function createTextJob(input: CreateTextJobInput, deps?: Deps): Pro
   return readJobId(res);
 }
 
-export type JobSnapshot = { status: NormalizedStatus; rawStatus: string; errorMessage: string | null };
-
 /** GET /jobs/{jobId}. */
 export async function getJob(jobId: string, deps?: Deps): Promise<JobSnapshot> {
   if (!isValidJobId(jobId)) throw new ProviderError("rejected", "Invalid job id.");
@@ -239,3 +226,20 @@ export async function downloadResult(jobId: string, deps?: Deps): Promise<Buffer
   if (total === 0) throw new ProviderError("not_ready", "The generated file is empty.");
   return Buffer.concat(chunks);
 }
+
+export const sloydAdapter: ModelAdapter = {
+  provider: "sloyd",
+  isConfigured: (deps) => (deps?.config === undefined ? providerConfig() : deps.config) !== null,
+  async submit(_engine, { source, textureResolution }, deps) {
+    if (source.kind === "image") {
+      return createImageJob({ image: source.image.buffer, mime: source.image.mime, filename: `product.${source.image.ext}`, textureResolution }, deps);
+    }
+    if (source.kind === "multi-image") {
+      const images = Object.fromEntries(Object.entries(source.images).map(([v, img]) => [v, { image: img.buffer, mime: img.mime }]));
+      return createMultiImageJob({ images, textureResolution }, deps);
+    }
+    return createTextJob({ prompt: source.prompt, textureResolution }, deps);
+  },
+  getStatus: (_engine, job, deps) => getJob(job.jobId, deps),
+  fetchResult: (_engine, job, deps) => downloadResult(job.jobId, deps),
+};

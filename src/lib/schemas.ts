@@ -27,8 +27,13 @@ export const demoCreateSchema = z.object({
   demoAsset: z.enum(DEMO_ASSETS),
 });
 
+const engineId = z.string().min(1).max(64).optional();
+const quoteId = z.string().min(1).max(1024).optional();
+
 export const providerFieldsSchema = z.object({
-  source: z.literal("sloyd"),
+  source: z.enum(["ai", "sloyd"]), // "sloyd" is the name older clients send
+  engineId,
+  quoteId,
   title,
   sku,
   category,
@@ -39,7 +44,9 @@ export const providerFieldsSchema = z.object({
 
 /** Text-to-3D request (JSON). Whitespace is collapsed, so line breaks cannot smuggle control characters. */
 export const textCreateSchema = z.object({
-  source: z.literal("sloyd-text"),
+  source: z.enum(["ai-text", "sloyd-text"]),
+  engineId,
+  quoteId,
   title,
   sku,
   category,

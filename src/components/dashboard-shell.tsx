@@ -228,7 +228,7 @@ export function DashboardShell({
                 providerReady ? "border-accent/50 text-accent" : "border-line text-muted",
               )}
             >
-              {providerReady ? dict.dash.source.sloyd : dict.dash.source.demo}
+              {providerReady ? dict.dash.source.ai : dict.dash.source.demo}
             </span>
             <LocaleSwitcher locale={locale} label={dict.common.language} />
           </div>

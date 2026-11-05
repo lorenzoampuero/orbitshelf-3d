@@ -57,3 +57,29 @@ export function providerConfig(): ProviderConfig | null {
 }
 
 export const providerConfigured = () => providerConfig() !== null;
+
+export type FalConfig = {
+  key: string;
+  queueBase: string;
+  /** Hosts a generated file may be downloaded from (the URL comes from a third party and the server fetches it). */
+  resultHosts: string[];
+  allowInsecureResultHosts: boolean;
+};
+
+export const DEFAULT_FAL_QUEUE_BASE = "https://queue.fal.run";
+const DEFAULT_FAL_RESULT_HOSTS = ["fal.media", "fal.ai", "storage.googleapis.com"];
+
+/** Null → fal is off. The base URL and host overrides only apply in test mode, so a stray variable cannot send the key elsewhere. */
+export function falConfig(): FalConfig | null {
+  const key = process.env.FAL_KEY?.trim();
+  if (!key) return null;
+  const test = process.env.ORBITSHELF_TEST === "1";
+  const queueBase = (test && process.env.FAL_QUEUE_BASE_URL?.trim()) || DEFAULT_FAL_QUEUE_BASE;
+  const hosts = test && process.env.FAL_RESULT_HOSTS?.trim();
+  return {
+    key,
+    queueBase: queueBase.replace(/\/+$/, ""),
+    resultHosts: hosts ? hosts.split(",").map((h) => h.trim()).filter(Boolean) : DEFAULT_FAL_RESULT_HOSTS,
+    allowInsecureResultHosts: test,
+  };
+}

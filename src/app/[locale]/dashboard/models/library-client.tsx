@@ -129,7 +129,7 @@ export function LibraryClient({
             className="mt-1 w-full rounded-xl border border-line bg-bg px-3 py-2 text-sm text-fg"
           >
             <option value="">{t.dash.library.all}</option>
-            {(["demo", "sloyd"] as ModelSource[]).map((k) => (
+            {(["demo", "ai", "import"] as ModelSource[]).map((k) => (
               <option key={k} value={k}>
                 {t.dash.source[k]}
               </option>

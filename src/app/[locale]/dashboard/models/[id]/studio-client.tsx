@@ -287,7 +287,7 @@ export function StudioClient({
             </div>
           )}
 
-          {model.source === "sloyd" && model.sourceViews.length > 0 && (
+          {model.source === "ai" && model.sourceViews.length > 0 && (
             <div className="rounded-[16px] border border-line bg-surface p-5">
               <h2 className="font-display text-sm font-semibold text-fg">
                 {model.sourceViews.length > 1 ? t.dash.detail.sourcePhotosTitle : t.dash.detail.sourcePhoto}

@@ -39,10 +39,51 @@ export function providerCreditsEstimate(texture: string | null, kind: InputKind 
   return geometryOnly ? PROVIDER_CREDITS_GEOMETRY_ONLY : PROVIDER_CREDITS_PER_ATTEMPT;
 }
 
-export type ModelSource = "demo" | "sloyd";
-/** What the file really is. Demo samples are never described as AI reconstructions. */
-export type Provenance = "demo-sample" | "ai-generated";
-export type JobState = "queued" | "pending" | "running" | "success" | "error";
+export type ModelSource = "demo" | "ai" | "import";
+/** What the file really is. Demo samples and imported files are never described as AI reconstructions. */
+export type Provenance = "demo-sample" | "ai-generated" | "imported";
+/**
+ * `reserved`: attempt debited, provider not yet called. `queued` / `running`: at the provider. `processing`: the provider finished and the file is being
+ * downloaded and validated. `needs_review`: the outcome is uncertain and a person must check it. `timed_out`: no answer within the limit.
+ */
+export const JOB_STATES = ["reserved", "queued", "running", "processing", "succeeded", "failed", "cancelled", "timed_out", "needs_review"] as const;
+export type JobState = (typeof JOB_STATES)[number];
+
+export type EngineLifecycle = "disabled" | "pilot" | "production";
+/** `published`: read from the provider's price page. `invoice`: confirmed against a real bill. */
+export type PriceEvidence = "published" | "invoice";
+
+/** Client-safe view of an engine: what it can really do, never how to call it. */
+export type EngineDto = {
+  id: string;
+  label: string;
+  lifecycle: EngineLifecycle;
+  modes: InputKind[];
+  maxPhotos: number;
+  views: ImageView[];
+  geometryOnly: boolean;
+  exports: string[];
+  priceVerifiedAt: string;
+  priceEvidence: PriceEvidence;
+};
+
+export type QuoteDto = {
+  id: string;
+  engineId: string;
+  engineLabel: string;
+  mode: InputKind;
+  photoCount: number;
+  texture: TextureResolution;
+  /** Estimated provider cost in USD. Internal cost, not what a customer pays. */
+  usd: number;
+  lines: { code: string; usd: number }[];
+  attempts: number;
+  evidence: PriceEvidence;
+  priceVerifiedAt: string;
+  expiresAt: string;
+};
+
+export type JobEventDto = { id: string; state: JobState; detail: string | null; at: string };
 export type ModelStatus = "processing" | "ready" | "failed";
 export type ReviewState = "pending" | "approved" | "rejected";
 
@@ -70,6 +111,10 @@ export type ModelDto = {
   category: Category;
   source: ModelSource;
   provenance: Provenance;
+  /** The engine that generated it. null for demo samples and imports. */
+  engineId: string | null;
+  /** Provider cost estimated when the job was created, in USD. Not an invoice. */
+  estimatedCostUsd: number | null;
   /** null for demo samples. */
   inputKind: InputKind | null;
   /** Photo views stored for this model (empty for text and demo). */

@@ -61,6 +61,43 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  // fal's queue: the submit path has the whole model id, status and result use only owner/app, and the client must use the URLs it is given.
+  if (url.pathname.startsWith("/fal/")) {
+    if (req.headers.authorization !== "Key test-fal-key-never-leak") {
+      res.writeHead(401, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ detail: "Unauthorized" }));
+      return;
+    }
+    const send = (status: number, body: unknown) => {
+      res.writeHead(status, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(body));
+    };
+    const reqMatch = url.pathname.match(/^\/fal\/fal-ai\/hyper3d\/requests\/([^/]+)(\/status)?$/);
+    if (req.method === "POST" && url.pathname === "/fal/fal-ai/hyper3d/rodin/v2.5") {
+      const chunks: Buffer[] = [];
+      for await (const c of req) chunks.push(c as Buffer);
+      const input = JSON.parse(Buffer.concat(chunks).toString("utf8")) as { image_urls?: string[]; geometry_file_format?: string };
+      created.push({ endpoint: "fal/rodin-2.5", parts: [`images:${input.image_urls?.length ?? 0}`, `format:${input.geometry_file_format}`] });
+      const id = `mock-fal-${counter++}`;
+      jobs.set(id, { id, polls: 0, outcome: nextJobOutcome });
+      nextJobOutcome = "success";
+      const base = `http://127.0.0.1:${PORT}/fal/fal-ai/hyper3d/requests/${id}`;
+      send(200, { request_id: id, status_url: `${base}/status`, response_url: base, cancel_url: `${base}/cancel` });
+      return;
+    }
+    if (req.method === "GET" && reqMatch) {
+      const job = jobs.get(reqMatch[1]);
+      if (!job) return send(404, { detail: "Not found" });
+      if (reqMatch[2]) {
+        job.polls += 1;
+        if (job.polls === 1) return send(200, { status: "IN_PROGRESS" });
+        return send(200, job.outcome === "error" ? { status: "COMPLETED", error: "Mesh reconstruction failed." } : { status: "COMPLETED" });
+      }
+      return send(200, { model_mesh: { url: `http://127.0.0.1:${PORT}/results/${job.id}.glb` }, textures: [], seed: 1 });
+    }
+    return send(404, { detail: "Not found" });
+  }
+
   if (req.method === "POST" && CREATE_ENDPOINTS.has(url.pathname)) {
     if (!hasValidAuth(req.headers)) {
       res.writeHead(401, { "Content-Type": "application/json" });

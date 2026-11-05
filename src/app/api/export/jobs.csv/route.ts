@@ -13,6 +13,8 @@ const COLUMNS = [
   { key: "provenance", header: "provenance" },
   { key: "status", header: "status" },
   { key: "jobState", header: "job_state" },
+  { key: "engineId", header: "engine" },
+  { key: "estimatedCostUsd", header: "estimated_cost_usd" },
   { key: "reviewState", header: "review_state" },
   { key: "failureCode", header: "failure_code" },
   { key: "error", header: "error" },

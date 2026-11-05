@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { isLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { currentUser } from "@/lib/api";
-import { providerConfigured } from "@/lib/env";
+import { availableEngines, toEngineDto } from "@/lib/provider/registry";
 import { store } from "@/lib/store";
 import { buildPageMetadata } from "@/lib/seo";
 import { CreateWizard } from "./create-wizard";
@@ -32,7 +32,7 @@ export default async function CreateModelPage({ params }: Props) {
       <CreateWizard
         locale={locale}
         dict={dict}
-        providerReady={providerConfigured()}
+        engines={availableEngines().map(toEngineDto)}
         attemptsLeft={usage.balance}
       />
     </div>

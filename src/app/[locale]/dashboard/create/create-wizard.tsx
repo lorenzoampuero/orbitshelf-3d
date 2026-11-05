@@ -10,13 +10,14 @@ import {
   DEMO_ASSETS,
   IMAGE_VIEWS,
   MAX_PROMPT_CHARS,
-  PROVIDER_CREDITS_PER_USD,
   TEXTURE_RESOLUTIONS,
-  providerCreditsEstimate,
   type Category,
   type DemoAsset,
+  type EngineDto,
   type ImageView,
+  type InputKind,
   type Locale,
+  type QuoteDto,
   type TextureResolution,
 } from "@/lib/types";
 import { ModelViewerBox } from "@/components/model-viewer-box";
@@ -32,14 +33,15 @@ type ApiFailure = {
 export function CreateWizard({
   locale,
   dict,
-  providerReady,
+  engines,
   attemptsLeft,
 }: {
   locale: Locale;
   dict: Dictionary;
-  providerReady: boolean;
+  engines: EngineDto[];
   attemptsLeft: number;
 }) {
+  const providerReady = engines.length > 0;
   const router = useRouter();
   const c = dict.dash.create;
 
@@ -58,10 +60,34 @@ export function CreateWizard({
   const [error, setError] = useState<string | null>(null);
   const [failedModelId, setFailedModelId] = useState<string | null>(null);
 
-  const photoCount = IMAGE_VIEWS.filter((v) => files[v]).length;
-  const kind = mode === "text" ? "text" : photoCount >= 2 ? "multi-image" : "image";
-  const credits = providerCreditsEstimate(textureResolution, kind);
-  const usd = (credits / PROVIDER_CREDITS_PER_USD).toFixed(2);
+  const [chosenEngine, setChosenEngine] = useState<string | null>(null);
+  const [quote, setQuote] = useState<QuoteDto | null>(null);
+
+  // Only engines that really support this mode are offered. A photo engine with fewer slots hides the views it cannot use.
+  const compatible = engines.filter((e) => e.modes.includes(mode === "text" ? "text" : "image"));
+  const engine = compatible.find((e) => e.id === chosenEngine) ?? compatible[0] ?? null;
+  const visibleViews = IMAGE_VIEWS.filter((v) => !engine || engine.views.includes(v));
+  const photoCount = visibleViews.filter((v) => files[v]).length;
+  const kind: InputKind = mode === "text" ? "text" : photoCount >= 2 ? "multi-image" : "image";
+  const textureOptions = TEXTURE_RESOLUTIONS.filter((tr) => tr !== "none" || engine?.geometryOnly);
+  const texture = textureOptions.includes(textureResolution) ? textureResolution : "1k";
+  const engineId = engine?.id ?? null;
+
+  // The cost shown always comes from the server, for exactly these options.
+  useEffect(() => {
+    if (mode === "demo" || !engineId) return;
+    const ctrl = new AbortController();
+    fetch("/api/quotes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: ctrl.signal,
+      body: JSON.stringify({ engineId, mode: kind, photoCount: kind === "text" ? 0 : Math.max(photoCount, 1), texture }),
+    })
+      .then((r) => (r.ok ? (r.json() as Promise<{ quote: QuoteDto }>) : null))
+      .then((d) => setQuote(d?.quote ?? null))
+      .catch(() => undefined);
+    return () => ctrl.abort();
+  }, [mode, engineId, kind, photoCount, texture]);
 
   // Object URLs for the photo thumbnails. They are revoked when the selection changes or the form unmounts.
   const previews = useMemo(() => {
@@ -160,11 +186,12 @@ export function CreateWizard({
       await send({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          source: "sloyd-text",
+          source: "ai-text",
+          engineId,
           title: cleanTitle,
           sku: sku.trim() || null,
           category,
-          textureResolution,
+          textureResolution: texture,
           prompt,
           confirmPaid: true,
           rightsAffirmed: true,
@@ -174,14 +201,15 @@ export function CreateWizard({
     }
 
     const form = new FormData();
-    form.set("source", "sloyd");
+    form.set("source", "ai");
+    if (engineId) form.set("engineId", engineId);
     form.set("title", cleanTitle);
     form.set("sku", sku.trim());
     form.set("category", category);
-    form.set("textureResolution", textureResolution);
+    form.set("textureResolution", texture);
     form.set("confirmPaid", "true");
     form.set("rightsAffirmed", "true");
-    for (const v of IMAGE_VIEWS) {
+    for (const v of visibleViews) {
       const f = files[v];
       if (f) form.set(`${v}Image`, f);
     }
@@ -308,7 +336,7 @@ export function CreateWizard({
             <div className="space-y-3">
               <p className="text-xs text-muted leading-relaxed">{c.photosGuide}</p>
               <div className="grid grid-cols-2 gap-3">
-                {IMAGE_VIEWS.map((view) => (
+                {visibleViews.map((view) => (
                   <div key={view} className="space-y-1.5">
                     <label htmlFor={`create-photo-${view}`} className="block text-xs font-medium text-fg">
                       {c.views[view]} {view === "front" ? "*" : `(${c.viewsOptional})`}
@@ -372,6 +400,27 @@ export function CreateWizard({
 
           {mode !== "demo" && (
             <div className="space-y-4">
+              {compatible.length > 1 && (
+                <div>
+                  <label htmlFor="create-engine" className="block text-xs font-medium text-fg mb-1.5">
+                    {c.engine}
+                  </label>
+                  <select
+                    id="create-engine"
+                    name="engineId"
+                    value={engineId ?? ""}
+                    onChange={(e) => setChosenEngine(e.target.value)}
+                    data-testid="create-engine-select"
+                    className="w-full rounded-xl border border-line bg-bg px-3.5 py-2 text-sm text-fg"
+                  >
+                    {compatible.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label htmlFor="create-texture" className="block text-xs font-medium text-fg mb-1.5">
                   {c.texture}
@@ -379,11 +428,11 @@ export function CreateWizard({
                 <select
                   id="create-texture"
                   name="textureResolution"
-                  value={textureResolution}
+                  value={texture}
                   onChange={(e) => setTextureResolution(e.target.value as TextureResolution)}
                   className="w-full rounded-xl border border-line bg-bg px-3.5 py-2 text-sm text-fg"
                 >
-                  {TEXTURE_RESOLUTIONS.map((tr) => (
+                  {textureOptions.map((tr) => (
                     <option key={tr} value={tr}>
                       {c.textures[tr]}
                     </option>
@@ -394,7 +443,7 @@ export function CreateWizard({
               <div className="rounded-xl border border-line bg-surface-2 p-4 space-y-2 text-xs">
                 <div className="font-semibold text-fg">{c.costTitle}</div>
                 <p className="text-muted leading-relaxed" data-testid="create-cost-text">
-                  {c.costText.replace("{credits}", String(credits)).replace("{usd}", usd)}
+                  {quote && quote.engineId === engineId ? c.costText.replace("{engine}", quote.engineLabel).replace("{usd}", quote.usd.toFixed(2)) : c.costLoading}
                 </p>
                 <div className="font-medium text-accent">{c.attemptsLeft.replace("{n}", String(attemptsLeft))}</div>
               </div>

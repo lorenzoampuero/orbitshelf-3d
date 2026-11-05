@@ -1,12 +1,13 @@
 import { apiError, apiJson, readBodyCapped, withUser } from "@/lib/api";
-import { providerConfigured } from "@/lib/env";
 import { ImageError, MAX_IMAGE_BYTES, validateAndNormalizeImage, type NormalizedImage } from "@/lib/image";
 import { createDemoModel, createProviderModel, type ProviderInput } from "@/lib/jobs";
+import { availableEngines } from "@/lib/provider/registry";
+import { checkQuote } from "@/lib/quotes";
 import { rateLimit } from "@/lib/rate-limit";
 import { filterModels } from "@/lib/model-filter";
 import { demoCreateSchema, fieldErrors, providerFieldsSchema, textCreateSchema } from "@/lib/schemas";
 import { store, toDto } from "@/lib/store";
-import { IMAGE_VIEWS, type ImageView } from "@/lib/types";
+import { IMAGE_VIEWS, type ImageView, type InputKind, type TextureResolution } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -48,12 +49,26 @@ async function readJson(req: Request) {
 }
 
 function checkProviderLimits(orgId: string) {
-  if (!providerConfigured()) {
+  if (availableEngines().length === 0) {
     return apiError(503, "provider_not_configured", "AI generation is not configured on this server. Use a demo sample or add provider credentials.");
   }
   const rl = rateLimit(`create-job:${orgId}`, 5, 60_000);
   if (!rl.ok) return apiError(429, "rate_limited", "Too many generation requests. Try again shortly.", undefined, { "Retry-After": String(rl.retryAfterSeconds) });
   return null;
+}
+
+/** The first available engine that can do this job, unless the client chose one. */
+function resolveEngine(requested: string | undefined, mode: InputKind, photoCount: number) {
+  if (requested) return requested;
+  return availableEngines().find((e) => e.modes.includes(mode) && (mode === "text" || photoCount <= e.maxPhotos))?.id;
+}
+
+/** A quote is optional for now; when sent, it must still match what the server would do. */
+function quoteProblem(quoteId: string | undefined, orgId: string, engineId: string | undefined, mode: InputKind, photoCount: number, texture: TextureResolution) {
+  if (!quoteId || !engineId) return null;
+  const check = checkQuote(quoteId, orgId, engineId, { mode, photoCount, texture });
+  if (check === "ok") return null;
+  return apiError(409, check === "expired" ? "quote_expired" : "quote_mismatch", "The quote is no longer valid. Review the cost and try again.");
 }
 
 export const POST = withUser(async (req, user) => {
@@ -67,12 +82,16 @@ export const POST = withUser(async (req, user) => {
     const source = typeof body.json === "object" && body.json !== null ? (body.json as { source?: unknown }).source : undefined;
 
     // -- Paid provider job (text -> 3D) --
-    if (source === "sloyd-text") {
+    if (source === "ai-text" || source === "sloyd-text") {
       const blocked = checkProviderLimits(user.orgId);
       if (blocked) return blocked;
       const parsed = textCreateSchema.safeParse(body.json);
       if (!parsed.success) return apiError(422, "validation", "Check the highlighted fields.", { fields: fieldErrors(parsed.error) });
+      const engineId = resolveEngine(parsed.data.engineId, "text", 0);
+      const stale = quoteProblem(parsed.data.quoteId, user.orgId, engineId, "text", 0, parsed.data.textureResolution);
+      if (stale) return stale;
       const result = await createProviderModel(user.orgId, {
+        engineId,
         title: parsed.data.title,
         sku: parsed.data.sku,
         category: parsed.data.category,
@@ -104,7 +123,7 @@ export const POST = withUser(async (req, user) => {
   } catch {
     return apiError(400, "invalid_form", "Malformed multipart body.");
   }
-  const fields = Object.fromEntries(["source", "title", "sku", "category", "textureResolution", "confirmPaid", "rightsAffirmed"].map((k) => [k, form.get(k) ?? undefined]));
+  const fields = Object.fromEntries(["source", "engineId", "quoteId", "title", "sku", "category", "textureResolution", "confirmPaid", "rightsAffirmed"].map((k) => [k, form.get(k) ?? undefined]));
   const parsed = providerFieldsSchema.safeParse({ ...fields, sku: typeof fields.sku === "string" ? fields.sku : null });
   if (!parsed.success) return apiError(422, "validation", "Check the highlighted fields.", { fields: fieldErrors(parsed.error) });
 
@@ -128,7 +147,13 @@ export const POST = withUser(async (req, user) => {
     source = { kind: "multi-image", images };
   }
 
+  const photoCount = Object.keys(images).length;
+  const engineId = resolveEngine(parsed.data.engineId, source.kind, photoCount);
+  const stale = quoteProblem(parsed.data.quoteId, user.orgId, engineId, source.kind, photoCount, parsed.data.textureResolution);
+  if (stale) return stale;
+
   const result = await createProviderModel(user.orgId, {
+    engineId,
     title: parsed.data.title,
     sku: parsed.data.sku,
     category: parsed.data.category,

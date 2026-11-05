@@ -10,8 +10,11 @@ import {
   type Dimensions,
   type FailureCode,
   type ImageView,
+  type JobEventDto,
+  type JobState,
   type LedgerEntryDto,
   type ModelDto,
+  type PriceEvidence,
   type UsageDto,
 } from "@/lib/types";
 
@@ -23,6 +26,8 @@ export type ExtraImage = { view: Exclude<ImageView, "front">; ext: ImageExt };
 export type ModelRow = ModelDto & {
   orgId: string;
   providerJobId: string | null;
+  /** The provider's own URLs for this job, when it requires using them as given. */
+  providerJobUrls?: { status: string; response: string; cancel?: string } | null;
   idempotencyKey: string | null;
   hasSourceImage: boolean;
   sourceImageExt: ImageExt | null;
@@ -47,7 +52,10 @@ type LedgerRow = {
   createdAt: string;
 };
 type AuditRow = { id: string; orgId: string; action: string; modelId: string | null; at: string; detail?: string };
-type Db = { version: 1; orgs: OrgRow[]; users: UserRow[]; models: ModelRow[]; ledger: LedgerRow[]; audit: AuditRow[] };
+type JobEventRow = JobEventDto & { orgId: string; modelId: string };
+/** What a provider job cost us. Separate from the ledger, which tracks what the customer used. */
+export type CostEventRow = { id: string; orgId: string; modelId: string; engineId: string; usd: number; evidence: PriceEvidence; at: string };
+type Db = { version: 1; orgs: OrgRow[]; users: UserRow[]; models: ModelRow[]; ledger: LedgerRow[]; audit: AuditRow[]; jobEvents: JobEventRow[]; costEvents: CostEventRow[] };
 
 export const emptyChecklist = (): Checklist => Object.fromEntries(CHECKLIST_KEYS.map((k) => [k, false])) as Checklist;
 export const emptyDimensions = (): Dimensions => ({ widthMm: null, heightMm: null, depthMm: null });
@@ -57,6 +65,7 @@ export function toDto(row: ModelRow): ModelDto {
   const {
     orgId: _o,
     providerJobId,
+    providerJobUrls: _u,
     idempotencyKey: _i,
     hasSourceImage: _h,
     sourceImageExt: _e,
@@ -71,7 +80,9 @@ export function toDto(row: ModelRow): ModelDto {
   // Rows saved before multi-photo / text support lack these fields: derive them.
   return {
     ...dto,
-    inputKind: row.inputKind ?? (row.source === "sloyd" ? "image" : null),
+    engineId: row.engineId ?? null,
+    estimatedCostUsd: row.estimatedCostUsd ?? null,
+    inputKind: row.inputKind ?? (row.source === "ai" ? "image" : null),
     sourceViews: row.sourceViews ?? (row.hasSourceImage ? ["front"] : []),
     prompt: row.prompt ?? null,
     providerJobRef: providerJobId ? "…" + providerJobId.slice(-6) : null,
@@ -93,14 +104,34 @@ function ensureDirs() {
   mkdirSync(path.join(dataDir(), "files"), { recursive: true });
   mkdirSync(path.join(dataDir(), "uploads"), { recursive: true });
 }
+const LEGACY_JOB_STATES: Record<string, JobState> = { pending: "queued", success: "succeeded", error: "failed" };
+
+/** Rows written before the multi-engine version used a provider name as the source and a shorter list of job states. */
+function upgradeRows(db: Db): Db {
+  db.jobEvents ??= [];
+  db.costEvents ??= [];
+  for (const m of db.models) {
+    if ((m.source as string) === "sloyd") {
+      m.source = "ai";
+      m.engineId ??= "sloyd";
+    }
+    const next = LEGACY_JOB_STATES[m.jobState as string];
+    if (next) m.jobState = next;
+    if (m.jobState === "queued" && !m.providerJobId && m.status === "processing") m.jobState = "reserved";
+  }
+  return db;
+}
+
 function readDb(): Db {
   ensureDirs();
-  if (!existsSync(dbFile())) return { version: 1, orgs: [], users: [], models: [], ledger: [], audit: [] };
+  if (!existsSync(dbFile())) return { version: 1, orgs: [], users: [], models: [], ledger: [], audit: [], jobEvents: [], costEvents: [] };
+  let db: Db;
   try {
-    return JSON.parse(readFileSync(dbFile(), "utf8")) as Db;
+    db = JSON.parse(readFileSync(dbFile(), "utf8")) as Db;
   } catch {
     throw new Error("Local database is unreadable (.data/db.json). Fix or remove it.");
   }
+  return upgradeRows(db);
 }
 function writeDb(db: Db) {
   ensureDirs();
@@ -148,7 +179,8 @@ const assertSafeId = (id: string) => {
 function balanceOf(db: Db, orgId: string) {
   return db.ledger.filter((l) => l.orgId === orgId).reduce((n, l) => n + l.delta, 0);
 }
-const activeJobsOf = (db: Db, orgId: string) => db.models.filter((m) => m.orgId === orgId && m.source === "sloyd" && m.status === "processing").length;
+/** A job that timed out no longer holds a slot: it would block the workspace forever. */
+const activeJobsOf = (db: Db, orgId: string) => db.models.filter((m) => m.orgId === orgId && m.source === "ai" && m.status === "processing" && !m.stalled).length;
 
 function pushLedger(db: Db, row: Omit<LedgerRow, "id" | "createdAt">): { created: boolean; row: LedgerRow } {
   const existing = db.ledger.find((l) => l.orgId === row.orgId && l.idempotencyKey === row.idempotencyKey);
@@ -160,6 +192,9 @@ function pushLedger(db: Db, row: Omit<LedgerRow, "id" | "createdAt">): { created
 function audit(db: Db, orgId: string, action: string, modelId: string | null, detail?: string) {
   db.audit.push({ id: randomUUID(), orgId, action, modelId, at: nowIso(), detail });
   if (db.audit.length > 5000) db.audit.splice(0, db.audit.length - 5000);
+}
+function jobEvent(db: Db, orgId: string, modelId: string, state: JobState, detail: string | null = null) {
+  db.jobEvents.push({ id: randomUUID(), orgId, modelId, state, detail, at: nowIso() });
 }
 
 /* ───────── public store API ───────── */
@@ -231,6 +266,7 @@ export const store = {
         for (const p of photos) writeFileSync(sourceFor(orgId, row.id, p.ext, p.view), p.buffer);
       }
       db.models.push({ ...row, attemptsDebited: 1 });
+      jobEvent(db, orgId, row.id, "reserved");
       audit(db, orgId, "job.reserved", row.id);
       return { ok: true as const, duplicate: false as const, model: db.models[db.models.length - 1] };
     });
@@ -240,6 +276,7 @@ export const store = {
     return tx((db) => {
       const m = db.models.find((x) => x.orgId === orgId && x.id === id);
       if (!m) return null;
+      if (patch.jobState && patch.jobState !== m.jobState) jobEvent(db, orgId, id, patch.jobState);
       Object.assign(m, patch, { updatedAt: nowIso() });
       return m;
     });
@@ -268,7 +305,9 @@ export const store = {
       if (!m) return null;
       if (m.status !== "processing") return m; // never overwrite a finished model
       m.status = "failed";
-      m.jobState = "error";
+      // An uncertain outcome is not a plain failure: the provider may have charged, and a person has to check.
+      m.jobState = input.failureCode === "ambiguous" || input.failureCode === "invalid_output" ? "needs_review" : "failed";
+      jobEvent(db, orgId, modelId, m.jobState, input.failureCode);
       m.error = input.error.slice(0, 400);
       m.failureCode = input.failureCode;
       m.nextPollAt = null;
@@ -290,7 +329,8 @@ export const store = {
       mkdirSync(path.join(dataDir(), "files", orgId), { recursive: true });
       writeFileSync(fileFor(orgId, modelId), glb);
       m.status = "ready";
-      m.jobState = "success";
+      m.jobState = "succeeded";
+      jobEvent(db, orgId, modelId, "succeeded");
       m.error = null;
       m.failureCode = null;
       m.fileSize = info.bytes;
@@ -362,7 +402,34 @@ export const store = {
 
   /** For the background poller: all provider jobs that still need attention, across tenants. */
   async listPollable(): Promise<ModelRow[]> {
-    return tx((db) => db.models.filter((m) => m.source === "sloyd" && m.status === "processing"), false);
+    return tx((db) => db.models.filter((m) => m.source === "ai" && m.status === "processing"), false);
+  },
+
+  /** For provider callbacks, which identify a job only by the provider's id. */
+  async findByProviderJob(providerJobId: string): Promise<ModelRow | null> {
+    return tx((db) => db.models.find((m) => m.providerJobId === providerJobId) ?? null, false);
+  },
+
+  async listJobEvents(orgId: string, modelId: string): Promise<JobEventDto[]> {
+    return tx(
+      (db) =>
+        db.jobEvents
+          .filter((e) => e.orgId === orgId && e.modelId === modelId)
+          .map(({ id, state, detail, at }) => ({ id, state, detail, at })),
+      false,
+    );
+  },
+
+  /** Recorded once per model, when the provider accepts the job. A job the provider never started has no cost event. */
+  async recordCost(orgId: string, modelId: string, engineId: string, usd: number, evidence: PriceEvidence): Promise<void> {
+    await tx((db) => {
+      if (db.costEvents.some((c) => c.orgId === orgId && c.modelId === modelId)) return;
+      db.costEvents.push({ id: randomUUID(), orgId, modelId, engineId, usd, evidence, at: nowIso() });
+    });
+  },
+
+  async listCostEvents(orgId: string): Promise<CostEventRow[]> {
+    return tx((db) => db.costEvents.filter((c) => c.orgId === orgId), false);
   },
 
   async rawModelsForOrgs(): Promise<number> {

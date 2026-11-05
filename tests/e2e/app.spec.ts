@@ -382,10 +382,10 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     const png = await makeTestPng(320, 320);
     await page.getByTestId("create-photo-input").setInputFiles({ name: "front.png", mimeType: "image/png", buffer: png });
     // One photo costs 20 credits; adding views switches the estimate to the 30-credit multi-photo price.
-    await expect(page.getByTestId("create-cost-text")).toContainText("20 provider credits");
+    await expect(page.getByTestId("create-cost-text")).toContainText("US$0.27");
     await page.getByTestId("create-photo-input-back").setInputFiles({ name: "back.png", mimeType: "image/png", buffer: png });
     await page.getByTestId("create-photo-input-left").setInputFiles({ name: "left.png", mimeType: "image/png", buffer: png });
-    await expect(page.getByTestId("create-cost-text")).toContainText("30 provider credits");
+    await expect(page.getByTestId("create-cost-text")).toContainText("US$0.40");
     await page.getByTestId("confirm-paid-checkbox").check();
     await page.getByTestId("confirm-rights-checkbox").check();
     await page.getByTestId("create-submit-btn").click();
@@ -409,6 +409,51 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
 
     const usage = await (await page.request.get("/api/usage")).json();
     expect(usage.usage.debited).toBe(1); // one attempt, whatever the number of photos
+  });
+
+  test("6b. A second engine runs through the same flow: chosen engine, server quote, its own endpoint, stored result and event history", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 840 });
+    await page.goto("/login");
+    await page.fill("#login-email", "second-engine@merchant.test");
+    await page.getByTestId("login-submit").click();
+    await page.waitForURL("**/dashboard");
+
+    // A disabled engine is refused by the server, whatever the client sends
+    const refused = await page.request.post("/api/quotes", { data: { engineId: "fal-trellis-2", mode: "image", photoCount: 1, texture: "1k" } });
+    expect(refused.status()).toBe(503);
+
+    await page.goto("/dashboard/create");
+    await page.fill("#create-title", "Oak Chair");
+    await page.selectOption("#create-category", "furniture");
+    await page.getByTestId("source-sloyd-radio").check();
+    await expect(page.getByTestId("create-engine-select").locator("option")).toHaveCount(2); // Sloyd and the one piloted engine, no others
+    await page.getByTestId("create-engine-select").selectOption("fal-rodin-2.5");
+    const png = await makeTestPng(320, 320);
+    await page.getByTestId("create-photo-input").setInputFiles({ name: "front.png", mimeType: "image/png", buffer: png });
+    await page.getByTestId("create-photo-input-back").setInputFiles({ name: "back.png", mimeType: "image/png", buffer: png });
+    await expect(page.getByTestId("create-cost-text")).toContainText("Rodin 2.5");
+    await expect(page.getByTestId("create-cost-text")).toContainText("US$0.40");
+    await page.getByTestId("confirm-paid-checkbox").check();
+    await page.getByTestId("confirm-rights-checkbox").check();
+    await page.getByTestId("create-submit-btn").click();
+    await page.waitForURL("**/dashboard/models/*");
+
+    const created = ((await (await page.request.get("http://127.0.0.1:3999/__created")).json()) as { created: { endpoint: string; parts: string[] }[] }).created;
+    expect(created.filter((c) => c.endpoint === "fal/rodin-2.5").at(-1)?.parts).toEqual(["images:2", "format:glb"]);
+
+    await expect(async () => {
+      const refreshBtn = page.getByTestId("refresh-job-btn");
+      if (await refreshBtn.isVisible()) await refreshBtn.click();
+      await expect(page.getByTestId("studio-viewer")).toHaveAttribute("data-status", "ready", { timeout: 2500 });
+    }).toPass({ timeout: 15_000 });
+
+    // The provider key and queue URLs never reach the browser
+    const id = page.url().split("/").at(-1)!;
+    const body = await (await page.request.get(`/api/models/${id}`)).text();
+    expect(body).not.toContain("test-fal-key-never-leak");
+    expect(body).not.toContain("queue");
+    expect(body).toContain('"engineId":"fal-rodin-2.5"');
+    expect((await (await page.request.get("/api/usage")).json()).usage.debited).toBe(1);
   });
 
   test("7. Text to 3D: prompt validation, text endpoint, prompt shown in the studio, and a refund when the provider refuses", async ({ page }) => {
