@@ -23,6 +23,7 @@ function row(orgId: string, over: Partial<ModelRow> = {}): ModelRow {
     provenance: "ai-generated",
     engineId: "sloyd",
     estimatedCostUsd: 0.27,
+    currentVersionId: null,
     inputKind: "image",
     sourceViews: ["front"],
     prompt: null,
@@ -90,7 +91,7 @@ describe("Postgres store", () => {
     const a = await store.signIn("a@example.com");
     const b = await store.signIn("b@example.com");
     const r = row(a.org.id, { source: "demo", provenance: "demo-sample", status: "ready", jobState: "succeeded", engineId: null });
-    await store.insertDemoModel(a.org.id, r, glb);
+    await store.insertReadyModel(a.org.id, r, glb);
     expect(await store.getModel(b.org.id, r.id)).toBeNull();
     expect(await store.readGlb(b.org.id, r.id)).toBeNull();
     expect(await store.updateModel(b.org.id, r.id, { title: "stolen" })).toBeNull();
@@ -224,6 +225,42 @@ describe("Postgres store", () => {
     await store.updateModel(org.id, r.id, { stalled: true, jobState: "timed_out" });
     expect(await store.claimPollable()).toEqual([]);
     expect((await store.usage(org.id)).activeJobs).toBe(0);
+  });
+
+  it("keeps versions: only one original, current file follows activation, review resets, and the original cannot be deleted", async () => {
+    const { org } = await store.signIn("a@example.com");
+    const other = await store.signIn("b@example.com");
+    const r = row(org.id, { source: "demo", provenance: "demo-sample", status: "ready", jobState: "succeeded", engineId: null, reviewState: "approved", checklist: { shape: true, surfaces: true, hiddenAngles: true, material: true, labels: true } });
+    await store.insertReadyModel(org.id, r, glb);
+    const diagnostics = { bytes: 1, vertices: 3, triangles: 1, meshes: 1, primitives: 1, materials: 0, textures: [], textureBytes: 0, maxTextureSize: 0, hasUv: false, hasNormals: false, sizeMeters: [1, 1, 1] as [number, number, number], warnings: [] };
+    const original = { id: uuid(), orgId: org.id, modelId: r.id, preset: "original" as const, bytes: glb.byteLength, sha256: "a".repeat(64), diagnostics, createdAt: nowIso() };
+    await store.addVersion(org.id, original, null);
+    await store.addVersion(org.id, { ...original, id: uuid() }, null); // a second original is ignored
+    const optimized = { ...original, id: uuid(), preset: "web" as const, bytes: 4, sha256: "b".repeat(64), createdAt: new Date(Date.now() + 1000).toISOString() };
+    await store.addVersion(org.id, optimized, Buffer.from("opt!"));
+    expect((await store.listVersions(org.id, r.id)).map((v) => v.preset)).toEqual(["original", "web"]);
+    expect(await store.listVersions(other.org.id, r.id)).toEqual([]);
+    expect(await store.readVersionGlb(other.org.id, r.id, optimized.id)).toBeNull();
+    expect(await store.activateVersion(other.org.id, r.id, optimized.id)).toBeNull();
+
+    const active = await store.activateVersion(org.id, r.id, optimized.id);
+    expect(active).toMatchObject({ currentVersionId: optimized.id, fileSize: 4, checksum: "b".repeat(64), reviewState: "pending" });
+    expect(active?.checklist.shape).toBe(false);
+    expect((await store.readGlb(org.id, r.id))?.toString()).toBe("opt!");
+    expect((await store.readVersionGlb(org.id, r.id, original.id))?.subarray(0, 4).toString()).toBe("glTF");
+
+    expect(await store.deleteVersion(org.id, r.id, optimized.id)).toBe("protected");
+    expect(await store.deleteVersion(org.id, r.id, original.id)).toBe("protected");
+    expect(await store.deleteVersion(other.org.id, r.id, optimized.id)).toBe("not_found");
+
+    expect((await store.activateVersion(org.id, r.id, original.id))?.currentVersionId).toBeNull();
+    expect((await store.readGlb(org.id, r.id))?.subarray(0, 4).toString()).toBe("glTF");
+    expect(await store.deleteVersion(org.id, r.id, optimized.id)).toBe("deleted");
+    expect(blobs.files.size).toBe(1);
+
+    await store.deleteModel(org.id, r.id);
+    expect(blobs.files.size).toBe(0);
+    expect(await store.listVersions(org.id, r.id)).toEqual([]);
   });
 
   it("reads the engine kill switch", async () => {

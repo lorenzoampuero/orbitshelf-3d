@@ -59,6 +59,13 @@ export const textCreateSchema = z.object({
   rightsAffirmed: z.literal(true, { error: "rights_required" }),
 });
 
+export const importFieldsSchema = z.object({
+  title,
+  sku,
+  category,
+  rightsAffirmed: z.literal("true", { error: "rights_required" }),
+});
+
 const mm = z.number().min(0).max(100_000).nullable();
 export const patchSchema = z
   .object({

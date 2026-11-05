@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { pgClient } from "@/lib/sql";
@@ -20,7 +20,10 @@ describe.skipIf(!url)("lock contention on a real Postgres", () => {
     process.env.MAX_ACTIVE_JOBS_PER_ORG = "5";
     const sql = pgClient(url!);
     const exists = await sql.query("SELECT to_regclass('public.models') AS t");
-    if (!exists.rows[0].t) await sql.query(await readFile(path.join(process.cwd(), "supabase", "migrations", "0001_init.sql"), "utf8"));
+    if (!exists.rows[0].t) {
+      const dir = path.join(process.cwd(), "supabase", "migrations");
+      for (const f of (await readdir(dir)).sort()) await sql.query(await readFile(path.join(dir, f), "utf8"));
+    }
 
     const store = createPostgresStore(sql, memoryBlobs());
     const { org } = await store.signIn(`race-${randomUUID()}@example.test`);
@@ -30,7 +33,7 @@ describe.skipIf(!url)("lock contention on a real Postgres", () => {
         id: randomUUID(), orgId: org.id, title: "Race", sku: null, category: "other", source: "ai", provenance: "ai-generated", engineId: "sloyd", estimatedCostUsd: 0, inputKind: "text",
         sourceViews: [], prompt: null, demoAsset: null, status: "processing", jobState: "reserved", providerJobRef: null, providerJobId: null, providerJobUrls: null, idempotencyKey: null, error: null,
         failureCode: null, attemptsDebited: 0, attemptsRefunded: 0, providerCreditsEstimate: 0, textureResolution: "1k", reviewState: "pending", checklist: emptyChecklist(), reviewNote: null,
-        reviewedAt: null, dimensions: emptyDimensions(), fileSize: null, checksum: null, stalled: false, rightsAffirmed: true, hasSourceImage: false, sourceImageExt: null, extraImages: [],
+        reviewedAt: null, dimensions: emptyDimensions(), fileSize: null, checksum: null, stalled: false, rightsAffirmed: true, hasSourceImage: false, sourceImageExt: null, extraImages: [], currentVersionId: null,
         sourceImageSha256: null, nextPollAt: null, pollCount: 0, lastPolledAt: null, lastPollError: null, createdAt: t, updatedAt: t,
       };
     };

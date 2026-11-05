@@ -83,6 +83,34 @@ export type QuoteDto = {
   expiresAt: string;
 };
 
+/** Technical budgets OrbitShelf can check and optimize to. See src/lib/glb-presets.ts. */
+export const OPTIMIZE_PRESETS = ["web", "store", "game"] as const;
+export type OptimizePreset = (typeof OPTIMIZE_PRESETS)[number];
+export type VersionPreset = OptimizePreset | "original";
+
+export const DIAGNOSTIC_WARNINGS = ["no_uv", "no_normals", "no_materials", "large_textures", "many_triangles", "heavy_file", "unusual_scale", "off_center"] as const;
+export type DiagnosticWarning = (typeof DIAGNOSTIC_WARNINGS)[number];
+
+/** Measured from the file itself. Nothing here is inferred or estimated. */
+export type MeshDiagnostics = {
+  bytes: number;
+  vertices: number;
+  triangles: number;
+  meshes: number;
+  primitives: number;
+  materials: number;
+  textures: { mime: string; width: number; height: number; bytes: number }[];
+  textureBytes: number;
+  maxTextureSize: number;
+  hasUv: boolean;
+  hasNormals: boolean;
+  /** Bounding box as stored in the file. A generated model's scale is not its real-world size. */
+  sizeMeters: [number, number, number];
+  warnings: DiagnosticWarning[];
+};
+
+export type AssetVersionDto = { id: string; preset: VersionPreset; bytes: number; sha256: string; diagnostics: MeshDiagnostics; createdAt: string; current: boolean };
+
 export type JobEventDto = { id: string; state: JobState; detail: string | null; at: string };
 export type ModelStatus = "processing" | "ready" | "failed";
 export type ReviewState = "pending" | "approved" | "rejected";
@@ -115,6 +143,8 @@ export type ModelDto = {
   engineId: string | null;
   /** Provider cost estimated when the job was created, in USD. Not an invoice. */
   estimatedCostUsd: number | null;
+  /** The optimized version in use. null means the original file. */
+  currentVersionId: string | null;
   /** null for demo samples. */
   inputKind: InputKind | null;
   /** Photo views stored for this model (empty for text and demo). */

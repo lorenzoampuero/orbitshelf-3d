@@ -21,7 +21,7 @@ DATABASE_URL=postgres://...
 
 ## 3. Crear las tablas
 
-Aplica `supabase/migrations/0001_init.sql` en el proyecto nuevo, desde el *SQL Editor* de Supabase. Crea las tablas, las reglas de acceso y el bucket privado `orbitshelf-private`.
+Aplica los archivos de `supabase/migrations/`, en orden, en el proyecto nuevo, desde el *SQL Editor* de Supabase. Crean las tablas, las reglas de acceso y el bucket privado `orbitshelf-private`.
 
 ## 4. Login
 

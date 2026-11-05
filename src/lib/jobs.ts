@@ -29,6 +29,7 @@ function baseRow(orgId: string, v: Pick<ModelRow, "title" | "sku" | "category" |
     provenance: v.provenance,
     engineId: null,
     estimatedCostUsd: null,
+    currentVersionId: null,
     inputKind: null,
     sourceViews: [],
     prompt: null,
@@ -72,7 +73,14 @@ export async function createDemoModel(orgId: string, input: { title: string; sku
   const info = validateGlb(glb);
   const row = baseRow(orgId, { title: input.title, sku: input.sku, category: input.category, source: "demo", provenance: "demo-sample" });
   Object.assign(row, { status: "ready", jobState: "succeeded", demoAsset: input.demoAsset, fileSize: info.bytes, checksum: info.sha256 });
-  return store.insertDemoModel(orgId, row, glb);
+  return store.insertReadyModel(orgId, row, glb);
+}
+
+/** A GLB the user brought. Free and instant, and it keeps saying it was imported. The caller has already validated the file. */
+export async function createImportedModel(orgId: string, input: { title: string; sku: string | null; category: Category; glb: Buffer; sha256: string; bytes: number }) {
+  const row = baseRow(orgId, { title: input.title, sku: input.sku, category: input.category, source: "import", provenance: "imported" });
+  Object.assign(row, { status: "ready", jobState: "succeeded", fileSize: input.bytes, checksum: input.sha256, rightsAffirmed: true });
+  return store.insertReadyModel(orgId, row, input.glb, "model.imported");
 }
 
 export type CreateProviderResult =

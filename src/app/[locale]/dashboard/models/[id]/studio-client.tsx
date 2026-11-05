@@ -11,23 +11,30 @@ import {
   type Category,
   type Checklist,
   type ChecklistKey,
+  type JobEventDto,
   type Locale,
   type ModelDto,
 } from "@/lib/types";
 import { ModelViewerBox } from "@/components/model-viewer-box";
+import { AssetTools } from "./asset-tools";
 import { formatBytes, formatDate } from "@/lib/utils";
 
 export function StudioClient({
   locale,
   t,
   initialModel,
+  initialEvents,
+  engineLabel,
 }: {
   locale: Locale;
   t: Dictionary;
   initialModel: ModelDto;
+  initialEvents: JobEventDto[];
+  engineLabel: string | null;
 }) {
   const router = useRouter();
-  const [model, setModel] = useState<ModelDto>(initialModel);
+  const [model, setModelState] = useState<ModelDto>(initialModel);
+  const [events, setEvents] = useState<JobEventDto[]>(initialEvents);
   const [checklist, setChecklist] = useState<Checklist>(initialModel.checklist);
   const [reviewNote, setReviewNote] = useState<string>(initialModel.reviewNote ?? "");
   const [savingReview, setSavingReview] = useState(false);
@@ -52,6 +59,27 @@ export function StudioClient({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const setModel = useCallback((next: ModelDto) => {
+    setModelState(next);
+    setChecklist(next.checklist);
+    setReviewNote(next.reviewNote ?? "");
+  }, []);
+
+  // The job history follows the state shown above it.
+  useEffect(() => {
+    if (model.source !== "ai") return;
+    let stale = false;
+    fetch(`/api/models/${encodeURIComponent(model.id)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((body: { events?: JobEventDto[] } | null) => {
+        if (!stale && body?.events) setEvents(body.events);
+      })
+      .catch(() => undefined);
+    return () => {
+      stale = true;
+    };
+  }, [model.id, model.source, model.jobState]);
+
   const refreshStatus = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -68,7 +96,7 @@ export function StudioClient({
     } finally {
       setRefreshing(false);
     }
-  }, [model.id]);
+  }, [model.id, setModel]);
 
   useEffect(() => {
     if (model.status !== "processing") return;
@@ -212,7 +240,7 @@ export function StudioClient({
 
       {/* Provenance disclaimer banner */}
       <div className="rounded-[14px] border border-line bg-surface-2 p-4 text-xs text-muted">
-        {model.source === "demo" ? t.dash.detail.demoDisclaimer : t.dash.detail.aiDisclaimer}
+        {model.source === "demo" ? t.dash.detail.demoDisclaimer : model.source === "import" ? t.dash.detail.importDisclaimer : t.dash.detail.aiDisclaimer}
       </div>
 
       {/* Processing Job Banner */}
@@ -270,7 +298,8 @@ export function StudioClient({
         <div className="space-y-6 lg:col-span-7">
           {hasFile ? (
             <ModelViewerBox
-              src={`/api/models/${encodeURIComponent(model.id)}/file`}
+              key={model.currentVersionId ?? "original"}
+              src={`/api/models/${encodeURIComponent(model.id)}/file?v=${encodeURIComponent(model.currentVersionId ?? "original")}`}
               alt={model.title}
               provenanceBadge={t.dash.provenance[model.provenance]}
               hint={t.dash.detail.viewerHint}
@@ -322,6 +351,8 @@ export function StudioClient({
             </div>
           )}
 
+          {hasFile && <AssetTools model={model} t={t} onModelChange={setModel} />}
+
           {/* Details Card */}
           <div className="rounded-[16px] border border-line bg-surface p-5">
             <h2 className="font-display text-sm font-semibold text-fg">{t.dash.detail.details}</h2>
@@ -336,6 +367,12 @@ export function StudioClient({
                 <dt className="text-muted">{t.dash.detail.sourceLabel}</dt>
                 <dd className="font-medium text-fg">{model.inputKind ? t.dash.inputKind[model.inputKind] : t.dash.source[model.source]}</dd>
               </div>
+              {engineLabel && (
+                <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
+                  <dt className="text-muted">{t.dash.detail.engineLabel}</dt>
+                  <dd className="font-medium text-fg" data-testid="studio-engine">{engineLabel}</dd>
+                </div>
+              )}
               <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                 <dt className="text-muted">{t.dash.detail.provenanceLabel}</dt>
                 <dd className="font-medium text-fg">{t.dash.provenance[model.provenance]}</dd>
@@ -375,6 +412,19 @@ export function StudioClient({
                 </div>
               )}
             </dl>
+            {events.length > 0 && (
+              <details className="mt-3 text-xs" data-testid="studio-job-history">
+                <summary className="cursor-pointer font-medium text-fg">{t.dash.detail.jobHistory}</summary>
+                <ol className="mt-2 space-y-1 text-muted">
+                  {events.map((e) => (
+                    <li key={e.id} className="flex justify-between gap-3">
+                      <span>{t.dash.jobState[e.state]}</span>
+                      <time dateTime={e.at} className="tabular-nums">{formatDate(e.at, locale)}</time>
+                    </li>
+                  ))}
+                </ol>
+              </details>
+            )}
           </div>
         </div>
 

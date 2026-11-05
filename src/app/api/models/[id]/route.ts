@@ -8,7 +8,7 @@ type Ctx = { params: Promise<{ id: string }> };
 export const GET = withUser<Ctx>(async (_req, user, { params }) => {
   const { id } = await params;
   const m = await store.getModel(user.orgId, id);
-  return m ? apiJson({ model: toDto(m) }) : apiError(404, "not_found", "Model not found.");
+  return m ? apiJson({ model: toDto(m), events: await store.listJobEvents(user.orgId, id) }) : apiError(404, "not_found", "Model not found.");
 });
 
 export const PATCH = withUser<Ctx>(async (req, user, { params }) => {

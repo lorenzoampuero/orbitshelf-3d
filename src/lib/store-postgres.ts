@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { blobStoreFromEnv, type BlobStore } from "@/lib/blob";
 import { maxActiveJobs, paidAttemptCap } from "@/lib/env";
 import { pgClient, type Queryable, type SqlClient, type SqlRow } from "@/lib/sql";
-import { assertSafeId, glbKey, mimeOf, nowIso, orgIdForEmail, sourceKey, type CostEventRow, type ExtraImage, type ModelRow, type OrgRow, type SourcePhoto, type UserRow } from "@/lib/store-shared";
+import { assertSafeId, emptyChecklist, glbKey, mimeOf, nowIso, orgIdForEmail, sourceKey, versionKey, type VersionRow, type CostEventRow, type ExtraImage, type ModelRow, type OrgRow, type SourcePhoto, type UserRow } from "@/lib/store-shared";
 import type { Store } from "@/lib/store-local";
 import type { FailureCode, ImageView, JobEventDto, JobState, LedgerEntryDto, PriceEvidence, UsageDto } from "@/lib/types";
 
@@ -19,6 +19,7 @@ const COLUMNS = {
   provenance: "provenance",
   engineId: "engine_id",
   estimatedCostUsd: "estimated_cost_usd",
+  currentVersionId: "current_version_id",
   inputKind: "input_kind",
   sourceViews: "source_views",
   prompt: "prompt",
@@ -70,6 +71,7 @@ function fromRow(r: SqlRow): ModelRow {
     provenance: r.provenance as ModelRow["provenance"],
     engineId: (r.engine_id as string | null) ?? null,
     estimatedCostUsd: r.estimated_cost_usd == null ? null : Number(r.estimated_cost_usd),
+    currentVersionId: r.current_version_id ? String(r.current_version_id) : null,
     inputKind: (r.input_kind as ModelRow["inputKind"]) ?? null,
     sourceViews: (r.source_views as ImageView[] | null) ?? [],
     prompt: (r.prompt as string | null) ?? null,
@@ -123,6 +125,19 @@ function toColumns(patch: Partial<ModelRow>): { columns: string[]; values: unkno
     values.push(patch.dimensions.widthMm, patch.dimensions.heightMm, patch.dimensions.depthMm);
   }
   return { columns, values };
+}
+
+function versionFromRow(r: SqlRow): VersionRow {
+  return {
+    id: String(r.id),
+    orgId: String(r.org_id),
+    modelId: String(r.model_id),
+    preset: r.preset as VersionRow["preset"],
+    bytes: Number(r.bytes),
+    sha256: String(r.sha256),
+    diagnostics: (typeof r.diagnostics === "string" ? JSON.parse(r.diagnostics) : r.diagnostics) as VersionRow["diagnostics"],
+    createdAt: iso(r.created_at)!,
+  };
 }
 
 const asUuid = (id: string) => (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) ? id : null);
@@ -216,12 +231,12 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
       return r ? fromRow(r) : null;
     },
 
-    async insertDemoModel(orgId, row, glb) {
+    async insertReadyModel(orgId, row, glb, action = "model.created.demo") {
       assertSafeId(row.id);
       await blobs.put(glbKey(orgId, row.id), glb, "model/gltf-binary");
       return sql.transaction(async (tx) => {
         await insertModel(tx, row);
-        await audit(tx, orgId, "model.created.demo", row.id);
+        await audit(tx, orgId, action, row.id);
         return row;
       });
     },
@@ -315,7 +330,7 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
     async readGlb(orgId, modelId) {
       const m = await store.getModel(orgId, modelId);
       if (!m || m.status !== "ready") return null;
-      return blobs.get(glbKey(orgId, modelId));
+      return blobs.get(m.currentVersionId ? versionKey(orgId, modelId, m.currentVersionId) : glbKey(orgId, modelId));
     },
 
     async readSourceImage(orgId, modelId, view: ImageView = "front") {
@@ -329,18 +344,76 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
 
     async deleteModel(orgId, id) {
       assertSafeId(id);
+      let versionIds: string[] = [];
       const m = await sql.transaction(async (tx) => {
         const row = await selectForUpdate(tx, orgId, id);
         if (!row) return null;
+        versionIds = (await tx.query<{ id: string }>("SELECT id FROM public.asset_versions WHERE org_id = $1 AND model_id = $2 AND preset <> 'original'", [orgId, id])).rows.map((r) => String(r.id));
         await tx.query("DELETE FROM public.models WHERE org_id = $1 AND id = $2", [orgId, id]);
         await audit(tx, orgId, "model.deleted", id); // the ledger is intentionally preserved
         return row;
       });
       if (!m) return false;
       await blobs.delete(glbKey(orgId, id));
+      for (const v of versionIds) await blobs.delete(versionKey(orgId, id, v));
       if (m.sourceImageExt) await blobs.delete(sourceKey(orgId, id, m.sourceImageExt));
       for (const e of m.extraImages ?? []) await blobs.delete(sourceKey(orgId, id, e.ext, e.view));
       return true;
+    },
+
+    async listVersions(orgId, modelId) {
+      if (!asUuid(modelId)) return [];
+      return (await sql.query("SELECT * FROM public.asset_versions WHERE org_id = $1 AND model_id = $2 ORDER BY created_at, id", [orgId, modelId])).rows.map(versionFromRow);
+    },
+
+    async addVersion(orgId, version, glb) {
+      assertSafeId(version.id);
+      if (glb) await blobs.put(versionKey(orgId, version.modelId, version.id), glb, "model/gltf-binary");
+      await sql.transaction(async (tx) => {
+        const inserted = await tx.query(
+          `INSERT INTO public.asset_versions (id, org_id, model_id, preset, bytes, sha256, diagnostics, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT DO NOTHING RETURNING id`,
+          [version.id, orgId, version.modelId, version.preset, version.bytes, version.sha256, JSON.stringify(version.diagnostics), version.createdAt],
+        );
+        if (inserted.rows.length > 0) await audit(tx, orgId, "version.created", version.modelId, version.preset);
+      });
+    },
+
+    async readVersionGlb(orgId, modelId, versionId) {
+      if (!asUuid(modelId) || !asUuid(versionId)) return null;
+      const r = (await sql.query("SELECT preset FROM public.asset_versions WHERE org_id = $1 AND model_id = $2 AND id = $3", [orgId, modelId, versionId])).rows[0];
+      if (!r) return null;
+      return blobs.get(r.preset === "original" ? glbKey(orgId, modelId) : versionKey(orgId, modelId, versionId));
+    },
+
+    /** Approval is about one exact file, so changing the file sends the review back to pending. */
+    async activateVersion(orgId, modelId, versionId) {
+      if (!asUuid(modelId) || !asUuid(versionId)) return null;
+      return sql.transaction(async (tx) => {
+        const m = await selectForUpdate(tx, orgId, modelId);
+        const r = (await tx.query("SELECT * FROM public.asset_versions WHERE org_id = $1 AND model_id = $2 AND id = $3", [orgId, modelId, versionId])).rows[0];
+        if (!m || !r) return null;
+        const v = versionFromRow(r);
+        const next = v.preset === "original" ? null : v.id;
+        if ((m.currentVersionId ?? null) === next) return m;
+        await audit(tx, orgId, "version.activated", modelId, v.preset);
+        return applyPatch(tx, orgId, modelId, { currentVersionId: next, fileSize: v.bytes, checksum: v.sha256, reviewState: "pending", checklist: emptyChecklist(), reviewedAt: null });
+      });
+    },
+
+    async deleteVersion(orgId, modelId, versionId) {
+      if (!asUuid(modelId) || !asUuid(versionId)) return "not_found";
+      const result = await sql.transaction(async (tx) => {
+        const m = await selectForUpdate(tx, orgId, modelId);
+        const r = (await tx.query("SELECT preset FROM public.asset_versions WHERE org_id = $1 AND model_id = $2 AND id = $3", [orgId, modelId, versionId])).rows[0];
+        if (!m || !r) return "not_found" as const;
+        if (r.preset === "original" || m.currentVersionId === versionId) return "protected" as const;
+        await tx.query("DELETE FROM public.asset_versions WHERE org_id = $1 AND id = $2", [orgId, versionId]);
+        await audit(tx, orgId, "version.deleted", modelId);
+        return "deleted" as const;
+      });
+      if (result === "deleted") await blobs.delete(versionKey(orgId, modelId, versionId));
+      return result;
     },
 
     async usage(orgId): Promise<UsageDto> {

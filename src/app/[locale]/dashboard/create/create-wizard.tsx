@@ -22,7 +22,7 @@ import {
 } from "@/lib/types";
 import { ModelViewerBox } from "@/components/model-viewer-box";
 
-type Mode = "photos" | "text" | "demo";
+type Mode = "photos" | "text" | "demo" | "import";
 type ApiFailure = {
   model?: { id: string };
   imageCode?: keyof Dictionary["dash"]["imageErrors"];
@@ -54,6 +54,7 @@ export function CreateWizard({
   const [files, setFiles] = useState<Partial<Record<ImageView, File>>>({});
   const [resets, setResets] = useState<Partial<Record<ImageView, number>>>({});
   const [prompt, setPrompt] = useState("");
+  const [glbFile, setGlbFile] = useState<File | null>(null);
   const [confirmPaid, setConfirmPaid] = useState(false);
   const [rightsAffirmed, setRightsAffirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -75,7 +76,7 @@ export function CreateWizard({
 
   // The cost shown always comes from the server, for exactly these options.
   useEffect(() => {
-    if (mode === "demo" || !engineId) return;
+    if (mode === "demo" || mode === "import" || !engineId) return;
     const ctrl = new AbortController();
     fetch("/api/quotes", {
       method: "POST",
@@ -128,10 +129,10 @@ export function CreateWizard({
     if (data.model?.id) setFailedModelId(data.model.id);
   }
 
-  async function send(init: RequestInit) {
+  async function send(init: RequestInit, url = "/api/models") {
     setSubmitting(true);
     try {
-      const res = await fetch("/api/models", { method: "POST", ...init });
+      const res = await fetch(url, { method: "POST", ...init });
       const data = (await res.json()) as ApiFailure;
       if (!res.ok || !data.model) {
         showFailure(data);
@@ -166,6 +167,25 @@ export function CreateWizard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ source: "demo", title: cleanTitle, sku: sku.trim() || null, category, demoAsset }),
       });
+      return;
+    }
+
+    if (mode === "import") {
+      if (!glbFile) {
+        setError(c.errors.glb);
+        return;
+      }
+      if (!rightsAffirmed) {
+        setError(c.errors.rightsImport);
+        return;
+      }
+      const form = new FormData();
+      form.set("title", cleanTitle);
+      form.set("sku", sku.trim());
+      form.set("category", category);
+      form.set("rightsAffirmed", "true");
+      form.set("file", glbFile);
+      await send({ body: form }, "/api/models/import");
       return;
     }
 
@@ -304,9 +324,10 @@ export function CreateWizard({
         {/* 2. Source */}
         <fieldset className="space-y-4">
           <legend className="font-display text-lg font-semibold">{c.sourceTitle}</legend>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {modeCard("photos", c.sourceAi, providerReady ? c.sourceAiText : c.sourceAiUnavailable, "source-sloyd-radio", !providerReady)}
             {modeCard("text", c.sourceText, providerReady ? c.sourceTextText : c.sourceAiUnavailable, "source-text-radio", !providerReady)}
+            {modeCard("import", c.sourceImport, c.sourceImportText, "source-import-radio")}
             {modeCard("demo", c.sourceDemo, c.sourceDemoText, "source-demo-radio")}
           </div>
 
@@ -398,7 +419,31 @@ export function CreateWizard({
             </div>
           )}
 
-          {mode !== "demo" && (
+          {mode === "import" && (
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <label htmlFor="create-glb" className="block text-xs font-medium text-fg">
+                  {c.glbFile} *
+                </label>
+                <input
+                  id="create-glb"
+                  name="file"
+                  type="file"
+                  accept=".glb,model/gltf-binary"
+                  onChange={(e) => setGlbFile(e.target.files?.[0] ?? null)}
+                  data-testid="create-glb-input"
+                  className="block w-full rounded-xl border border-line bg-bg px-2.5 py-2 text-xs text-fg file:mr-2 file:rounded-lg file:border-0 file:bg-accent file:px-2.5 file:py-1 file:text-xs file:font-semibold file:text-bg"
+                />
+                <p className="text-xs text-muted">{c.glbHint}</p>
+              </div>
+              <label className="flex items-start gap-2.5 cursor-pointer text-xs">
+                <input type="checkbox" checked={rightsAffirmed} onChange={(e) => setRightsAffirmed(e.target.checked)} data-testid="confirm-rights-checkbox" className="mt-0.5" />
+                <span>{c.rightsImport}</span>
+              </label>
+            </div>
+          )}
+
+          {(mode === "photos" || mode === "text") && (
             <div className="space-y-4">
               {compatible.length > 1 && (
                 <div>
@@ -491,7 +536,7 @@ export function CreateWizard({
           data-testid="create-submit-btn"
           className="w-full rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-bg disabled:opacity-50"
         >
-          {submitting ? c.submitting : mode === "demo" ? c.submitDemo : c.submitAi}
+          {submitting ? c.submitting : mode === "demo" ? c.submitDemo : mode === "import" ? c.submitImport : c.submitAi}
         </button>
       </form>
 

@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { isLocale, localePath } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { currentUser } from "@/lib/api";
+import { getEngine } from "@/lib/provider/registry";
 import { store, toDto } from "@/lib/store";
 import { buildPageMetadata } from "@/lib/seo";
 import { StudioClient } from "./studio-client";
@@ -39,5 +40,8 @@ export default async function ModelDetailPage({
   const row = await store.getModel(session.orgId, id);
   if (!row) notFound();
 
-  return <StudioClient locale={locale} t={t} initialModel={toDto(row)} />;
+  const events = await store.listJobEvents(session.orgId, id);
+  const engine = row.engineId ? getEngine(row.engineId)?.label ?? row.engineId : null;
+
+  return <StudioClient locale={locale} t={t} initialModel={toDto(row)} initialEvents={events} engineLabel={engine} />;
 }

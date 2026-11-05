@@ -31,7 +31,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  serverExternalPackages: ["sharp", "pg"],
+  serverExternalPackages: ["sharp", "pg", "draco3dgltf", "meshoptimizer", "@gltf-transform/core", "@gltf-transform/functions", "@gltf-transform/extensions"],
   turbopack: {
     root: __dirname,
   },

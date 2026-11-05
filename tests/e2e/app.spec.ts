@@ -451,9 +451,90 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     const id = page.url().split("/").at(-1)!;
     const body = await (await page.request.get(`/api/models/${id}`)).text();
     expect(body).not.toContain("test-fal-key-never-leak");
-    expect(body).not.toContain("queue");
+    expect(body).not.toContain("3999");
     expect(body).toContain('"engineId":"fal-rodin-2.5"');
+    expect((JSON.parse(body).events as { state: string }[]).map((e) => e.state)).toEqual(["reserved", "queued", "running", "processing", "succeeded"]);
+    await expect(page.getByTestId("studio-engine")).toHaveText("Rodin 2.5");
     expect((await (await page.request.get("/api/usage")).json()).usage.debited).toBe(1);
+  });
+
+  test("6c. Import a GLB for free, read its diagnostics, optimize to a new version, compare, use it, and export geometry", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/login");
+    await page.fill("#login-email", "importer@merchant.test");
+    await page.getByTestId("login-submit").click();
+    await page.waitForURL("**/dashboard");
+
+    // Something that is not a GLB is refused, and nothing is created
+    const bad = await page.request.post("/api/models/import", {
+      multipart: { title: "Bad", category: "other", rightsAffirmed: "true", file: { name: "x.glb", mimeType: "model/gltf-binary", buffer: Buffer.from("not a glb") } },
+    });
+    expect(bad.status()).toBe(422);
+    expect((await (await page.request.get("/api/models")).json()).models).toHaveLength(0);
+
+    await page.goto("/dashboard/create");
+    await page.getByTestId("source-import-radio").check();
+    await page.fill("#create-title", "Imported Lamp");
+    await page.getByTestId("create-glb-input").setInputFiles(path.join(process.cwd(), "public", "demo", "lamp.glb"));
+    await page.getByTestId("create-submit-btn").click();
+    await expect(page.getByTestId("create-error-alert")).toBeVisible(); // rights not confirmed yet
+    await page.getByTestId("confirm-rights-checkbox").check();
+    await page.getByTestId("create-submit-btn").click();
+    await page.waitForURL("**/dashboard/models/*");
+
+    // It keeps saying it was imported, and it cost no attempt
+    const id = page.url().split("/").at(-1)!;
+    const created = (await (await page.request.get(`/api/models/${id}`)).json()).model;
+    expect(created.source).toBe("import");
+    expect(created.provenance).toBe("imported");
+    expect((await (await page.request.get("/api/usage")).json()).usage.debited).toBe(0);
+
+    // Diagnostics are measured from the file
+    await expect(page.getByTestId("tools-metrics")).toBeVisible();
+    await expect(page.getByTestId("preset-web-result")).toBeVisible();
+    await expect(page.getByTestId("version-original")).toContainText("In use");
+
+    // Approving, then changing the file, sends the review back to pending
+    await page.getByTestId("optimize-store-btn").click();
+    await expect(page.getByTestId("version-store")).toBeVisible();
+    await page.getByTestId("compare-version-store").click();
+    await expect(page.getByTestId("compare-panel")).toBeVisible();
+    await page.request.post(`/api/models/${id}/review`, {
+      data: { decision: "approve", checklist: { shape: true, surfaces: true, hiddenAngles: true, material: true, labels: true }, note: null },
+    });
+    expect((await (await page.request.get(`/api/models/${id}`)).json()).model.reviewState).toBe("approved");
+    await page.getByTestId("use-version-store").click();
+    await expect(page.getByTestId("version-store")).toContainText("In use");
+    expect((await (await page.request.get(`/api/models/${id}`)).json()).model.reviewState).toBe("pending");
+
+    // The original stays, and it and the version in use cannot be deleted
+    const versions = (await (await page.request.get(`/api/models/${id}/versions`)).json()).versions as { id: string; preset: string; current: boolean }[];
+    expect(versions.map((v) => v.preset)).toEqual(["original", "store"]);
+    for (const v of versions) expect((await page.request.delete(`/api/models/${id}/versions/${v.id}`)).status()).toBe(409);
+
+    // Back to the original
+    await page.getByTestId("use-version-original").click();
+    await expect(page.getByTestId("version-original")).toContainText("In use");
+    await page.getByTestId("delete-version-store").click();
+    await expect(page.getByTestId("version-store")).toHaveCount(0);
+
+    // Exports are real files
+    const stl = await page.request.get(`/api/models/${id}/export?format=stl`);
+    expect(stl.status()).toBe(200);
+    const body = await stl.body();
+    expect(body.length).toBe(84 + body.readUInt32LE(80) * 50);
+    expect((await page.request.get(`/api/models/${id}/export?format=obj`)).status()).toBe(200);
+    expect((await page.request.get(`/api/models/${id}/export?format=exe`)).status()).toBe(422);
+
+    // Another workspace sees none of it
+    await page.request.post("/api/auth/logout");
+    await page.goto("/login");
+    await page.fill("#login-email", "someone-else@merchant.test");
+    await page.getByTestId("login-submit").click();
+    await page.waitForURL("**/dashboard");
+    expect((await page.request.get(`/api/models/${id}/versions`)).status()).toBe(404);
+    expect((await page.request.get(`/api/models/${id}/export?format=stl`)).status()).toBe(404);
+    expect((await page.request.get(`/api/models/${id}/file?version=${versions[0].id}`)).status()).toBe(404);
   });
 
   test("7. Text to 3D: prompt validation, text endpoint, prompt shown in the studio, and a refund when the provider refuses", async ({ page }) => {

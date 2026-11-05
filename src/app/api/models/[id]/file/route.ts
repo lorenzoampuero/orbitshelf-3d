@@ -11,9 +11,11 @@ export const GET = withUser<Ctx>(async (req, user, { params }) => {
   const { id } = await params;
   const model = await store.getModel(user.orgId, id);
   if (!model) return apiError(404, "not_found", "Model not found.");
-  const data = await store.readGlb(user.orgId, id);
+  const search = new URL(req.url).searchParams;
+  const version = search.get("version");
+  const data = version ? await store.readVersionGlb(user.orgId, id, version) : await store.readGlb(user.orgId, id);
   if (!data) return apiError(409, "not_ready", "The model file is not available yet.");
-  const download = new URL(req.url).searchParams.get("download") === "1";
+  const download = search.get("download") === "1";
   const name = safeFilename(model.sku || model.title, "model") + ".glb";
   return new Response(new Uint8Array(data), {
     status: 200,

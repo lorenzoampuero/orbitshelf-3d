@@ -3,8 +3,8 @@ import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { dataDir, maxActiveJobs, paidAttemptCap } from "@/lib/env";
-import { assertSafeId, mimeOf, nowIso, orgIdForEmail, type CostEventRow, type ExtraImage, type LedgerRow, type LocalDb, type ModelRow, type SourcePhoto } from "@/lib/store-shared";
-import type { FailureCode, ImageView, JobEventDto, JobState, LedgerEntryDto, PriceEvidence, UsageDto } from "@/lib/types";
+import { assertSafeId, emptyChecklist, mimeOf, nowIso, orgIdForEmail, versionKey, type CostEventRow, type VersionRow, type LedgerRow, type LocalDb, type ModelRow, type SourcePhoto } from "@/lib/store-shared";
+import type { FailureCode, ImageView, JobEventDto, JobState, PriceEvidence, UsageDto } from "@/lib/types";
 
 /* ───────── persistence primitives ───────── */
 
@@ -23,6 +23,7 @@ const LEGACY_JOB_STATES: Record<string, JobState> = { pending: "queued", success
 function upgradeRows(db: LocalDb): LocalDb {
   db.jobEvents ??= [];
   db.costEvents ??= [];
+  db.versions ??= [];
   for (const m of db.models) {
     if ((m.source as string) === "sloyd") {
       m.source = "ai";
@@ -37,7 +38,7 @@ function upgradeRows(db: LocalDb): LocalDb {
 
 function readDb(): LocalDb {
   ensureDirs();
-  if (!existsSync(dbFile())) return { version: 1, orgs: [], users: [], models: [], ledger: [], audit: [], jobEvents: [], costEvents: [] };
+  if (!existsSync(dbFile())) return { version: 1, orgs: [], users: [], models: [], ledger: [], audit: [], jobEvents: [], costEvents: [], versions: [] };
   let db: LocalDb;
   try {
     db = JSON.parse(readFileSync(dbFile(), "utf8")) as LocalDb;
@@ -78,6 +79,7 @@ function tx<T>(fn: (db: LocalDb) => T | Promise<T>, write = true): Promise<T> {
 }
 
 const fileFor = (orgId: string, modelId: string) => path.join(dataDir(), "files", orgId, `${modelId}.glb`);
+const versionFile = (orgId: string, modelId: string, versionId: string) => path.join(dataDir(), ...versionKey(orgId, modelId, versionId).split("/"));
 const sourceFor = (orgId: string, modelId: string, ext: string, view: ImageView = "front") =>
   path.join(dataDir(), "uploads", orgId, view === "front" ? `${modelId}.${ext}` : `${modelId}.${view}.${ext}`);
 
@@ -140,14 +142,15 @@ export const localStore = {
     return tx((db) => db.models.find((m) => m.orgId === orgId && m.id === id) ?? null, false);
   },
 
-  async insertDemoModel(orgId: string, row: ModelRow, glb: Buffer) {
+  /** A model that is complete from the start: a demo sample or an imported file. */
+  async insertReadyModel(orgId: string, row: ModelRow, glb: Buffer, action = "model.created.demo") {
     assertSafeId(row.id);
     return tx((db) => {
       const dir = path.join(dataDir(), "files", orgId);
       mkdirSync(dir, { recursive: true });
       writeFileSync(fileFor(orgId, row.id), glb);
       db.models.push(row);
-      audit(db, orgId, "model.created.demo", row.id);
+      audit(db, orgId, action, row.id);
       return row;
     });
   },
@@ -253,7 +256,8 @@ export const localStore = {
     return tx((db) => {
       const m = db.models.find((x) => x.orgId === orgId && x.id === modelId);
       if (!m || m.status !== "ready") return null;
-      const f = fileFor(orgId, modelId);
+      const current = m.currentVersionId ? db.versions.find((v) => v.orgId === orgId && v.id === m.currentVersionId) : null;
+      const f = current ? versionFile(orgId, modelId, current.id) : fileFor(orgId, modelId);
       return existsSync(f) ? readFileSync(f) : null;
     }, false);
   },
@@ -278,10 +282,68 @@ export const localStore = {
       if (idx < 0) return false;
       const [m] = db.models.splice(idx, 1);
       rmSync(fileFor(orgId, id), { force: true });
+      for (const v of db.versions.filter((x) => x.orgId === orgId && x.modelId === id)) rmSync(versionFile(orgId, id, v.id), { force: true });
+      db.versions = db.versions.filter((x) => !(x.orgId === orgId && x.modelId === id));
       if (m.sourceImageExt) rmSync(sourceFor(orgId, id, m.sourceImageExt), { force: true });
       for (const e of m.extraImages ?? []) rmSync(sourceFor(orgId, id, e.ext, e.view), { force: true });
       audit(db, orgId, "model.deleted", id); // the ledger is intentionally preserved
       return true;
+    });
+  },
+
+  async listVersions(orgId: string, modelId: string): Promise<VersionRow[]> {
+    return tx((db) => db.versions.filter((v) => v.orgId === orgId && v.modelId === modelId).sort((a, b) => a.createdAt.localeCompare(b.createdAt)), false);
+  },
+
+  /** The original's file already exists, so `glb` is null for it. A model has only one original. */
+  async addVersion(orgId: string, version: VersionRow, glb: Buffer | null): Promise<void> {
+    assertSafeId(version.id);
+    await tx((db) => {
+      if (version.preset === "original" && db.versions.some((v) => v.orgId === orgId && v.modelId === version.modelId && v.preset === "original")) return;
+      if (glb) {
+        const f = versionFile(orgId, version.modelId, version.id);
+        mkdirSync(path.dirname(f), { recursive: true });
+        writeFileSync(f, glb);
+      }
+      db.versions.push(version);
+      audit(db, orgId, "version.created", version.modelId, version.preset);
+    });
+  },
+
+  async readVersionGlb(orgId: string, modelId: string, versionId: string): Promise<Buffer | null> {
+    assertSafeId(modelId);
+    return tx((db) => {
+      const v = db.versions.find((x) => x.orgId === orgId && x.modelId === modelId && x.id === versionId);
+      if (!v) return null;
+      const f = v.preset === "original" ? fileFor(orgId, modelId) : versionFile(orgId, modelId, v.id);
+      return existsSync(f) ? readFileSync(f) : null;
+    }, false);
+  },
+
+  /** Approval is about one exact file, so changing the file sends the review back to pending. */
+  async activateVersion(orgId: string, modelId: string, versionId: string): Promise<ModelRow | null> {
+    return tx((db) => {
+      const m = db.models.find((x) => x.orgId === orgId && x.id === modelId);
+      const v = db.versions.find((x) => x.orgId === orgId && x.modelId === modelId && x.id === versionId);
+      if (!m || !v) return null;
+      const next = v.preset === "original" ? null : v.id;
+      if ((m.currentVersionId ?? null) === next) return m;
+      Object.assign(m, { currentVersionId: next, fileSize: v.bytes, checksum: v.sha256, reviewState: "pending", checklist: emptyChecklist(), reviewedAt: null, updatedAt: nowIso() });
+      audit(db, orgId, "version.activated", modelId, v.preset);
+      return m;
+    });
+  },
+
+  async deleteVersion(orgId: string, modelId: string, versionId: string): Promise<"deleted" | "not_found" | "protected"> {
+    return tx((db) => {
+      const m = db.models.find((x) => x.orgId === orgId && x.id === modelId);
+      const idx = db.versions.findIndex((x) => x.orgId === orgId && x.modelId === modelId && x.id === versionId);
+      if (!m || idx < 0) return "not_found" as const;
+      if (db.versions[idx].preset === "original" || m.currentVersionId === versionId) return "protected" as const;
+      rmSync(versionFile(orgId, modelId, versionId), { force: true });
+      db.versions.splice(idx, 1);
+      audit(db, orgId, "version.deleted", modelId);
+      return "deleted" as const;
     });
   },
 

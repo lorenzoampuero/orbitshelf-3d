@@ -2,17 +2,17 @@ import "server-only";
 import { createHash } from "node:crypto";
 import {
   CHECKLIST_KEYS,
+  type AssetVersionDto,
   providerCreditsEstimate,
   type Checklist,
   type Dimensions,
-  type FailureCode,
   type ImageView,
   type JobEventDto,
-  type JobState,
   type LedgerEntryDto,
+  type MeshDiagnostics,
   type ModelDto,
   type PriceEvidence,
-  type UsageDto,
+  type VersionPreset,
 } from "@/lib/types";
 
 export type ImageExt = "png" | "jpg";
@@ -37,6 +37,8 @@ export type ModelRow = ModelDto & {
   lastPollError: string | null;
 };
 
+export type VersionRow = { id: string; orgId: string; modelId: string; preset: VersionPreset; bytes: number; sha256: string; diagnostics: MeshDiagnostics; createdAt: string };
+
 export type OrgRow = { id: string; name: string; createdAt: string };
 export type UserRow = { id: string; email: string; orgId: string; createdAt: string };
 export type LedgerRow = {
@@ -52,7 +54,7 @@ export type AuditRow = { id: string; orgId: string; action: string; modelId: str
 export type JobEventRow = JobEventDto & { orgId: string; modelId: string };
 /** What a provider job cost us. Separate from the ledger, which tracks what the customer used. */
 export type CostEventRow = { id: string; orgId: string; modelId: string; engineId: string; usd: number; evidence: PriceEvidence; at: string };
-export type LocalDb = { version: 1; orgs: OrgRow[]; users: UserRow[]; models: ModelRow[]; ledger: LedgerRow[]; audit: AuditRow[]; jobEvents: JobEventRow[]; costEvents: CostEventRow[] };
+export type LocalDb = { version: 1; orgs: OrgRow[]; users: UserRow[]; models: ModelRow[]; ledger: LedgerRow[]; audit: AuditRow[]; jobEvents: JobEventRow[]; costEvents: CostEventRow[]; versions: VersionRow[] };
 
 export const emptyChecklist = (): Checklist => Object.fromEntries(CHECKLIST_KEYS.map((k) => [k, false])) as Checklist;
 export const emptyDimensions = (): Dimensions => ({ widthMm: null, heightMm: null, depthMm: null });
@@ -79,6 +81,7 @@ export function toDto(row: ModelRow): ModelDto {
     ...dto,
     engineId: row.engineId ?? null,
     estimatedCostUsd: row.estimatedCostUsd ?? null,
+    currentVersionId: row.currentVersionId ?? null,
     inputKind: row.inputKind ?? (row.source === "ai" ? "image" : null),
     sourceViews: row.sourceViews ?? (row.hasSourceImage ? ["front"] : []),
     prompt: row.prompt ?? null,
@@ -103,5 +106,12 @@ export const assertSafeId = (id: string) => {
 export const glbKey = (orgId: string, modelId: string) => `files/${assertSafeId(orgId)}/${assertSafeId(modelId)}.glb`;
 export const sourceKey = (orgId: string, modelId: string, ext: string, view: ImageView = "front") =>
   `uploads/${assertSafeId(orgId)}/${view === "front" ? `${assertSafeId(modelId)}.${ext}` : `${assertSafeId(modelId)}.${view}.${ext}`}`;
+
+export const versionKey = (orgId: string, modelId: string, versionId: string) => `files/${assertSafeId(orgId)}/${assertSafeId(modelId)}.${assertSafeId(versionId)}.glb`;
+
+export function toVersionDto(v: VersionRow, model: Pick<ModelRow, "currentVersionId">): AssetVersionDto {
+  const current = model.currentVersionId ? model.currentVersionId === v.id : v.preset === "original";
+  return { id: v.id, preset: v.preset, bytes: v.bytes, sha256: v.sha256, diagnostics: v.diagnostics, createdAt: v.createdAt, current };
+}
 
 export const estimateProviderCredits = providerCreditsEstimate;

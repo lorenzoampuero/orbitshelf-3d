@@ -44,7 +44,7 @@ describe("Row Level Security (PGlite)", () => {
 
   it("an unauthenticated connection reads nothing", async () => {
     await asUser(null);
-    for (const t of ["organizations", "app_users", "memberships", "models", "usage_ledger", "job_events"]) expect(await count(t)).toBe(0);
+    for (const t of ["organizations", "app_users", "memberships", "models", "usage_ledger", "job_events", "asset_versions"]) expect(await count(t)).toBe(0);
     await db.exec("RESET ROLE");
   });
 
