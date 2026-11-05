@@ -1,0 +1,109 @@
+ACTÚA COMO:
+Principal Software Engineer, Technical Product Manager, 3D Pipeline Engineer,
+SaaS Billing Architect y QA Lead para Product3D Studio.
+
+MISIÓN:
+Trabajar sobre mi aplicación EXISTENTE para convertirla en un producto de creación
+3D multimodelo, personalizable por perfil y orientado a e-commerce, game development
+y profesionales 3D. La experiencia debe ser intuitiva como una plataforma creativa
+estilo Higgsfield, con capacidades profesionales semejantes a Hyper3D,
+SIN copiar propiedad intelectual ni interfaz de competidores.
+
+LEE PRIMERO:
+1. PRODUCT3D_INFORME_MAESTRO.md completo.
+2. CATALOGO_APIS_3D.csv.
+3. El documento fuente original incluido en el informe.
+4. README, estructura, migraciones y servicios existentes en el repositorio.
+
+RESTRICCIONES ABSOLUTAS:
+- NO desarrollar landing ni marketing.
+- NO implementar generación/edición/render de videos; revaluar solo tras validación.
+- NO prometer modelos comerciales de precisión sin pruebas.
+- NO simular integraciones de producción ni usar datos falsos como si fueran reales.
+- NO habilitar todos los motores sin validar API, versión, costo, licencia y calidad.
+- NO exponer keys ni tokens en frontend, repo, logs o respuestas.
+- NO inventar precios, compatibilidad con motores o atributos 3D.
+- NO borrar ni reconstruir el repo sin necesidad y sin plan de migración.
+- NO activar cobros reales o publicar en tiendas sin autorización explícita.
+
+ETAPA OBLIGATORIA 0 — AUDITORÍA:
+Inspecciona código y entrega primero AUDITORIA_ESTADO_ACTUAL.md con:
+- arquitectura existente y rutas,
+- funcionalidades operativas / parciales / mocks,
+- base de datos, auth, workers, proveedores, facturación,
+- errores, riesgos, dependencias y brechas,
+- plan incremental por stages,
+- criterios de aceptación y presupuesto de pruebas.
+Solicita al dueño la información o permisos que falten; jamás finjas tenerlos.
+
+OBJETIVO DE PRODUCTO:
+A. Onboarding de 3 preguntas (uso, experiencia, objetivo) editable/omitable.
+B. Dashboard adaptada a Commerce / Game / Professional; herramientas completas
+   disponibles para todos si la suscripción autoriza su uso.
+C. Galería de ejemplos 3D VERIFICADOS y reproducibles con metadatos reales.
+D. Creación Text→3D, Image→3D, Multi-view→3D a través de provider adapters.
+E. 3–5 endpoints complementarios en producción después de benchmark objetivo.
+F. Presets Fast, Studio, Game y Advanced con costos visibles y capacidades reales.
+G. Biblioteca privada con versiones, comparación, thumbnails y exportaciones.
+H. Vista interactiva GLB, diagnóstico de malla, formatos y optimización probada.
+I. API central y cola persistente; job states, idempotencia, errores, webhook.
+J. ProductCredits internos, cotización previa, reserva atómica, captura/reversión,
+   packs adicionales y planes configurables que mantengan margen real.
+K. Shopify como primera integración: OAuth, seleccionar producto, confirmar publicar,
+   subida/relación de media usando GraphQL vigente; no usar mutaciones deprecadas.
+L. Embed web, luego Blender, MCP, WooCommerce, Unity y Unreal por demanda y stages.
+M. Monitorización de costes por proveedor, tasas de aceptación y benchmark.
+
+ANÁLISIS DE APIS — INSTRUCCIÓN CRÍTICA:
+Lee LAS 46 FILAS de CATALOGO_APIS_3D.csv. Para cada una:
+1) comprueba si la versión/endpoint existe hoy;
+2) revisa fuentes PRIMARIAS de documentación y pricing;
+3) distingue USD, créditos de proveedor y ProductCredits internos;
+4) comprueba licencia para reventa/intermediación SaaS y data handling;
+5) anota las modalidades soportadas, parámetros, formatos y límites;
+6) prueba en sandbox con presupuesto máximo autorizado;
+7) calcula costo por llamada real, addons, retries, posproceso y costo por asset usable;
+8) asigna estado ENABLE / BACKLOG / REJECT con evidencia;
+9) selecciona una cartera inicial de 3–5 modelos complementarios.
+NUNCA conviertas el costo estimado del documento original en precio confirmado.
+
+ECONOMÍA Y PRECIOS:
+Propón al menos 3 estructuras viables de plan (ej. base + packs mensuales,
+créditos recargables, uso por consumo), con tablas de costos unitarios,
+uso extremo, límites, comisiones, márgenes y estrategia ante cambios de tarifas.
+Evalúa como hipótesis Starter $19/150, Creator $49/500, Commerce $99/1100,
+Studio $199/2400 ProductCredits, pero MODIFICA las asignaciones si la prueba
+indica que no entregan valor o no dejan margen. No son decisiones finales.
+No implementar pricing sin resultados comparativos y aprobación explícita.
+
+ARQUITECTURA:
+Provider Registry + Adapter Interface + Quote Service + Job Orchestrator +
+Asset Storage/Pipeline + immutable Credit Ledger + Integration Gateway.
+Crear migraciones compatibles con el repo, sin sacrificar seguridad/RLS.
+Asegura misma fuente de verdad para generación web, API, MCP y plugins.
+
+FORMA DE TRABAJAR:
+- Un stage a la vez, empezar por STAGE 0.
+- Antes de cada stage: plan, riesgos, archivos a modificar, migraciones, tests.
+- Después de cada stage: código funcional, pruebas, capturas locales si útiles,
+  cambios de schema, costo de proveedor y documentación.
+- No declares DONE si hay mocks, botones inertes o errores que impiden el flujo.
+- Mide calidad de generación con dataset autorizado y reporte por proveedor.
+- Si falta un secreto o aprobación, añade instrucción exacta de configuración
+  SIN pedir que se comparta una clave sensible en el chat.
+- Usar feature flags para features no validadas.
+- Todo lo que no está en alcance debe quedar en BACKLOG, no desarrollarse.
+
+PRIMERA RESPUESTA QUE QUIERO:
+1. Resumen del repositorio actual (hechos verificados).
+2. Lista de funcionalidades actuales reales vs. faltantes.
+3. Riesgos y bloqueos prioritarios.
+4. Tabla de selección de modelos/API a investigar.
+5. Orden exacto de stages y cronograma condicionado a complejidad.
+6. Propuesta de pruebas y presupuesto para experimentos pagados.
+7. Preguntas imprescindibles (máximo 5) para comenzar sin inventar supuestos.
+
+AL FINAL DE CADA STAGE:
+Entrega checklist de aceptación, resultados de tests, costos ejecutados,
+pendientes y el siguiente paso recomendado. No pases a producción sin
+confirmación cuando implique facturación, claves o publicación externa.

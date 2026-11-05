@@ -1,0 +1,5 @@
+﻿plan,precio_usd_mes,productcredits_mes,max_costo_variable_por_credito_usd,max_presupuesto_variable_usd,escenario_uso_pct,proveedor_tasa_comision_pct,storage_fijo_mes_usd,soporte_variable_mes_usd,ingreso_neto_estimado,costo_variable_estimado,margen_bruto_pct,margen_contribucion_pct,nota
+Starter,19,150,0.02 (solo hipótesis),3.0,25/50/75/100,,,,,,,,Hipótesis para stress test; reemplazar con costos y datos reales
+Creator,49,500,0.02 (solo hipótesis),10.0,25/50/75/100,,,,,,,,Hipótesis para stress test; reemplazar con costos y datos reales
+Commerce,99,1100,0.02 (solo hipótesis),22.0,25/50/75/100,,,,,,,,Hipótesis para stress test; reemplazar con costos y datos reales
+Studio/API,199,2400,0.02 (solo hipótesis),48.0,25/50/75/100,,,,,,,,Hipótesis para stress test; reemplazar con costos y datos reales

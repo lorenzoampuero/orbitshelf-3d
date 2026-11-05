@@ -1,0 +1,22 @@
+PRODUCT3D STUDIO — PAQUETE DE ESPECIFICACIÓN TÉCNICA
+Versión 1.0 · Noviembre 2026
+
+ARCHIVOS
+1. PRODUCT3D_INFORME_MAESTRO.pdf — informe en 22 páginas, lectura y revisión.
+2. PRODUCT3D_INFORME_MAESTRO.docx — editable.
+3. PRODUCT3D_INFORME_MAESTRO.md — especificación técnica lista para compartir con un coder/agente.
+4. PROMPT_MAESTRO_CODER.txt — prompt central listo para copiar.
+5. CATALOGO_APIS_3D.csv — 46 entradas de modelos/proveedores; confirma fuentes y etiquetas de verificación.
+6. PLANTILLA_COSTOS_MODELOS.csv — hoja de entrada para comprobar tarifas reales y elegir motores.
+7. PLANTILLA_PLANES_MARGEN.csv — hipótesis de planes; requiere cálculo con datos reales.
+
+ORDEN SUGERIDO
+A. Entregar el informe y los CSV al coder.
+B. Copiar el PROMPT_MAESTRO_CODER.txt al agente; indicarle trabajar sobre el repo actual.
+C. Comenzar con Stage 0 (auditoría); no implementar funciones caras hasta validar proveedor, licencia y costos.
+D. Estudiar Stage 9 del informe: catálogo de candidatos separado en página propia.
+
+IMPORTANTE
+No incluye diseño de landing, marketing ni funcionalidad de creación de videos.
+Precios y algunas versiones del Google Doc original no están verificados; el coder debe contrastarlos.
+La selección final de endpoints y los márgenes requieren pruebas, factura del proveedor y datos de uso.

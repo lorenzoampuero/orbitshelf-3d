@@ -1,0 +1,47 @@
+familia,modelo,endpoint,decision_documental,motivo,probado_con_dinero,licencia_aprobada
+Hyper3D Rodin,Rodin Gen-1.5,Hyper3D API / fal.ai,DESCARTADO,Superado por Rodin 2.5; precio sin verificar.,NO,PENDIENTE
+Hyper3D Rodin,Rodin Gen-2,fal-ai/hyper3d/rodin/v2,MAS_ADELANTE,Superado por 2.5 al mismo precio publicado.,NO,PENDIENTE
+Hyper3D Rodin,Rodin Gen-2.5 Fast,fal-ai/hyper3d/rodin/v2.5/fast,CANDIDATO,Opcion economica de imagen. Precio tomado del informe; verificar en ficha antes de habilitar.,NO,PENDIENTE
+Hyper3D Rodin,Rodin Gen-2.5 Standard,fal-ai/hyper3d/rodin/v2.5,CANDIDATO,"Alta fidelidad. Verificado 2026-11-05: US$0.40, HighPack +0.80, hasta 5 imagenes; exporta glb/usdz/fbx/obj/stl. Texto solo no documentado en fal.",NO,PENDIENTE
+Tripo,TripoSR,Replicate / fal.ai alternativo,DESCARTADO,Investigacion; superado.,NO,PENDIENTE
+Tripo,Tripo v1.4 / v2.0,Tripo OpenAPI,DESCARTADO,Version antigua.,NO,PENDIENTE
+Tripo,Tripo v2.5,Tripo OpenAPI / fal.ai,MAS_ADELANTE,Superado por H3.1 salvo que el precio directo lo justifique.,NO,PENDIENTE
+Tripo,Tripo v3.0 Ultra,Tripo API,MAS_ADELANTE,Sin documentacion verificada.,NO,PENDIENTE
+Tripo,Tripo H3.1,tripo3d/h3.1/*,CANDIDATO,"Equilibrado. Verificado 2026-11-05: US$0.20/0.30/0.40, geometria detallada +0.20, quads +0.05.",NO,PENDIENTE
+Tripo,Tripo P1/P1.0,Tripo OpenAPI,MAS_ADELANTE,Posible preset de juego por low-poly; revisar cuando exista perfil de juego con clientes.,NO,PENDIENTE
+Hunyuan3D,Hunyuan3D 1.0,Replicate/Hugging Face,DESCARTADO,Version antigua.,NO,PENDIENTE
+Hunyuan3D,Hunyuan3D 2.0,Replicate / open weights,DESCARTADO,Version antigua; licencia con exclusion territorial.,NO,PENDIENTE
+Hunyuan3D,Hunyuan3D 2.1,Replicate / open weights,DESCARTADO,"Version antigua; licencia excluye UE, Reino Unido y Corea del Sur (texto visto en espejo de terceros).",NO,PENDIENTE
+Hunyuan3D,Hunyuan3D 2.5,Tencent / fal.ai,DESCARTADO,Superado por 3.1.,NO,PENDIENTE
+Hunyuan3D,Hunyuan3D v3.1 Rapid,fal-ai/hunyuan-3d/v3.1/rapid/*,CANDIDATO,Equilibrado. Precio tomado del informe; verificar. Revisar licencia de la version 3.1.,NO,PENDIENTE
+Hunyuan3D,Hunyuan3D v3.1 Pro,fal-ai/hunyuan-3d/v3.1/pro/*,CANDIDATO,"Alta fidelidad y multivista. Verificado 2026-11-05: US$0.375, PBR +0.15, multivista +0.15, 8 vistas etiquetadas. Revisar licencia de la version 3.1.",NO,PENDIENTE
+TRELLIS,TRELLIS 1,fal-ai/trellis,CANDIDATO,Vista previa muy barata. Precio tomado del informe; verificar.,NO,PENDIENTE
+TRELLIS,TRELLIS.2,fal-ai/trellis-2,CANDIDATO,Solo imagen. Verificado 2026-11-05: US$0.25/0.30/0.35 segun resolucion.,NO,PENDIENTE
+TRELLIS,TRELLIS.2 Retexture,fal-ai/trellis-2/retexture,MAS_ADELANTE,Posproceso; precio sin verificar.,NO,PENDIENTE
+Meshy,Meshy-4,Meshy API,DESCARTADO,Version antigua.,NO,PENDIENTE
+Meshy,Meshy-5,Meshy API,DESCARTADO,Retirado segun la documentacion citada en el informe.,NO,PENDIENTE
+Meshy,Meshy-6,Meshy API / fal-ai/meshy/v6-preview/image-to-3d,MAS_ADELANTE,Superado por Meshy-7.,NO,PENDIENTE
+Meshy,Meshy-7,Meshy API / fal.ai,CANDIDATO,Referencia de mercado. Tarifa en creditos Meshy; el valor en USD de la API no esta publicado en la pagina revisada.,NO,PENDIENTE
+Meshy,Meshy-7.1,Meshy API,MAS_ADELANTE,Revisar disponibilidad y precio en USD.,NO,PENDIENTE
+Meshy,Meshy T2 Smart Topology,Meshy API,MAS_ADELANTE,Posproceso: remesh a 5 creditos Meshy.,NO,PENDIENTE
+Stability AI,Stable Fast 3D,Stability AI API,MAS_ADELANTE,Tarifa en creditos Stability; sin conversion a USD verificada.,NO,PENDIENTE
+Stability AI,SPAR3D,Stability AI API,MAS_ADELANTE,Tarifa en creditos Stability; sin conversion a USD verificada.,NO,PENDIENTE
+Stability AI,SV3D / Stable Zero123,Stability AI / Replicate,DESCARTADO,"Genera vistas, no un activo final.",NO,PENDIENTE
+Hi3D,Hi3D v2.1 / legacy,hitem3d/hi3d/image-to-3d,DESCARTADO,Version antigua.,NO,PENDIENTE
+Hi3D,Hi3D v3.0,hitem3d/hi3d/v3.0/image-to-3d,MAS_ADELANTE,Precio dinamico; requiere cotizar configuracion.,NO,PENDIENTE
+CSM,CSM Cube 1.5 / 2.0,CSM API,MAS_ADELANTE,Precio sin verificar.,NO,PENDIENTE
+CraftsMan,CraftsMan 1.5,open source/hosting propio,DESCARTADO,Requiere hospedar GPU propia.,NO,PENDIENTE
+Sloyd,Sloyd AI v3,Sloyd API,CANDIDATO,Unico motor ya integrado. Verificado 2026-11-05: 20/30/25 creditos con US$1 = 75 creditos; compra minima US$12.,NO,PENDIENTE
+Luma,Luma Genie 1.0,Web / API socios no confirmada,DESCARTADO,Sin API publica comprobada.,NO,PENDIENTE
+Pixal,Pixal3D,fal.ai (pendiente localizar),DESCARTADO,Endpoint no localizado.,NO,PENDIENTE
+Meta,SAM 3 3D Objects,fal-ai/sam-3/3d-objects,MAS_ADELANTE,"Segmentacion, no generacion completa.",NO,PENDIENTE
+InstantMesh,InstantMesh,Replicate/open source,DESCARTADO,Investigacion.,NO,PENDIENTE
+LGM,Large Gaussian Model,Replicate/open source,DESCARTADO,"Gaussian splatting, no malla GLB utilizable.",NO,PENDIENTE
+Wonder3D,Wonder3D,Replicate/open source,DESCARTADO,Investigacion.,NO,PENDIENTE
+Unique3D,Unique3D,Open source/Replicate,DESCARTADO,Investigacion.,NO,PENDIENTE
+MVDream,MVDream,Replicate / abierto,DESCARTADO,"Genera vistas, no un activo final.",NO,PENDIENTE
+ImageDream,ImageDream,Replicate / abierto,DESCARTADO,"Genera vistas, no un activo final.",NO,PENDIENTE
+OpenAI,Shap-E,open source/Replicate,DESCARTADO,Calidad desactualizada.,NO,PENDIENTE
+OpenAI,Point-E,open source,DESCARTADO,Calidad desactualizada.,NO,PENDIENTE
+Google,Gemini 1.5 Flash / Pro,Gemini API / Vertex legacy,DESCARTADO,No genera mallas.,NO,PENDIENTE
+Google,Gemini 2.5 Flash / Pro,Gemini API / Vertex,DESCARTADO,No genera mallas.,NO,PENDIENTE
