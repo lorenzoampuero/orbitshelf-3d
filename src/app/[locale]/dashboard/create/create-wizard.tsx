@@ -518,7 +518,7 @@ export function CreateWizard({
               <div className="rounded-xl border border-line bg-surface-2 p-4 space-y-2 text-xs">
                 <div className="font-semibold text-fg">{c.costTitle}</div>
                 <p className="text-muted leading-relaxed" data-testid="create-cost-text">
-                  {quote && quote.engineId === engineId ? c.costText.replace("{engine}", quote.engineLabel).replace("{usd}", quote.usd.toFixed(2)) : c.costLoading}
+                  {quote && quote.engineId === engineId ? (quote.unit === "credits" ? c.costTextCredits.replace("{n}", String(quote.charge)) : c.costText).replace("{engine}", quote.engineLabel).replace("{usd}", quote.usd.toFixed(2)) : c.costLoading}
                 </p>
                 <div className="font-medium text-accent">{c.attemptsLeft.replace("{n}", String(attemptsLeft))}</div>
               </div>

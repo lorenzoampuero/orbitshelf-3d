@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { dataDir, maxActiveJobs, paidAttemptCap } from "@/lib/env";
-import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type EmbedRow, type ProjectRow, mimeOf, nowIso, orgIdForEmail, versionKey, type CostEventRow, type VersionRow, type LedgerRow, type LocalDb, type ModelRow, type SourcePhoto } from "@/lib/store-shared";
+import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type EmbedRow, type ProjectRow, type IntegrationRow, type PublicationRow, mimeOf, nowIso, orgIdForEmail, versionKey, type CostEventRow, type VersionRow, type LedgerRow, type LocalDb, type ModelRow, type SourcePhoto } from "@/lib/store-shared";
 import type { UserProfile, FailureCode, ImageView, JobEventDto, JobState, PriceEvidence, UsageDto } from "@/lib/types";
 
 /* ───────── persistence primitives ───────── */
@@ -26,6 +26,8 @@ function upgradeRows(db: LocalDb): LocalDb {
   db.versions ??= [];
   db.projects ??= [];
   db.embeds ??= [];
+  db.integrations ??= [];
+  db.publications ??= [];
   for (const m of db.models) {
     if ((m.source as string) === "sloyd") {
       m.source = "ai";
@@ -40,7 +42,7 @@ function upgradeRows(db: LocalDb): LocalDb {
 
 function readDb(): LocalDb {
   ensureDirs();
-  if (!existsSync(dbFile())) return { version: 1, orgs: [], users: [], models: [], ledger: [], audit: [], jobEvents: [], costEvents: [], versions: [], projects: [], embeds: [] };
+  if (!existsSync(dbFile())) return { version: 1, orgs: [], users: [], models: [], ledger: [], audit: [], jobEvents: [], costEvents: [], versions: [], projects: [], embeds: [], integrations: [], publications: [] };
   let db: LocalDb;
   try {
     db = JSON.parse(readFileSync(dbFile(), "utf8")) as LocalDb;
@@ -176,7 +178,7 @@ export const localStore = {
    * Atomically: idempotency lookup → concurrency cap → balance check → ledger debit → model row insert.
    * The provider call happens afterwards, outside the lock.
    */
-  async reserveProviderJob(orgId: string, row: ModelRow, photos: SourcePhoto[]) {
+  async reserveProviderJob(orgId: string, row: ModelRow, photos: SourcePhoto[], charge = 1) {
     assertSafeId(row.id);
     return tx((db) => {
       if (row.idempotencyKey) {
@@ -184,14 +186,14 @@ export const localStore = {
         if (dup) return { ok: true as const, duplicate: true as const, model: dup };
       }
       if (activeJobsOf(db, orgId) >= maxActiveJobs()) return { ok: false as const, reason: "too_many_active" as const };
-      if (balanceOf(db, orgId) < 1) return { ok: false as const, reason: "insufficient" as const };
-      pushLedger(db, { orgId, idempotencyKey: `debit:${row.id}`, delta: -1, reason: "job_debit", modelId: row.id });
+      if (balanceOf(db, orgId) < charge) return { ok: false as const, reason: "insufficient" as const };
+      pushLedger(db, { orgId, idempotencyKey: `debit:${row.id}`, delta: -charge, reason: "job_debit", modelId: row.id });
       if (photos.length > 0) {
         const dir = path.join(dataDir(), "uploads", orgId);
         mkdirSync(dir, { recursive: true });
         for (const p of photos) writeFileSync(sourceFor(orgId, row.id, p.ext, p.view), p.buffer);
       }
-      db.models.push({ ...row, attemptsDebited: 1 });
+      db.models.push({ ...row, attemptsDebited: charge });
       jobEvent(db, orgId, row.id, "reserved");
       audit(db, orgId, "job.reserved", row.id);
       return { ok: true as const, duplicate: false as const, model: db.models[db.models.length - 1] };
@@ -215,9 +217,9 @@ export const localStore = {
       if (!m) return false;
       const debit = db.ledger.find((l) => l.orgId === orgId && l.idempotencyKey === `debit:${modelId}`);
       if (!debit) return false;
-      const { created } = pushLedger(db, { orgId, idempotencyKey: `refund:${modelId}`, delta: 1, reason: "job_refund", modelId });
+      const { created } = pushLedger(db, { orgId, idempotencyKey: `refund:${modelId}`, delta: -debit.delta, reason: "job_refund", modelId });
       if (created) {
-        m.attemptsRefunded += 1;
+        m.attemptsRefunded += -debit.delta;
         m.updatedAt = nowIso();
         audit(db, orgId, "job.refunded", modelId, why);
       }
@@ -238,9 +240,10 @@ export const localStore = {
       m.failureCode = input.failureCode;
       m.nextPollAt = null;
       m.updatedAt = nowIso();
-      if (input.refund && db.ledger.some((l) => l.orgId === orgId && l.idempotencyKey === `debit:${modelId}`)) {
-        const { created } = pushLedger(db, { orgId, idempotencyKey: `refund:${modelId}`, delta: 1, reason: "job_refund", modelId });
-        if (created) m.attemptsRefunded += 1;
+      const debit = input.refund ? db.ledger.find((l) => l.orgId === orgId && l.idempotencyKey === `debit:${modelId}`) : null;
+      if (debit) {
+        const { created } = pushLedger(db, { orgId, idempotencyKey: `refund:${modelId}`, delta: -debit.delta, reason: "job_refund", modelId });
+        if (created) m.attemptsRefunded += -debit.delta;
       }
       audit(db, orgId, "job.failed", modelId, input.failureCode);
       return m;
@@ -256,6 +259,7 @@ export const localStore = {
       writeFileSync(fileFor(orgId, modelId), glb);
       m.status = "ready";
       m.jobState = "succeeded";
+      if (db.ledger.some((l) => l.orgId === orgId && l.idempotencyKey === `debit:${modelId}`)) pushLedger(db, { orgId, idempotencyKey: `capture:${modelId}`, delta: 0, reason: "job_capture", modelId });
       jobEvent(db, orgId, modelId, "succeeded");
       m.error = null;
       m.failureCode = null;
@@ -423,6 +427,68 @@ export const localStore = {
     }, false);
   },
 
+  /** Grants, corrections and expiry. Applied once per key, and it can never take the balance below zero. */
+  async adjustBalance(orgId: string, delta: number, reason: "plan_grant" | "adjustment" | "expiry", key: string): Promise<"applied" | "duplicate" | "insufficient"> {
+    return tx((db) => {
+      if (db.ledger.some((l) => l.orgId === orgId && l.idempotencyKey === `adjust:${key}`)) return "duplicate" as const;
+      if (balanceOf(db, orgId) + delta < 0) return "insufficient" as const;
+      pushLedger(db, { orgId, idempotencyKey: `adjust:${key}`, delta, reason, modelId: null });
+      audit(db, orgId, "ledger.adjusted", null, reason);
+      return "applied" as const;
+    });
+  },
+
+  async getIntegration(orgId: string): Promise<IntegrationRow | null> {
+    return tx((db) => db.integrations.find((i) => i.orgId === orgId) ?? null, false);
+  },
+
+  async saveIntegration(row: IntegrationRow): Promise<void> {
+    await tx((db) => {
+      db.integrations = db.integrations.filter((i) => i.orgId !== row.orgId);
+      db.integrations.push(row);
+      audit(db, row.orgId, "integration.saved", null, row.shop);
+    });
+  },
+
+  async revokeIntegration(orgId: string): Promise<void> {
+    await tx((db) => {
+      const i = db.integrations.find((x) => x.orgId === orgId);
+      if (i) {
+        i.revokedAt ??= nowIso();
+        audit(db, orgId, "integration.revoked", null, i.shop);
+      }
+    });
+  },
+
+  async revokeIntegrationsForShop(shop: string): Promise<void> {
+    await tx((db) => {
+      for (const i of db.integrations) if (i.shop === shop) i.revokedAt ??= nowIso();
+    });
+  },
+
+  async createPublication(row: PublicationRow): Promise<void> {
+    await tx((db) => {
+      db.publications.push(row);
+      audit(db, row.orgId, "publication.created", row.modelId, row.productId);
+    });
+  },
+
+  async updatePublication(row: PublicationRow): Promise<void> {
+    await tx((db) => {
+      const idx = db.publications.findIndex((p) => p.orgId === row.orgId && p.id === row.id);
+      if (idx >= 0) db.publications[idx] = row;
+      audit(db, row.orgId, `publication.${row.state}`, row.modelId, row.productId);
+    });
+  },
+
+  async getPublication(orgId: string, id: string): Promise<PublicationRow | null> {
+    return tx((db) => db.publications.find((p) => p.orgId === orgId && p.id === id) ?? null, false);
+  },
+
+  async listPublications(orgId: string, modelId: string): Promise<PublicationRow[]> {
+    return tx((db) => db.publications.filter((p) => p.orgId === orgId && p.modelId === modelId).sort((a, b) => b.createdAt.localeCompare(a.createdAt)), false);
+  },
+
   async listVersions(orgId: string, modelId: string): Promise<VersionRow[]> {
     return tx((db) => db.versions.filter((v) => v.orgId === orgId && v.modelId === modelId).sort((a, b) => a.createdAt.localeCompare(b.createdAt)), false);
   },
@@ -482,17 +548,18 @@ export const localStore = {
   async usage(orgId: string): Promise<UsageDto> {
     return tx((db) => {
       const rows = db.ledger.filter((l) => l.orgId === orgId);
-      const granted = rows.filter((l) => l.reason === "local_cap_grant").reduce((n, l) => n + l.delta, 0);
+      const granted = rows.filter((l) => l.reason === "local_cap_grant" || l.reason === "plan_grant").reduce((n, l) => n + l.delta, 0);
       const debited = -rows.filter((l) => l.reason === "job_debit").reduce((n, l) => n + l.delta, 0);
       const refunded = rows.filter((l) => l.reason === "job_refund").reduce((n, l) => n + l.delta, 0);
       return {
-        balance: granted - debited + refunded,
+        balance: rows.reduce((n, l) => n + l.delta, 0),
         granted,
         debited,
         refunded,
         activeJobs: activeJobsOf(db, orgId),
         maxActiveJobs: maxActiveJobs(),
         ledger: rows
+          .filter((l) => l.delta !== 0)
           .map((l) => ({ id: l.id, delta: l.delta, reason: l.reason, modelId: l.modelId, createdAt: l.createdAt }))
           .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
           .slice(0, 200),

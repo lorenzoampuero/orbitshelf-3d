@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -23,6 +24,7 @@ function safePrompt(body: string): string | undefined {
   }
 }
 
+const shopifyState = { uploads: 0, statusChecks: 0, attached: [] as string[] };
 const jobs = new Map<string, JobMeta>();
 let nextCreateStatus: number | null = null;
 let nextJobOutcome: "success" | "error" = "success";
@@ -96,6 +98,66 @@ const server = createServer(async (req, res) => {
       return send(200, { model_mesh: { url: `http://127.0.0.1:${PORT}/results/${job.id}.glb` }, textures: [], seed: 1 });
     }
     return send(404, { detail: "Not found" });
+  }
+
+  // Shopify: OAuth, the Admin GraphQL calls this app makes, and the staged upload target.
+  const shopifyMatch = url.pathname.match(/^\/shopify\/([^/]+\.myshopify\.com)(\/.*)$/);
+  if (shopifyMatch) {
+    const [, shop, rest] = shopifyMatch;
+    const send = (status: number, body: unknown) => {
+      res.writeHead(status, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(body));
+    };
+    const chunks: Buffer[] = [];
+    for await (const c of req) chunks.push(c as Buffer);
+    const raw = Buffer.concat(chunks);
+    if (rest === "/admin/oauth/authorize") {
+      // Stands in for the merchant approving: signs the redirect exactly as Shopify documents it.
+      const params = new URLSearchParams({ code: "test-oauth-code", shop, state: url.searchParams.get("state") ?? "", timestamp: "1800000000" });
+      const message = [...params.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join("&");
+      params.set("hmac", createHmac("sha256", "test-shopify-secret-never-leak").update(message).digest("hex"));
+      res.writeHead(302, { Location: `${url.searchParams.get("redirect_uri")}?${params}` });
+      res.end();
+      return;
+    }
+    if (rest === "/admin/oauth/access_token") {
+      const form = new URLSearchParams(raw.toString("utf8"));
+      if (form.get("client_secret") !== "test-shopify-secret-never-leak" || form.get("code") !== "test-oauth-code" || form.get("expiring") !== "1") return send(400, { error: "bad" });
+      return send(200, { access_token: "test-shopify-token-never-leak", refresh_token: "test-refresh", expires_in: 3600, scope: "read_products,write_products,write_files" });
+    }
+    if (rest === "/upload") {
+      shopifyState.uploads += 1;
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+    if (rest.endsWith("/graphql.json")) {
+      if (req.headers["x-shopify-access-token"] !== "test-shopify-token-never-leak") return send(401, { errors: "unauthorized" });
+      const { query, variables } = JSON.parse(raw.toString("utf8")) as { query: string; variables: Record<string, unknown> };
+      if (query.includes("productCreateMedia") || query.includes("productSet")) return send(200, { errors: [{ message: "Must not use replacing or deprecated mutations" }] });
+      if (query.includes("products(")) return send(200, { data: { products: { nodes: [{ id: "gid://shopify/Product/111", title: "Oak Chair", status: "ACTIVE", featuredMedia: null }, { id: "gid://shopify/Product/222", title: "Grey Hoodie", status: "DRAFT", featuredMedia: null }] } } });
+      if (query.includes("stagedUploadsCreate")) {
+        const input = (variables.input as { resource: string; mimeType: string; fileSize: string }[])[0];
+        if (input.resource !== "MODEL_3D" || !input.fileSize || input.mimeType !== "model/gltf-binary") return send(200, { data: { stagedUploadsCreate: { stagedTargets: [], userErrors: [{ message: "bad input" }] } } });
+        return send(200, { data: { stagedUploadsCreate: { stagedTargets: [{ url: `http://127.0.0.1:${PORT}/shopify/${shop}/upload`, resourceUrl: "https://staged.test/x.glb", parameters: [{ name: "key", value: "x" }] }], userErrors: [] } } });
+      }
+      if (query.includes("fileCreate")) return send(200, { data: { fileCreate: { files: [{ id: "gid://shopify/Model3d/999" }], userErrors: [] } } });
+      if (query.includes("fileStatus")) {
+        shopifyState.statusChecks += 1;
+        return send(200, { data: { node: { fileStatus: shopifyState.statusChecks < 2 ? "PROCESSING" : "READY", fileErrors: [] } } });
+      }
+      if (query.includes("fileUpdate")) {
+        shopifyState.attached.push(((variables.files as { referencesToAdd: string[] }[])[0].referencesToAdd ?? [])[0]);
+        return send(200, { data: { fileUpdate: { files: [{ id: "gid://shopify/Model3d/999" }], userErrors: [] } } });
+      }
+      return send(200, { errors: [{ message: "Unexpected query" }] });
+    }
+    return send(404, {});
+  }
+  if (req.method === "GET" && url.pathname === "/__shopify") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(shopifyState));
+    return;
   }
 
   if (req.method === "POST" && CREATE_ENDPOINTS.has(url.pathname)) {

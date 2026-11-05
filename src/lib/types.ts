@@ -79,7 +79,9 @@ export type QuoteDto = {
   /** Estimated provider cost in USD. Internal cost, not what a customer pays. */
   usd: number;
   lines: { code: string; usd: number }[];
-  attempts: number;
+  /** What this job takes from the balance, in `unit`. */
+  charge: number;
+  unit: "attempts" | "credits";
   evidence: PriceEvidence;
   priceVerifiedAt: string;
   expiresAt: string;
@@ -115,6 +117,9 @@ export type AssetVersionDto = { id: string; preset: VersionPreset; bytes: number
 
 export type ProjectDto = { id: string; name: string; createdAt: string };
 export type EmbedDto = { id: string; token: string; modelId: string; allowedDomains: string[]; createdAt: string; active: boolean };
+
+export type PublicationState = "processing" | "published" | "failed";
+export type PublicationDto = { id: string; modelId: string; shop: string; productId: string; productTitle: string; state: PublicationState; error: string | null; createdAt: string };
 
 export type JobEventDto = { id: string; state: JobState; detail: string | null; at: string };
 export type ModelStatus = "processing" | "ready" | "failed";
@@ -186,10 +191,12 @@ export type ModelDto = {
   updatedAt: string;
 };
 
+export type LedgerReason = "local_cap_grant" | "plan_grant" | "job_debit" | "job_capture" | "job_refund" | "adjustment" | "expiry";
+
 export type LedgerEntryDto = {
   id: string;
   delta: number;
-  reason: "local_cap_grant" | "job_debit" | "job_refund";
+  reason: LedgerReason;
   modelId: string | null;
   createdAt: string;
 };

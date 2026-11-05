@@ -18,6 +18,7 @@ import {
 } from "@/lib/types";
 import { ModelViewerBox } from "@/components/model-viewer-box";
 import { AssetTools } from "./asset-tools";
+import { ShopifyPublish } from "./shopify-publish";
 import { formatBytes, formatDate } from "@/lib/utils";
 
 export function StudioClient({
@@ -371,6 +372,7 @@ export function StudioClient({
           )}
 
           {hasFile && <AssetTools model={model} t={t} onModelChange={setModel} />}
+          {hasFile && <ShopifyPublish model={model} t={t} />}
 
           {/* Details Card */}
           <div className="rounded-[16px] border border-line bg-surface p-5">

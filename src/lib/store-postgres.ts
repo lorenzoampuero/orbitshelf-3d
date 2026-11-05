@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { blobStoreFromEnv, type BlobStore } from "@/lib/blob";
 import { maxActiveJobs, paidAttemptCap } from "@/lib/env";
 import { pgClient, type Queryable, type SqlClient, type SqlRow } from "@/lib/sql";
-import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type EmbedRow, type ProjectRow, glbKey, mimeOf, nowIso, orgIdForEmail, sourceKey, versionKey, type VersionRow, type CostEventRow, type ExtraImage, type ModelRow, type OrgRow, type SourcePhoto, type UserRow } from "@/lib/store-shared";
+import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type EmbedRow, type ProjectRow, type PublicationRow, glbKey, mimeOf, nowIso, orgIdForEmail, sourceKey, versionKey, type VersionRow, type CostEventRow, type ExtraImage, type ModelRow, type OrgRow, type SourcePhoto, type UserRow } from "@/lib/store-shared";
 import type { Store } from "@/lib/store-local";
 import type { UserProfile, FailureCode, ImageView, JobEventDto, JobState, LedgerEntryDto, PriceEvidence, UsageDto } from "@/lib/types";
 
@@ -166,6 +166,21 @@ function embedFromRow(r: SqlRow): EmbedRow {
 }
 const projectFromRow = (r: SqlRow): ProjectRow => ({ id: String(r.id), orgId: String(r.org_id), name: String(r.name), createdAt: iso(r.created_at)! });
 
+const publicationFromRow = (r: SqlRow): PublicationRow => ({
+  id: String(r.id),
+  orgId: String(r.org_id),
+  modelId: String(r.model_id),
+  checksum: String(r.checksum),
+  shop: String(r.shop),
+  productId: String(r.product_id),
+  productTitle: String(r.product_title),
+  state: r.state as PublicationRow["state"],
+  remoteFileId: (r.remote_file_id as string | null) ?? null,
+  error: (r.error as string | null) ?? null,
+  createdAt: iso(r.created_at)!,
+  updatedAt: iso(r.updated_at)!,
+});
+
 const asUuid = (id: string) => (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) ? id : null);
 
 /* ───────── helpers shared by transactions ───────── */
@@ -188,6 +203,11 @@ const audit = (tx: Queryable, orgId: string, action: string, modelId: string | n
 
 const jobEvent = (tx: Queryable, orgId: string, modelId: string, state: JobState, detail: string | null = null) =>
   tx.query("INSERT INTO public.job_events (id, org_id, model_id, state, detail, created_at) VALUES ($1, $2, $3, $4, $5, $6)", [randomUUID(), orgId, modelId, state, detail, nowIso()]);
+
+async function debitOf(tx: Queryable, orgId: string, modelId: string): Promise<number | null> {
+  const r = (await tx.query<{ delta: unknown }>("SELECT delta FROM public.usage_ledger WHERE org_id = $1 AND idempotency_key = $2", [orgId, `debit:${modelId}`])).rows[0];
+  return r ? Number(r.delta) : null;
+}
 
 async function balanceOf(tx: Queryable, orgId: string): Promise<number> {
   const res = await tx.query<{ n: unknown }>("SELECT COALESCE(SUM(delta), 0) AS n FROM public.usage_ledger WHERE org_id = $1", [orgId]);
@@ -287,7 +307,7 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
      * The lock serialises reservations per organization, so two simultaneous requests cannot both spend the last attempt.
      * Photos are stored after the commit, so a slow upload never holds the lock.
      */
-    async reserveProviderJob(orgId, row, photos: SourcePhoto[]) {
+    async reserveProviderJob(orgId, row, photos: SourcePhoto[], charge = 1) {
       assertSafeId(row.id);
       const reserved = await sql.transaction(async (tx) => {
         await lockOrg(tx, orgId);
@@ -296,9 +316,9 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
           if (dup) return { ok: true as const, duplicate: true as const, model: fromRow(dup) };
         }
         if ((await activeJobsOf(tx, orgId)) >= maxActiveJobs()) return { ok: false as const, reason: "too_many_active" as const };
-        if ((await balanceOf(tx, orgId)) < 1) return { ok: false as const, reason: "insufficient" as const };
-        await pushLedger(tx, { orgId, idempotencyKey: `debit:${row.id}`, delta: -1, reason: "job_debit", modelId: row.id });
-        const model = { ...row, attemptsDebited: 1 };
+        if ((await balanceOf(tx, orgId)) < charge) return { ok: false as const, reason: "insufficient" as const };
+        await pushLedger(tx, { orgId, idempotencyKey: `debit:${row.id}`, delta: -charge, reason: "job_debit", modelId: row.id });
+        const model = { ...row, attemptsDebited: charge };
         await insertModel(tx, model);
         await jobEvent(tx, orgId, row.id, "reserved");
         await audit(tx, orgId, "job.reserved", row.id);
@@ -324,11 +344,11 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
       return sql.transaction(async (tx) => {
         const m = await selectForUpdate(tx, orgId, modelId);
         if (!m) return false;
-        const debit = await tx.query("SELECT id FROM public.usage_ledger WHERE org_id = $1 AND idempotency_key = $2", [orgId, `debit:${modelId}`]);
-        if (debit.rows.length === 0) return false;
-        const created = await pushLedger(tx, { orgId, idempotencyKey: `refund:${modelId}`, delta: 1, reason: "job_refund", modelId });
+        const debit = await debitOf(tx, orgId, modelId);
+        if (debit === null) return false;
+        const created = await pushLedger(tx, { orgId, idempotencyKey: `refund:${modelId}`, delta: -debit, reason: "job_refund", modelId });
         if (created) {
-          await applyPatch(tx, orgId, modelId, { attemptsRefunded: m.attemptsRefunded + 1 });
+          await applyPatch(tx, orgId, modelId, { attemptsRefunded: m.attemptsRefunded - debit });
           await audit(tx, orgId, "job.refunded", modelId, why);
         }
         return created;
@@ -344,8 +364,8 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
         await jobEvent(tx, orgId, modelId, jobState, input.failureCode);
         let attemptsRefunded = m.attemptsRefunded;
         if (input.refund) {
-          const debit = await tx.query("SELECT id FROM public.usage_ledger WHERE org_id = $1 AND idempotency_key = $2", [orgId, `debit:${modelId}`]);
-          if (debit.rows.length > 0 && (await pushLedger(tx, { orgId, idempotencyKey: `refund:${modelId}`, delta: 1, reason: "job_refund", modelId }))) attemptsRefunded += 1;
+          const debit = await debitOf(tx, orgId, modelId);
+          if (debit !== null && (await pushLedger(tx, { orgId, idempotencyKey: `refund:${modelId}`, delta: -debit, reason: "job_refund", modelId }))) attemptsRefunded -= debit;
         }
         await audit(tx, orgId, "job.failed", modelId, input.failureCode);
         return applyPatch(tx, orgId, modelId, { status: "failed", jobState, error: input.error.slice(0, 400), failureCode: input.failureCode, nextPollAt: null, attemptsRefunded });
@@ -363,6 +383,7 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
         if (!m) return null;
         if (m.status === "ready") return m;
         await jobEvent(tx, orgId, modelId, "succeeded");
+        if ((await debitOf(tx, orgId, modelId)) !== null) await pushLedger(tx, { orgId, idempotencyKey: `capture:${modelId}`, delta: 0, reason: "job_capture", modelId });
         await audit(tx, orgId, "job.completed", modelId);
         return applyPatch(tx, orgId, modelId, { status: "ready", jobState: "succeeded", error: null, failureCode: null, fileSize: info.bytes, checksum: info.sha256, nextPollAt: null });
       });
@@ -498,6 +519,76 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
       return m ? { embed, model: fromRow(m) } : null;
     },
 
+    /** Grants, corrections and expiry. Applied once per key, and it can never take the balance below zero. */
+    async adjustBalance(orgId, delta, reason, key) {
+      return sql.transaction(async (tx) => {
+        await lockOrg(tx, orgId);
+        const seen = await tx.query("SELECT 1 FROM public.usage_ledger WHERE org_id = $1 AND idempotency_key = $2", [orgId, `adjust:${key}`]);
+        if (seen.rows.length > 0) return "duplicate" as const;
+        if ((await balanceOf(tx, orgId)) + delta < 0) return "insufficient" as const;
+        await pushLedger(tx, { orgId, idempotencyKey: `adjust:${key}`, delta, reason, modelId: null });
+        await audit(tx, orgId, "ledger.adjusted", null, reason);
+        return "applied" as const;
+      });
+    },
+
+    async getIntegration(orgId) {
+      const r = (await sql.query("SELECT * FROM public.integrations WHERE org_id = $1 AND provider = 'shopify'", [orgId])).rows[0];
+      if (!r) return null;
+      return { orgId: String(r.org_id), shop: String(r.shop), accessTokenEnc: String(r.access_token_enc), refreshTokenEnc: (r.refresh_token_enc as string | null) ?? null, expiresAt: iso(r.expires_at), scopes: String(r.scopes), connectedAt: iso(r.connected_at)!, revokedAt: iso(r.revoked_at) };
+    },
+
+    async saveIntegration(row) {
+      await sql.transaction(async (tx) => {
+        await tx.query(
+          `INSERT INTO public.integrations (org_id, provider, shop, access_token_enc, refresh_token_enc, expires_at, scopes, connected_at, revoked_at)
+           VALUES ($1, 'shopify', $2, $3, $4, $5, $6, $7, $8)
+           ON CONFLICT (org_id, provider) DO UPDATE SET shop = EXCLUDED.shop, access_token_enc = EXCLUDED.access_token_enc, refresh_token_enc = EXCLUDED.refresh_token_enc,
+             expires_at = EXCLUDED.expires_at, scopes = EXCLUDED.scopes, connected_at = EXCLUDED.connected_at, revoked_at = EXCLUDED.revoked_at`,
+          [row.orgId, row.shop, row.accessTokenEnc, row.refreshTokenEnc, row.expiresAt, row.scopes, row.connectedAt, row.revokedAt],
+        );
+        await audit(tx, row.orgId, "integration.saved", null, row.shop);
+      });
+    },
+
+    async revokeIntegration(orgId) {
+      const r = (await sql.query("UPDATE public.integrations SET revoked_at = COALESCE(revoked_at, now()) WHERE org_id = $1 AND provider = 'shopify' RETURNING shop", [orgId])).rows[0];
+      if (r) await audit(sql, orgId, "integration.revoked", null, String(r.shop));
+    },
+
+    async revokeIntegrationsForShop(shop) {
+      await sql.query("UPDATE public.integrations SET revoked_at = COALESCE(revoked_at, now()) WHERE provider = 'shopify' AND shop = $1", [shop]);
+    },
+
+    async createPublication(row) {
+      await sql.transaction(async (tx) => {
+        await tx.query(
+          `INSERT INTO public.publications (id, org_id, model_id, checksum, shop, product_id, product_title, state, remote_file_id, error, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+          [row.id, row.orgId, row.modelId, row.checksum, row.shop, row.productId, row.productTitle, row.state, row.remoteFileId, row.error, row.createdAt, row.updatedAt],
+        );
+        await audit(tx, row.orgId, "publication.created", row.modelId, row.productId);
+      });
+    },
+
+    async updatePublication(row) {
+      await sql.transaction(async (tx) => {
+        await tx.query("UPDATE public.publications SET state = $3, remote_file_id = $4, error = $5, updated_at = $6 WHERE org_id = $1 AND id = $2", [row.orgId, row.id, row.state, row.remoteFileId, row.error, row.updatedAt]);
+        await audit(tx, row.orgId, `publication.${row.state}`, row.modelId, row.productId);
+      });
+    },
+
+    async getPublication(orgId, id) {
+      if (!asUuid(id)) return null;
+      const r = (await sql.query("SELECT * FROM public.publications WHERE org_id = $1 AND id = $2", [orgId, id])).rows[0];
+      return r ? publicationFromRow(r) : null;
+    },
+
+    async listPublications(orgId, modelId) {
+      if (!asUuid(modelId)) return [];
+      return (await sql.query("SELECT * FROM public.publications WHERE org_id = $1 AND model_id = $2 ORDER BY created_at DESC", [orgId, modelId])).rows.map(publicationFromRow);
+    },
+
     async listVersions(orgId, modelId) {
       if (!asUuid(modelId)) return [];
       return (await sql.query("SELECT * FROM public.asset_versions WHERE org_id = $1 AND model_id = $2 ORDER BY created_at, id", [orgId, modelId])).rows.map(versionFromRow);
@@ -558,12 +649,12 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
         await sql.query<{ reason: string; n: unknown }>("SELECT reason, COALESCE(SUM(delta), 0) AS n FROM public.usage_ledger WHERE org_id = $1 GROUP BY reason", [orgId])
       ).rows;
       const sum = (reason: string) => Number(totals.find((t) => t.reason === reason)?.n ?? 0);
-      const granted = sum("local_cap_grant");
+      const granted = sum("local_cap_grant") + sum("plan_grant");
       const debited = -sum("job_debit");
       const refunded = sum("job_refund");
-      const rows = (await sql.query("SELECT id, delta, reason, model_id, created_at FROM public.usage_ledger WHERE org_id = $1 ORDER BY created_at DESC LIMIT 200", [orgId])).rows;
+      const rows = (await sql.query("SELECT id, delta, reason, model_id, created_at FROM public.usage_ledger WHERE org_id = $1 AND delta <> 0 ORDER BY created_at DESC LIMIT 200", [orgId])).rows;
       return {
-        balance: granted - debited + refunded,
+        balance: totals.reduce((n, t) => n + Number(t.n), 0),
         granted,
         debited,
         refunded,

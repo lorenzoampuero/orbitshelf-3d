@@ -14,6 +14,9 @@ export function intEnv(name: string, fallback: number, min = 0, max = 1_000_000)
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
 }
 
+/** How a job is charged. "attempts": every job counts one. "credits": a job costs what its engine costs. */
+export const billingUnit = (): "attempts" | "credits" => (process.env.BILLING_UNIT === "credits" ? "credits" : "attempts");
+
 export const paidAttemptCap = () => intEnv("LOCAL_PAID_ATTEMPT_CAP", 3, 0, 10_000);
 export const maxActiveJobs = () => intEnv("MAX_ACTIVE_JOBS_PER_ORG", 2, 1, 5);
 

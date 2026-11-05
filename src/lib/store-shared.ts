@@ -4,6 +4,8 @@ import {
   CHECKLIST_KEYS,
   type AssetVersionDto,
   type EmbedDto,
+  type PublicationDto,
+  type PublicationState,
   type ProjectDto,
   providerCreditsEstimate,
   type Checklist,
@@ -49,6 +51,9 @@ export type EmbedRow = { id: string; token: string; orgId: string; modelId: stri
 export type ProjectRow = ProjectDto & { orgId: string };
 export const TRASH_RETENTION_DAYS = 30;
 
+export type IntegrationRow = { orgId: string; shop: string; accessTokenEnc: string; refreshTokenEnc: string | null; expiresAt: string | null; scopes: string; connectedAt: string; revokedAt: string | null };
+export type PublicationRow = { id: string; orgId: string; modelId: string; checksum: string; shop: string; productId: string; productTitle: string; state: PublicationState; remoteFileId: string | null; error: string | null; createdAt: string; updatedAt: string };
+
 export type OrgRow = { id: string; name: string; createdAt: string };
 export type UserRow = { id: string; email: string; orgId: string; createdAt: string; profile?: UserProfile };
 export type LedgerRow = {
@@ -64,7 +69,7 @@ export type AuditRow = { id: string; orgId: string; action: string; modelId: str
 export type JobEventRow = JobEventDto & { orgId: string; modelId: string };
 /** What a provider job cost us. Separate from the ledger, which tracks what the customer used. */
 export type CostEventRow = { id: string; orgId: string; modelId: string; engineId: string; usd: number; evidence: PriceEvidence; at: string };
-export type LocalDb = { version: 1; orgs: OrgRow[]; users: UserRow[]; models: ModelRow[]; ledger: LedgerRow[]; audit: AuditRow[]; jobEvents: JobEventRow[]; costEvents: CostEventRow[]; versions: VersionRow[]; projects: ProjectRow[]; embeds: EmbedRow[] };
+export type LocalDb = { version: 1; orgs: OrgRow[]; users: UserRow[]; models: ModelRow[]; ledger: LedgerRow[]; audit: AuditRow[]; jobEvents: JobEventRow[]; costEvents: CostEventRow[]; versions: VersionRow[]; projects: ProjectRow[]; embeds: EmbedRow[]; integrations: IntegrationRow[]; publications: PublicationRow[] };
 
 export const emptyChecklist = (): Checklist => Object.fromEntries(CHECKLIST_KEYS.map((k) => [k, false])) as Checklist;
 export const emptyDimensions = (): Dimensions => ({ widthMm: null, heightMm: null, depthMm: null });
@@ -128,6 +133,8 @@ export const versionKey = (orgId: string, modelId: string, versionId: string) =>
 export const thumbnailKey = (orgId: string, modelId: string, ext: string) => `thumbs/${assertSafeId(orgId)}/${assertSafeId(modelId)}.${ext}`;
 
 export const toEmbedDto = (e: EmbedRow): EmbedDto => ({ id: e.id, token: e.token, modelId: e.modelId, allowedDomains: e.allowedDomains, createdAt: e.createdAt, active: !e.revokedAt });
+
+export const toPublicationDto = (p: PublicationRow): PublicationDto => ({ id: p.id, modelId: p.modelId, shop: p.shop, productId: p.productId, productTitle: p.productTitle, state: p.state, error: p.error, createdAt: p.createdAt });
 
 export function toVersionDto(v: VersionRow, model: Pick<ModelRow, "currentVersionId">): AssetVersionDto {
   const current = model.currentVersionId ? model.currentVersionId === v.id : v.preset === "original";

@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { validateGlb, GlbError } from "@/lib/glb";
+import { chargeFor } from "@/lib/quotes";
 import { adapterFor, capabilityProblem, engineEnabled, getEngine, priceOf, setSwitchedOffEngines } from "@/lib/provider/registry";
 import { redact } from "@/lib/provider/sloyd";
 import { ProviderError, type Deps, type ProviderInput, type ProviderJobRef } from "@/lib/provider/types";
@@ -148,7 +149,7 @@ export async function createProviderModel(
   });
   let reserved;
   try {
-    reserved = await store.reserveProviderJob(orgId, row, photos);
+    reserved = await store.reserveProviderJob(orgId, row, photos, chargeFor(cost));
   } catch (e) {
     // The photos could not be stored after the attempt was debited. The provider was never called, so the attempt goes back.
     console.error("[jobs] reservation failed:", e instanceof Error ? e.message : "unknown");

@@ -1,4 +1,7 @@
 import { ProfileForm } from "@/components/profile-form";
+import { ShopifyConnect } from "@/components/shopify-connect";
+import { encryptionConfigured } from "@/lib/secrets";
+import { shopifyConfig } from "@/lib/shopify";
 import { store } from "@/lib/store";
 import { notFound, redirect } from "next/navigation";
 import { isLocale, localePath } from "@/i18n/config";
@@ -30,6 +33,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
   if (!session) redirect(localePath(locale, "/login"));
 
   const configured = providerConfigured();
+  const shopConnection = await store.getIntegration(session.orgId);
 
   return (
     <div className="space-y-6">
@@ -80,11 +84,9 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
             <p className="mt-1 text-muted">{t.dash.settings.providerNote}</p>
           </div>
 
-          <div className="flex items-center justify-between rounded-xl border border-line bg-bg p-4">
+          <div className="space-y-3 rounded-xl border border-line bg-bg p-4">
             <span className="font-semibold text-fg">{t.dash.settings.shopify}</span>
-            <span className="rounded-full border border-line bg-surface px-2.5 py-0.5 font-medium text-amber">
-              {t.dash.settings.planned}
-            </span>
+            <ShopifyConnect dict={t} available={Boolean(shopifyConfig()) && encryptionConfigured()} initialShop={shopConnection && !shopConnection.revokedAt ? shopConnection.shop : null} />
           </div>
 
           <div className="flex items-center justify-between rounded-xl border border-line bg-bg p-4">

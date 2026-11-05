@@ -700,6 +700,69 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     expect((await (await page.request.get("/api/projects")).json()).projects).toHaveLength(1);
   });
 
+  test("6f. Shopify: connect, confirm, upload, wait for processing, attach without duplicates, and disconnect", async ({ page, request }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/login");
+    await page.fill("#login-email", "shopify@merchant.test");
+    await page.getByTestId("login-submit").click();
+    await page.waitForURL("**/dashboard");
+    const id = (await (await page.request.post("/api/models", { data: { source: "demo", title: "Oak Chair 3D", category: "furniture", demoAsset: "chair" } })).json()).model.id as string;
+    const checklist = { shape: true, surfaces: true, hiddenAngles: true, material: true, labels: true };
+
+    // Before connecting, there is nothing to publish to
+    const publishBody = { modelId: id, productId: "gid://shopify/Product/111", productTitle: "Oak Chair", confirm: true };
+    expect((await page.request.get("/api/integrations/shopify/products")).status()).toBe(409);
+
+    // A store address that is not a Shopify store never receives a request
+    expect((await page.request.get("/api/integrations/shopify/install?shop=evil.test", { maxRedirects: 0 })).status()).toBe(422);
+    expect((await page.request.get("/api/integrations/shopify/install?shop=shop.myshopify.com.evil.test", { maxRedirects: 0 })).status()).toBe(422);
+
+    // A forged callback is refused
+    expect((await page.request.get("/api/integrations/shopify/callback?shop=forged.myshopify.com&code=x&state=y&hmac=z", { maxRedirects: 0 })).status()).toBe(400);
+
+    await page.goto("/dashboard/settings");
+    await page.getByTestId("shopify-shop-input").fill("mi-tienda");
+    await page.getByTestId("shopify-connect").click();
+    await page.waitForURL("**/dashboard/settings**");
+    await expect(page.getByTestId("shopify-connected")).toContainText("mi-tienda.myshopify.com");
+
+    // The token never reaches the browser
+    const status = await (await page.request.get("/api/integrations/shopify")).text();
+    expect(status).not.toContain("test-shopify-token");
+    expect(status).not.toContain("v1.");
+    const settingsHtml = await page.content();
+    expect(settingsHtml).not.toContain("test-shopify-token");
+
+    // Not approved, or not confirmed: nothing happens
+    expect((await page.request.post("/api/integrations/shopify/publish", { data: publishBody })).status()).toBe(409);
+    await page.request.post(`/api/models/${id}/review`, { data: { decision: "approve", checklist, note: null } });
+    expect((await page.request.post("/api/integrations/shopify/publish", { data: { ...publishBody, confirm: false } })).status()).toBe(422);
+    const before = await (await request.get("http://127.0.0.1:3999/__shopify")).json();
+
+    await page.goto(`/dashboard/models/${id}`);
+    await page.getByTestId("shopify-search-btn").click();
+    await page.getByTestId("shopify-product-111").check();
+    await expect(page.getByTestId("shopify-summary")).toContainText("Oak Chair");
+    await expect(page.getByTestId("shopify-publish-btn")).toBeDisabled();
+    await page.getByTestId("shopify-confirm").check();
+    await page.getByTestId("shopify-publish-btn").click();
+    await expect(page.getByTestId("shopify-publication-state")).toHaveText("Published", { timeout: 20_000 });
+
+    const after = await (await request.get("http://127.0.0.1:3999/__shopify")).json();
+    expect(after.uploads).toBe(before.uploads + 1);
+    expect(after.attached.at(-1)).toBe("gid://shopify/Product/111");
+
+    // Repeating it does not duplicate the file
+    const again = await (await page.request.post("/api/integrations/shopify/publish", { data: publishBody })).json();
+    expect(again.duplicate).toBe(true);
+    expect((await (await request.get("http://127.0.0.1:3999/__shopify")).json()).uploads).toBe(after.uploads);
+
+    // Disconnecting stops publishing and keeps the model
+    await page.request.delete("/api/integrations/shopify");
+    expect((await page.request.post("/api/integrations/shopify/publish", { data: { ...publishBody, productId: "gid://shopify/Product/222" } })).status()).toBe(409);
+    expect((await page.request.get(`/api/models/${id}`)).ok()).toBe(true);
+  });
+
   test("7. Text to 3D: prompt validation, text endpoint, prompt shown in the studio, and a refund when the provider refuses", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 840 });
     await page.goto("/login");

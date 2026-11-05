@@ -1,11 +1,16 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { creditsFor } from "@/lib/credits";
+import { billingUnit } from "@/lib/env";
 import { capabilityProblem, getEngine, engineEnabled, priceOf, type CapabilityProblem } from "@/lib/provider/registry";
 import type { PriceLine, PriceQuery } from "@/lib/provider/types";
 import { sessionSecret } from "@/lib/session";
 import type { PriceEvidence, QuoteDto } from "@/lib/types";
 
 const TTL_MS = 15 * 60_000;
+
+/** What a job with this provider cost takes from the balance. */
+export const chargeFor = (usd: number) => (billingUnit() === "credits" ? creditsFor(usd) : 1);
 
 type Signed = { o: string; e: string; m: PriceQuery["mode"]; p: number; t: PriceQuery["texture"]; u: number; x: number };
 
@@ -34,7 +39,8 @@ export function createQuote(orgId: string, engineId: string, q: PriceQuery, now 
       texture: q.texture,
       usd,
       lines: lines as PriceLine[],
-      attempts: 1,
+      charge: chargeFor(usd),
+      unit: billingUnit(),
       evidence: engine.priceEvidence as PriceEvidence,
       priceVerifiedAt: engine.priceVerifiedAt,
       expiresAt: new Date(expiresAt).toISOString(),
