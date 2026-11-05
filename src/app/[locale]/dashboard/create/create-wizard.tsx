@@ -13,7 +13,9 @@ import {
   TEXTURE_RESOLUTIONS,
   type Category,
   type DemoAsset,
+  GENERATION_PRESETS,
   type EngineDto,
+  type GenerationPreset,
   type ImageView,
   type InputKind,
   type Locale,
@@ -21,6 +23,7 @@ import {
   type TextureResolution,
 } from "@/lib/types";
 import { ModelViewerBox } from "@/components/model-viewer-box";
+import { resolvePreset } from "@/lib/profiles";
 
 type Mode = "photos" | "text" | "demo" | "import";
 type ApiFailure = {
@@ -35,17 +38,23 @@ export function CreateWizard({
   dict,
   engines,
   attemptsLeft,
+  initialMode,
+  initialPreset,
 }: {
   locale: Locale;
   dict: Dictionary;
   engines: EngineDto[];
   attemptsLeft: number;
+  initialMode: "photos" | "text" | "import" | null;
+  initialPreset: GenerationPreset;
 }) {
   const providerReady = engines.length > 0;
   const router = useRouter();
   const c = dict.dash.create;
 
-  const [mode, setMode] = useState<Mode>(providerReady ? "photos" : "demo");
+  // A mode that needs an engine is only opened when one exists: otherwise it would be a form that cannot be submitted.
+  const [mode, setMode] = useState<Mode>(initialMode === "import" ? "import" : providerReady ? (initialMode ?? "photos") : "demo");
+  const [preset, setPreset] = useState<GenerationPreset>(initialPreset);
   const [title, setTitle] = useState(providerReady ? "" : c.demoObjects.vase);
   const [sku, setSku] = useState("");
   const [category, setCategory] = useState<Category>(providerReady ? "apparel" : "home-decor");
@@ -66,12 +75,14 @@ export function CreateWizard({
 
   // Only engines that really support this mode are offered. A photo engine with fewer slots hides the views it cannot use.
   const compatible = engines.filter((e) => e.modes.includes(mode === "text" ? "text" : "image"));
-  const engine = compatible.find((e) => e.id === chosenEngine) ?? compatible[0] ?? null;
+  const photosChosen = IMAGE_VIEWS.filter((v) => files[v]).length;
+  const presetPick = resolvePreset(preset, compatible, mode === "text" ? "text" : photosChosen >= 2 ? "multi-image" : "image", mode === "text" ? 0 : Math.max(photosChosen, 1));
+  const engine = compatible.find((e) => e.id === (presetPick?.engineId ?? chosenEngine)) ?? compatible[0] ?? null;
   const visibleViews = IMAGE_VIEWS.filter((v) => !engine || engine.views.includes(v));
   const photoCount = visibleViews.filter((v) => files[v]).length;
   const kind: InputKind = mode === "text" ? "text" : photoCount >= 2 ? "multi-image" : "image";
   const textureOptions = TEXTURE_RESOLUTIONS.filter((tr) => tr !== "none" || engine?.geometryOnly);
-  const texture = textureOptions.includes(textureResolution) ? textureResolution : "1k";
+  const texture = presetPick?.texture ?? (textureOptions.includes(textureResolution) ? textureResolution : "1k");
   const engineId = engine?.id ?? null;
 
   // The cost shown always comes from the server, for exactly these options.
@@ -445,7 +456,24 @@ export function CreateWizard({
 
           {(mode === "photos" || mode === "text") && (
             <div className="space-y-4">
-              {compatible.length > 1 && (
+              {providerReady && (
+                <fieldset className="space-y-2">
+                  <legend className="text-xs font-medium text-fg">{c.presetTitle}</legend>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {GENERATION_PRESETS.map((p) => (
+                      <label key={p} className={`flex cursor-pointer items-start gap-2 rounded-xl border bg-bg p-2.5 text-xs ${preset === p ? "border-accent" : "border-line"}`}>
+                        <input type="radio" name="preset" value={p} checked={preset === p} onChange={() => setPreset(p)} data-testid={`preset-radio-${p}`} className="mt-0.5" />
+                        <span>
+                          <span className="block font-semibold text-fg">{c.presets[p].label}</span>
+                          <span className="block text-muted">{c.presets[p].text}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted">{c.presetNote}</p>
+                </fieldset>
+              )}
+              {preset === "advanced" && compatible.length > 1 && (
                 <div>
                   <label htmlFor="create-engine" className="block text-xs font-medium text-fg mb-1.5">
                     {c.engine}
@@ -466,24 +494,26 @@ export function CreateWizard({
                   </select>
                 </div>
               )}
-              <div>
-                <label htmlFor="create-texture" className="block text-xs font-medium text-fg mb-1.5">
-                  {c.texture}
-                </label>
-                <select
-                  id="create-texture"
-                  name="textureResolution"
-                  value={texture}
-                  onChange={(e) => setTextureResolution(e.target.value as TextureResolution)}
-                  className="w-full rounded-xl border border-line bg-bg px-3.5 py-2 text-sm text-fg"
-                >
-                  {textureOptions.map((tr) => (
-                    <option key={tr} value={tr}>
-                      {c.textures[tr]}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {preset === "advanced" && (
+                <div>
+                  <label htmlFor="create-texture" className="block text-xs font-medium text-fg mb-1.5">
+                    {c.texture}
+                  </label>
+                  <select
+                    id="create-texture"
+                    name="textureResolution"
+                    value={texture}
+                    onChange={(e) => setTextureResolution(e.target.value as TextureResolution)}
+                    className="w-full rounded-xl border border-line bg-bg px-3.5 py-2 text-sm text-fg"
+                  >
+                    {textureOptions.map((tr) => (
+                      <option key={tr} value={tr}>
+                        {c.textures[tr]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="rounded-xl border border-line bg-surface-2 p-4 space-y-2 text-xs">
                 <div className="font-semibold text-fg">{c.costTitle}</div>

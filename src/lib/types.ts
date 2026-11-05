@@ -65,6 +65,8 @@ export type EngineDto = {
   exports: string[];
   priceVerifiedAt: string;
   priceEvidence: PriceEvidence;
+  /** Lowest published price for one textured photo or text job, in USD. */
+  fromPriceUsd: number;
 };
 
 export type QuoteDto = {
@@ -191,6 +193,25 @@ export type UsageDto = {
   activeJobs: number;
   maxActiveJobs: number;
   ledger: LedgerEntryDto[];
+};
+
+export const USE_CASES = ["commerce", "game", "pro", "explore"] as const;
+export type UseCase = (typeof USE_CASES)[number];
+export const EXPERIENCES = ["beginner", "intermediate", "advanced"] as const;
+export type Experience = (typeof EXPERIENCES)[number];
+export const GOALS = ["photos", "text", "assets", "publish"] as const;
+export type Goal = (typeof GOALS)[number];
+export const GENERATION_PRESETS = ["fast", "studio", "game", "advanced"] as const;
+export type GenerationPreset = (typeof GENERATION_PRESETS)[number];
+
+/** Preferences only. A profile never changes permissions, balance or accounting. */
+export type UserProfile = {
+  useCase: UseCase | null;
+  experience: Experience | null;
+  goal: Goal | null;
+  activeWorkspace: UseCase | null;
+  onboardedAt: string | null;
+  skippedAt: string | null;
 };
 
 export type SessionUser = { userId: string; orgId: string; email: string };

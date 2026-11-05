@@ -537,6 +537,70 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     expect((await page.request.get(`/api/models/${id}/file?version=${versions[0].id}`)).status()).toBe(404);
   });
 
+  test("6d. Profiles: skip or answer, the dashboard reorders, tools stay reachable, and balance and projects do not change", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const signIn = async (email: string) => {
+      await page.goto("/login");
+      await page.fill("#login-email", email);
+      await page.getByTestId("login-submit").click();
+      await page.waitForURL("**/dashboard");
+    };
+
+    await signIn("skipper@merchant.test");
+    await page.getByTestId("profile-skip").click();
+    await expect(page.getByTestId("onboarding-card")).toHaveCount(0);
+    await page.reload();
+    await expect(page.getByTestId("onboarding-card")).toHaveCount(0);
+    await expect(page.getByTestId("shortcut-createPhotos")).toBeVisible();
+
+    await page.request.post("/api/auth/logout");
+    await signIn("profile@merchant.test");
+    await page.request.post("/api/models", { data: { source: "demo", title: "Keep me", category: "other", demoAsset: "vase" } });
+    const before = (await (await page.request.get("/api/usage")).json()).usage.balance;
+
+    // A goal that does not belong to the use case is refused
+    expect((await page.request.put("/api/me/profile", { data: { useCase: "explore", experience: "beginner", goal: "publish" } })).status()).toBe(422);
+    // Nothing but preferences can be written here
+    expect((await page.request.put("/api/me/profile", { data: { useCase: "game", experience: "advanced", goal: "text", balance: 999 } })).status()).toBe(422);
+
+    await page.goto("/dashboard");
+    await page.getByTestId("use-case-game").check();
+    await page.getByTestId("experience-beginner").check();
+    await page.getByTestId("goal-assets").check();
+    await page.getByTestId("profile-save").click();
+    await expect(page.getByTestId("onboarding-card")).toHaveCount(0);
+    await expect(page.getByTestId("workspace-shortcuts").locator("a").first()).toHaveAttribute("href", /mode=import/);
+
+    await page.getByTestId("workspace-select").selectOption("commerce");
+    await expect(page.getByTestId("workspace-shortcuts").locator("a").nth(1)).toHaveAttribute("href", /mode=photos/);
+
+    // The wizard follows the workspace and goal, and manual controls appear only in Advanced
+    await page.goto("/dashboard/create?mode=photos");
+    await expect(page.getByTestId("preset-radio-studio")).toBeChecked();
+    await expect(page.getByTestId("create-engine-select")).toHaveCount(0);
+    await expect(page.getByTestId("create-cost-text")).toContainText("Sloyd");
+    await page.getByTestId("preset-radio-advanced").check();
+    await expect(page.getByTestId("create-engine-select")).toBeVisible();
+
+    // Every tool stays reachable; an engine not validated says so instead of being offered
+    await page.goto("/dashboard/explore");
+    await expect(page.getByTestId("explore-tool-import")).toBeVisible();
+    await expect(page.getByTestId("explore-engine-status-sloyd")).toHaveText("Available");
+    await expect(page.getByTestId("explore-engine-status-fal-trellis-2")).toHaveText("Not available yet");
+    const a11y = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+    expect(a11y.violations.map((v) => v.id)).toEqual([]);
+
+    // Editable from Settings, and nothing else moved
+    await page.goto("/dashboard/settings");
+    await expect(page.getByTestId("use-case-game")).toBeChecked();
+    await page.getByTestId("use-case-pro").check();
+    await page.getByTestId("goal-text").check();
+    await page.getByTestId("profile-save").click();
+    await expect(page.getByTestId("profile-saved")).toBeVisible();
+    expect((await (await page.request.get("/api/usage")).json()).usage.balance).toBe(before);
+    expect((await (await page.request.get("/api/models")).json()).models).toHaveLength(1);
+  });
+
   test("7. Text to 3D: prompt validation, text endpoint, prompt shown in the studio, and a refund when the provider refuses", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 840 });
     await page.goto("/login");

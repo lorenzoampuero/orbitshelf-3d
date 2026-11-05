@@ -3,8 +3,8 @@ import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { dataDir, maxActiveJobs, paidAttemptCap } from "@/lib/env";
-import { assertSafeId, emptyChecklist, mimeOf, nowIso, orgIdForEmail, versionKey, type CostEventRow, type VersionRow, type LedgerRow, type LocalDb, type ModelRow, type SourcePhoto } from "@/lib/store-shared";
-import type { FailureCode, ImageView, JobEventDto, JobState, PriceEvidence, UsageDto } from "@/lib/types";
+import { assertSafeId, emptyChecklist, emptyProfile, mimeOf, nowIso, orgIdForEmail, versionKey, type CostEventRow, type VersionRow, type LedgerRow, type LocalDb, type ModelRow, type SourcePhoto } from "@/lib/store-shared";
+import type { UserProfile, FailureCode, ImageView, JobEventDto, JobState, PriceEvidence, UsageDto } from "@/lib/types";
 
 /* ───────── persistence primitives ───────── */
 
@@ -126,6 +126,20 @@ export const localStore = {
         db.users.push(user);
       }
       return { user, org };
+    });
+  },
+
+  /** Saved per user, across sessions and devices. Signing in again never touches it. */
+  async getProfile(userId: string): Promise<UserProfile> {
+    return tx((db) => ({ ...emptyProfile(), ...(db.users.find((u) => u.id === userId)?.profile ?? {}) }), false);
+  },
+
+  async saveProfile(userId: string, patch: Partial<UserProfile>): Promise<UserProfile> {
+    return tx((db) => {
+      const u = db.users.find((x) => x.id === userId);
+      const next = { ...emptyProfile(), ...(u?.profile ?? {}), ...patch };
+      if (u) u.profile = next;
+      return next;
     });
   },
 

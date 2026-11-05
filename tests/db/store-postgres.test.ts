@@ -263,6 +263,18 @@ describe("Postgres store", () => {
     expect(await store.listVersions(org.id, r.id)).toEqual([]);
   });
 
+  it("keeps a user's answers across sign-ins and never touches balance", async () => {
+    const { user, org } = await store.signIn("a@example.com");
+    expect((await store.getProfile(user.id)).useCase).toBeNull();
+    await store.saveProfile(user.id, { useCase: "game", experience: "advanced", goal: "assets", activeWorkspace: "game", onboardedAt: nowIso() });
+    await store.saveProfile(user.id, { activeWorkspace: "commerce" });
+    await store.signIn("a@example.com");
+    const p = await store.getProfile(user.id);
+    expect(p).toMatchObject({ useCase: "game", experience: "advanced", goal: "assets", activeWorkspace: "commerce" });
+    expect(p.onboardedAt).not.toBeNull();
+    expect((await store.usage(org.id)).balance).toBe(3);
+  });
+
   it("reads the engine kill switch", async () => {
     await db.exec("INSERT INTO public.engine_switches (engine_id) VALUES ('fal-rodin-2.5'); INSERT INTO public.engine_switches (engine_id, disabled) VALUES ('sloyd', false);");
     expect(await store.listDisabledEngines()).toEqual(["fal-rodin-2.5"]);

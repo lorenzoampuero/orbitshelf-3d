@@ -1,3 +1,5 @@
+import { ProfileForm } from "@/components/profile-form";
+import { store } from "@/lib/store";
 import { notFound, redirect } from "next/navigation";
 import { isLocale, localePath } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
@@ -52,6 +54,14 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
           <span className="text-xs font-medium text-muted">{t.dash.settings.language}</span>
           <LocaleSwitcher locale={locale} label={t.common.language} />
         </div>
+      </section>
+
+      <section className="rounded-[16px] border border-line bg-surface p-5 space-y-4">
+        <div>
+          <h2 className="font-display text-base font-semibold text-fg">{t.dash.profile.settingsTitle}</h2>
+          <p className="mt-1 text-xs text-muted">{t.dash.profile.settingsIntro}</p>
+        </div>
+        <ProfileForm dict={t} profile={await store.getProfile(session.userId)} variant="settings" />
       </section>
 
       <section className="rounded-[16px] border border-line bg-surface p-5">

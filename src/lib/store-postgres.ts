@@ -3,9 +3,9 @@ import { randomUUID } from "node:crypto";
 import { blobStoreFromEnv, type BlobStore } from "@/lib/blob";
 import { maxActiveJobs, paidAttemptCap } from "@/lib/env";
 import { pgClient, type Queryable, type SqlClient, type SqlRow } from "@/lib/sql";
-import { assertSafeId, emptyChecklist, glbKey, mimeOf, nowIso, orgIdForEmail, sourceKey, versionKey, type VersionRow, type CostEventRow, type ExtraImage, type ModelRow, type OrgRow, type SourcePhoto, type UserRow } from "@/lib/store-shared";
+import { assertSafeId, emptyChecklist, emptyProfile, glbKey, mimeOf, nowIso, orgIdForEmail, sourceKey, versionKey, type VersionRow, type CostEventRow, type ExtraImage, type ModelRow, type OrgRow, type SourcePhoto, type UserRow } from "@/lib/store-shared";
 import type { Store } from "@/lib/store-local";
-import type { FailureCode, ImageView, JobEventDto, JobState, LedgerEntryDto, PriceEvidence, UsageDto } from "@/lib/types";
+import type { UserProfile, FailureCode, ImageView, JobEventDto, JobState, LedgerEntryDto, PriceEvidence, UsageDto } from "@/lib/types";
 
 /* ───────── row mapping ───────── */
 
@@ -140,6 +140,17 @@ function versionFromRow(r: SqlRow): VersionRow {
   };
 }
 
+function profileFromRow(r: SqlRow): UserProfile {
+  return {
+    useCase: (r.use_case as UserProfile["useCase"]) ?? null,
+    experience: (r.experience as UserProfile["experience"]) ?? null,
+    goal: (r.goal as UserProfile["goal"]) ?? null,
+    activeWorkspace: (r.active_workspace as UserProfile["activeWorkspace"]) ?? null,
+    onboardedAt: iso(r.onboarded_at),
+    skippedAt: iso(r.onboarding_skipped_at),
+  };
+}
+
 const asUuid = (id: string) => (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) ? id : null);
 
 /* ───────── helpers shared by transactions ───────── */
@@ -213,6 +224,21 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
         const org: OrgRow = { id: String(o.id), name: String(o.name), createdAt: iso(o.created_at)! };
         return { user, org };
       });
+    },
+
+    /** Saved per user, across sessions and devices. Signing in again never touches it. */
+    async getProfile(userId) {
+      const r = (await sql.query("SELECT use_case, experience, goal, active_workspace, onboarded_at, onboarding_skipped_at FROM public.app_users WHERE id = $1", [userId])).rows[0];
+      return r ? profileFromRow(r) : emptyProfile();
+    },
+
+    async saveProfile(userId, patch) {
+      const cols: Record<keyof UserProfile, string> = { useCase: "use_case", experience: "experience", goal: "goal", activeWorkspace: "active_workspace", onboardedAt: "onboarded_at", skippedAt: "onboarding_skipped_at" };
+      const keys = (Object.keys(patch) as (keyof UserProfile)[]).filter((k) => k in cols);
+      if (keys.length === 0) return store.getProfile(userId);
+      const sets = keys.map((k, i) => `${cols[k]} = $${i + 2}`).join(", ");
+      const r = (await sql.query(`UPDATE public.app_users SET ${sets} WHERE id = $1 RETURNING use_case, experience, goal, active_workspace, onboarded_at, onboarding_skipped_at`, [userId, ...keys.map((k) => patch[k] ?? null)])).rows[0];
+      return r ? profileFromRow(r) : emptyProfile();
     },
 
     async getOrg(orgId) {

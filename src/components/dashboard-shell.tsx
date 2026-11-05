@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   PlusSquare,
   Boxes,
+  Compass,
   Share2,
   Activity,
   CreditCard,
@@ -56,6 +57,7 @@ export function DashboardShell({
     { href: "/dashboard", label: dict.dash.nav.overview, icon: LayoutDashboard },
     { href: "/dashboard/create", label: dict.dash.nav.create, icon: PlusSquare },
     { href: "/dashboard/models", label: dict.dash.nav.models, icon: Boxes },
+    { href: "/dashboard/explore", label: dict.dash.nav.explore, icon: Compass },
   ];
 
   const manageItems: NavItem[] = [

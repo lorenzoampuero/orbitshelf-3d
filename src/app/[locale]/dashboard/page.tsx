@@ -4,6 +4,9 @@ import { Plus } from "lucide-react";
 import { isLocale, localePath } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { currentUser } from "@/lib/api";
+import { ProfileForm } from "@/components/profile-form";
+import { WorkspaceSwitcher } from "@/components/workspace-switcher";
+import { activeWorkspace, SHORTCUTS, shortcutsFor } from "@/lib/profiles";
 import { store, toDto } from "@/lib/store";
 import { formatDate } from "@/lib/utils";
 import { buildPageMetadata } from "@/lib/seo";
@@ -24,6 +27,10 @@ export default async function DashboardOverviewPage({ params }: Props) {
   const user = (await currentUser())!;
   const rows = (await store.listModels(user.orgId)).map(toDto);
   const usage = await store.usage(user.orgId);
+  const profile = await store.getProfile(user.userId);
+  const workspace = activeWorkspace(profile);
+  const shortcuts = shortcutsFor(workspace, profile.goal);
+  const showOnboarding = !profile.onboardedAt && !profile.skippedAt;
 
   const readyToReview = rows.filter((m) => m.status === "ready" && m.reviewState === "pending").length;
   const approved = rows.filter((m) => m.reviewState === "approved").length;
@@ -36,15 +43,49 @@ export default async function DashboardOverviewPage({ params }: Props) {
           <h1 className="font-display text-2xl sm:text-3xl font-bold">{dict.dash.overview.title}</h1>
           <p className="text-sm text-muted">{dict.dash.overview.subtitle}</p>
         </div>
-        <Link
-          href={localePath(locale, "/dashboard/create")}
-          data-testid="overview-create-cta"
-          className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-bg shrink-0"
-        >
-          <Plus className="h-4 w-4" aria-hidden="true" />
-          <span>{dict.dash.overview.cta}</span>
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <WorkspaceSwitcher dict={dict} active={workspace} />
+          <Link
+            href={localePath(locale, "/dashboard/create")}
+            data-testid="overview-create-cta"
+            className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-bg shrink-0"
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            <span>{dict.dash.overview.cta}</span>
+          </Link>
+        </div>
       </div>
+
+      {showOnboarding && (
+        <section aria-labelledby="onboarding-heading" className="rounded-[16px] border border-accent/40 bg-surface p-5 space-y-3" data-testid="onboarding-card">
+          <div>
+            <h2 id="onboarding-heading" className="font-display text-lg font-semibold">{dict.dash.profile.title}</h2>
+            <p className="mt-1 text-xs text-muted">{dict.dash.profile.intro}</p>
+          </div>
+          <ProfileForm dict={dict} profile={profile} variant="onboarding" />
+        </section>
+      )}
+
+      <section aria-labelledby="shortcuts-heading" className="space-y-3">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 id="shortcuts-heading" className="font-display text-lg font-semibold">
+            {workspace ? dict.dash.profile.useCases[workspace] : dict.dash.profile.shortcutsTitle}
+          </h2>
+          <Link href={localePath(locale, "/dashboard/explore")} data-testid="explore-all-link" className="text-xs font-medium text-accent hover:underline">
+            {dict.dash.profile.exploreAll} →
+          </Link>
+        </div>
+        <ul className="divide-y divide-line border-y border-line" data-testid="workspace-shortcuts">
+          {shortcuts.map((id) => (
+            <li key={id}>
+              <Link href={localePath(locale, SHORTCUTS[id])} data-testid={`shortcut-${id}`} className="group grid gap-1 py-3 text-sm md:grid-cols-12 md:gap-6">
+                <span className="font-semibold text-fg group-hover:text-accent md:col-span-4">{dict.dash.profile.shortcuts[id].title}</span>
+                <span className="text-xs leading-relaxed text-muted md:col-span-8">{dict.dash.profile.shortcuts[id].text}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">

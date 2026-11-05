@@ -4,11 +4,12 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { currentUser } from "@/lib/api";
 import { refreshEngineSwitches } from "@/lib/jobs";
 import { availableEngines, toEngineDto } from "@/lib/provider/registry";
+import { activeWorkspace, defaultMode, defaultPreset } from "@/lib/profiles";
 import { store } from "@/lib/store";
 import { buildPageMetadata } from "@/lib/seo";
 import { CreateWizard } from "./create-wizard";
 
-type Props = { params: Promise<{ locale: string }> };
+type Props = { params: Promise<{ locale: string }>; searchParams: Promise<{ mode?: string }> };
 
 export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
@@ -17,12 +18,15 @@ export async function generateMetadata({ params }: Props) {
   return buildPageMetadata({ locale, path: "/dashboard/create", title: t.dash.create.title, description: t.dash.create.subtitle, noIndex: true });
 }
 
-export default async function CreateModelPage({ params }: Props) {
+export default async function CreateModelPage({ params, searchParams }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const dict = getDictionary(locale);
   const user = (await currentUser())!;
   const usage = await store.usage(user.orgId);
+  const profile = await store.getProfile(user.userId);
+  const asked = (await searchParams).mode;
+  const requestedMode = asked === "photos" || asked === "text" || asked === "import" ? asked : defaultMode(profile.goal);
   await refreshEngineSwitches().catch(() => undefined);
 
   return (
@@ -36,6 +40,8 @@ export default async function CreateModelPage({ params }: Props) {
         dict={dict}
         engines={availableEngines().map(toEngineDto)}
         attemptsLeft={usage.balance}
+        initialMode={requestedMode}
+        initialPreset={defaultPreset(activeWorkspace(profile), profile.experience)}
       />
     </div>
   );

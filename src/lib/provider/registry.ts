@@ -202,6 +202,7 @@ export function toEngineDto(engine: EngineDefinition): EngineDto {
     exports: engine.exports,
     priceVerifiedAt: engine.priceVerifiedAt,
     priceEvidence: engine.priceEvidence,
+    fromPriceUsd: priceOf(engine, { mode: engine.modes[0], photoCount: engine.modes[0] === "text" ? 0 : 1, texture: "1k" }).usd,
   };
 }
 

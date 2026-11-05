@@ -12,6 +12,7 @@ import {
   type MeshDiagnostics,
   type ModelDto,
   type PriceEvidence,
+  type UserProfile,
   type VersionPreset,
 } from "@/lib/types";
 
@@ -40,7 +41,7 @@ export type ModelRow = ModelDto & {
 export type VersionRow = { id: string; orgId: string; modelId: string; preset: VersionPreset; bytes: number; sha256: string; diagnostics: MeshDiagnostics; createdAt: string };
 
 export type OrgRow = { id: string; name: string; createdAt: string };
-export type UserRow = { id: string; email: string; orgId: string; createdAt: string };
+export type UserRow = { id: string; email: string; orgId: string; createdAt: string; profile?: UserProfile };
 export type LedgerRow = {
   id: string;
   orgId: string;
@@ -58,6 +59,7 @@ export type LocalDb = { version: 1; orgs: OrgRow[]; users: UserRow[]; models: Mo
 
 export const emptyChecklist = (): Checklist => Object.fromEntries(CHECKLIST_KEYS.map((k) => [k, false])) as Checklist;
 export const emptyDimensions = (): Dimensions => ({ widthMm: null, heightMm: null, depthMm: null });
+export const emptyProfile = (): UserProfile => ({ useCase: null, experience: null, goal: null, activeWorkspace: null, onboardedAt: null, skippedAt: null });
 export const nowIso = () => new Date().toISOString();
 
 export function toDto(row: ModelRow): ModelDto {
