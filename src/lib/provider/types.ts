@@ -1,8 +1,8 @@
-import type { FalConfig, ProviderConfig } from "@/lib/env";
+import type { FalConfig, MeshyConfig, ProviderConfig } from "@/lib/env";
 import type { NormalizedImage } from "@/lib/image";
 import type { EngineLifecycle, ImageView, InputKind, PriceEvidence, TextureResolution } from "@/lib/types";
 
-export type ProviderId = "sloyd" | "fal";
+export type ProviderId = "sloyd" | "fal" | "meshy";
 
 export type ProviderErrorKind = "payment_required" | "auth" | "rate_limited" | "rejected" | "server" | "network" | "timeout" | "not_ready" | "not_configured" | "invalid_response";
 
@@ -23,7 +23,7 @@ export type NormalizedStatus = "pending" | "running" | "success" | "error";
 export type JobSnapshot = { status: NormalizedStatus; rawStatus: string; errorMessage: string | null };
 
 /** Injection points for tests. Real calls read their configuration from the environment. */
-export type Deps = { fetch?: typeof fetch; config?: ProviderConfig | null; falConfig?: FalConfig | null; timeoutMs?: number };
+export type Deps = { fetch?: typeof fetch; config?: ProviderConfig | null; falConfig?: FalConfig | null; meshyConfig?: MeshyConfig | null; timeoutMs?: number };
 
 /** What a generation starts from: one photo, 2 or more photos of the same object (front is required), or a text description. */
 export type ProviderInput =
@@ -61,6 +61,9 @@ export type EngineDefinition = {
     endpoint: string;
     buildInput: (req: GenerationRequest) => Record<string, unknown>;
     glbUrl: (output: unknown) => string | null;
+  };
+  meshy?: {
+    aiModel: string;
   };
 };
 

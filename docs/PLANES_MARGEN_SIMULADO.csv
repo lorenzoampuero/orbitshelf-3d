@@ -1,88 +1,88 @@
 estructura,plan,precio_usd,unidades,motor,costo_publicado_usd,costo_efectivo_supuesto_usd,uso_pct,trabajos,costo_variable_usd,comision_supuesta_usd,contribucion_usd,margen_pct,evidencia
-spec,Starter,19,150,fal-tripo-h3.1,0.3,0.480,25,1,0.48,1.45,17.07,89.8,precio publicado + supuestos, sin factura
-spec,Starter,19,150,fal-tripo-h3.1,0.3,0.480,50,3,1.44,1.45,16.11,84.8,precio publicado + supuestos, sin factura
-spec,Starter,19,150,fal-tripo-h3.1,0.3,0.480,75,4,1.92,1.45,15.63,82.3,precio publicado + supuestos, sin factura
-spec,Starter,19,150,fal-tripo-h3.1,0.3,0.480,100,6,2.88,1.45,14.67,77.2,precio publicado + supuestos, sin factura
+spec,Starter,19,150,fal-trellis-1,0.02,0.144,25,4,0.58,1.45,16.97,89.3,precio publicado + supuestos, sin factura
+spec,Starter,19,150,fal-trellis-1,0.02,0.144,50,9,1.3,1.45,16.25,85.5,precio publicado + supuestos, sin factura
+spec,Starter,19,150,fal-trellis-1,0.02,0.144,75,13,1.87,1.45,15.68,82.5,precio publicado + supuestos, sin factura
+spec,Starter,19,150,fal-trellis-1,0.02,0.144,100,18,2.59,1.45,14.96,78.7,precio publicado + supuestos, sin factura
 spec,Starter,19,150,fal-hunyuan-3.1-pro,0.675,0.930,25,0,0,1.45,17.55,92.4,precio publicado + supuestos, sin factura
 spec,Starter,19,150,fal-hunyuan-3.1-pro,0.675,0.930,50,1,0.93,1.45,16.62,87.5,precio publicado + supuestos, sin factura
 spec,Starter,19,150,fal-hunyuan-3.1-pro,0.675,0.930,75,2,1.86,1.45,15.69,82.6,precio publicado + supuestos, sin factura
 spec,Starter,19,150,fal-hunyuan-3.1-pro,0.675,0.930,100,3,2.79,1.45,14.76,77.7,precio publicado + supuestos, sin factura
-spec,Creator,49,500,fal-tripo-h3.1,0.3,0.480,25,5,2.4,2.95,43.65,89.1,precio publicado + supuestos, sin factura
-spec,Creator,49,500,fal-tripo-h3.1,0.3,0.480,50,10,4.8,2.95,41.25,84.2,precio publicado + supuestos, sin factura
-spec,Creator,49,500,fal-tripo-h3.1,0.3,0.480,75,15,7.2,2.95,38.85,79.3,precio publicado + supuestos, sin factura
-spec,Creator,49,500,fal-tripo-h3.1,0.3,0.480,100,20,9.6,2.95,36.45,74.4,precio publicado + supuestos, sin factura
+spec,Creator,49,500,fal-trellis-1,0.02,0.144,25,15,2.16,2.95,43.89,89.6,precio publicado + supuestos, sin factura
+spec,Creator,49,500,fal-trellis-1,0.02,0.144,50,31,4.46,2.95,41.59,84.9,precio publicado + supuestos, sin factura
+spec,Creator,49,500,fal-trellis-1,0.02,0.144,75,46,6.62,2.95,39.43,80.5,precio publicado + supuestos, sin factura
+spec,Creator,49,500,fal-trellis-1,0.02,0.144,100,62,8.93,2.95,37.12,75.8,precio publicado + supuestos, sin factura
 spec,Creator,49,500,fal-hunyuan-3.1-pro,0.675,0.930,25,2,1.86,2.95,44.19,90.2,precio publicado + supuestos, sin factura
 spec,Creator,49,500,fal-hunyuan-3.1-pro,0.675,0.930,50,5,4.65,2.95,41.4,84.5,precio publicado + supuestos, sin factura
 spec,Creator,49,500,fal-hunyuan-3.1-pro,0.675,0.930,75,7,6.51,2.95,39.54,80.7,precio publicado + supuestos, sin factura
 spec,Creator,49,500,fal-hunyuan-3.1-pro,0.675,0.930,100,10,9.3,2.95,36.75,75,precio publicado + supuestos, sin factura
-spec,Commerce,99,1100,fal-tripo-h3.1,0.3,0.480,25,11,5.28,5.45,88.27,89.2,precio publicado + supuestos, sin factura
-spec,Commerce,99,1100,fal-tripo-h3.1,0.3,0.480,50,22,10.56,5.45,82.99,83.8,precio publicado + supuestos, sin factura
-spec,Commerce,99,1100,fal-tripo-h3.1,0.3,0.480,75,33,15.84,5.45,77.71,78.5,precio publicado + supuestos, sin factura
-spec,Commerce,99,1100,fal-tripo-h3.1,0.3,0.480,100,45,21.6,5.45,71.95,72.7,precio publicado + supuestos, sin factura
+spec,Commerce,99,1100,fal-trellis-1,0.02,0.144,25,34,4.9,5.45,88.65,89.5,precio publicado + supuestos, sin factura
+spec,Commerce,99,1100,fal-trellis-1,0.02,0.144,50,68,9.79,5.45,83.76,84.6,precio publicado + supuestos, sin factura
+spec,Commerce,99,1100,fal-trellis-1,0.02,0.144,75,102,14.69,5.45,78.86,79.7,precio publicado + supuestos, sin factura
+spec,Commerce,99,1100,fal-trellis-1,0.02,0.144,100,137,19.73,5.45,73.82,74.6,precio publicado + supuestos, sin factura
 spec,Commerce,99,1100,fal-hunyuan-3.1-pro,0.675,0.930,25,5,4.65,5.45,88.9,89.8,precio publicado + supuestos, sin factura
 spec,Commerce,99,1100,fal-hunyuan-3.1-pro,0.675,0.930,50,11,10.23,5.45,83.32,84.2,precio publicado + supuestos, sin factura
 spec,Commerce,99,1100,fal-hunyuan-3.1-pro,0.675,0.930,75,17,15.81,5.45,77.74,78.5,precio publicado + supuestos, sin factura
 spec,Commerce,99,1100,fal-hunyuan-3.1-pro,0.675,0.930,100,23,21.39,5.45,72.16,72.9,precio publicado + supuestos, sin factura
-spec,Studio,199,2400,fal-tripo-h3.1,0.3,0.480,25,25,12,10.45,176.55,88.7,precio publicado + supuestos, sin factura
-spec,Studio,199,2400,fal-tripo-h3.1,0.3,0.480,50,50,24,10.45,164.55,82.7,precio publicado + supuestos, sin factura
-spec,Studio,199,2400,fal-tripo-h3.1,0.3,0.480,75,75,36,10.45,152.55,76.7,precio publicado + supuestos, sin factura
-spec,Studio,199,2400,fal-tripo-h3.1,0.3,0.480,100,100,48,10.45,140.55,70.6,precio publicado + supuestos, sin factura
+spec,Studio,199,2400,fal-trellis-1,0.02,0.144,25,75,10.8,10.45,177.75,89.3,precio publicado + supuestos, sin factura
+spec,Studio,199,2400,fal-trellis-1,0.02,0.144,50,150,21.6,10.45,166.95,83.9,precio publicado + supuestos, sin factura
+spec,Studio,199,2400,fal-trellis-1,0.02,0.144,75,225,32.4,10.45,156.15,78.5,precio publicado + supuestos, sin factura
+spec,Studio,199,2400,fal-trellis-1,0.02,0.144,100,300,43.2,10.45,145.35,73,precio publicado + supuestos, sin factura
 spec,Studio,199,2400,fal-hunyuan-3.1-pro,0.675,0.930,25,12,11.16,10.45,177.39,89.1,precio publicado + supuestos, sin factura
 spec,Studio,199,2400,fal-hunyuan-3.1-pro,0.675,0.930,50,25,23.25,10.45,165.3,83.1,precio publicado + supuestos, sin factura
 spec,Studio,199,2400,fal-hunyuan-3.1-pro,0.675,0.930,75,38,35.34,10.45,153.21,77,precio publicado + supuestos, sin factura
 spec,Studio,199,2400,fal-hunyuan-3.1-pro,0.675,0.930,100,51,47.43,10.45,141.12,70.9,precio publicado + supuestos, sin factura
-attempts,Starter,19,25,fal-tripo-h3.1,0.3,0.480,25,6,2.88,1.45,14.67,77.2,precio publicado + supuestos, sin factura
-attempts,Starter,19,25,fal-tripo-h3.1,0.3,0.480,50,12,5.76,1.45,11.79,62.1,precio publicado + supuestos, sin factura
-attempts,Starter,19,25,fal-tripo-h3.1,0.3,0.480,75,18,8.64,1.45,8.91,46.9,precio publicado + supuestos, sin factura
-attempts,Starter,19,25,fal-tripo-h3.1,0.3,0.480,100,25,12,1.45,5.55,29.2,precio publicado + supuestos, sin factura
+attempts,Starter,19,25,fal-trellis-1,0.02,0.144,25,6,0.86,1.45,16.69,87.8,precio publicado + supuestos, sin factura
+attempts,Starter,19,25,fal-trellis-1,0.02,0.144,50,12,1.73,1.45,15.82,83.3,precio publicado + supuestos, sin factura
+attempts,Starter,19,25,fal-trellis-1,0.02,0.144,75,18,2.59,1.45,14.96,78.7,precio publicado + supuestos, sin factura
+attempts,Starter,19,25,fal-trellis-1,0.02,0.144,100,25,3.6,1.45,13.95,73.4,precio publicado + supuestos, sin factura
 attempts,Starter,19,25,fal-hunyuan-3.1-pro,0.675,0.930,25,6,5.58,1.45,11.97,63,precio publicado + supuestos, sin factura
 attempts,Starter,19,25,fal-hunyuan-3.1-pro,0.675,0.930,50,12,11.16,1.45,6.39,33.6,precio publicado + supuestos, sin factura
 attempts,Starter,19,25,fal-hunyuan-3.1-pro,0.675,0.930,75,18,16.74,1.45,0.81,4.3,precio publicado + supuestos, sin factura
 attempts,Starter,19,25,fal-hunyuan-3.1-pro,0.675,0.930,100,25,23.25,1.45,-5.7,-30,precio publicado + supuestos, sin factura
-attempts,Growth,49,70,fal-tripo-h3.1,0.3,0.480,25,17,8.16,2.95,37.89,77.3,precio publicado + supuestos, sin factura
-attempts,Growth,49,70,fal-tripo-h3.1,0.3,0.480,50,35,16.8,2.95,29.25,59.7,precio publicado + supuestos, sin factura
-attempts,Growth,49,70,fal-tripo-h3.1,0.3,0.480,75,52,24.96,2.95,21.09,43,precio publicado + supuestos, sin factura
-attempts,Growth,49,70,fal-tripo-h3.1,0.3,0.480,100,70,33.6,2.95,12.45,25.4,precio publicado + supuestos, sin factura
+attempts,Growth,49,70,fal-trellis-1,0.02,0.144,25,17,2.45,2.95,43.6,89,precio publicado + supuestos, sin factura
+attempts,Growth,49,70,fal-trellis-1,0.02,0.144,50,35,5.04,2.95,41.01,83.7,precio publicado + supuestos, sin factura
+attempts,Growth,49,70,fal-trellis-1,0.02,0.144,75,52,7.49,2.95,38.56,78.7,precio publicado + supuestos, sin factura
+attempts,Growth,49,70,fal-trellis-1,0.02,0.144,100,70,10.08,2.95,35.97,73.4,precio publicado + supuestos, sin factura
 attempts,Growth,49,70,fal-hunyuan-3.1-pro,0.675,0.930,25,17,15.81,2.95,30.24,61.7,precio publicado + supuestos, sin factura
 attempts,Growth,49,70,fal-hunyuan-3.1-pro,0.675,0.930,50,35,32.55,2.95,13.5,27.6,precio publicado + supuestos, sin factura
 attempts,Growth,49,70,fal-hunyuan-3.1-pro,0.675,0.930,75,52,48.36,2.95,-2.31,-4.7,precio publicado + supuestos, sin factura
 attempts,Growth,49,70,fal-hunyuan-3.1-pro,0.675,0.930,100,70,65.1,2.95,-19.05,-38.9,precio publicado + supuestos, sin factura
-attempts,Studio,99,160,fal-tripo-h3.1,0.3,0.480,25,40,19.2,5.45,74.35,75.1,precio publicado + supuestos, sin factura
-attempts,Studio,99,160,fal-tripo-h3.1,0.3,0.480,50,80,38.4,5.45,55.15,55.7,precio publicado + supuestos, sin factura
-attempts,Studio,99,160,fal-tripo-h3.1,0.3,0.480,75,120,57.6,5.45,35.95,36.3,precio publicado + supuestos, sin factura
-attempts,Studio,99,160,fal-tripo-h3.1,0.3,0.480,100,160,76.8,5.45,16.75,16.9,precio publicado + supuestos, sin factura
+attempts,Studio,99,160,fal-trellis-1,0.02,0.144,25,40,5.76,5.45,87.79,88.7,precio publicado + supuestos, sin factura
+attempts,Studio,99,160,fal-trellis-1,0.02,0.144,50,80,11.52,5.45,82.03,82.9,precio publicado + supuestos, sin factura
+attempts,Studio,99,160,fal-trellis-1,0.02,0.144,75,120,17.28,5.45,76.27,77,precio publicado + supuestos, sin factura
+attempts,Studio,99,160,fal-trellis-1,0.02,0.144,100,160,23.04,5.45,70.51,71.2,precio publicado + supuestos, sin factura
 attempts,Studio,99,160,fal-hunyuan-3.1-pro,0.675,0.930,25,40,37.2,5.45,56.35,56.9,precio publicado + supuestos, sin factura
 attempts,Studio,99,160,fal-hunyuan-3.1-pro,0.675,0.930,50,80,74.4,5.45,19.15,19.3,precio publicado + supuestos, sin factura
 attempts,Studio,99,160,fal-hunyuan-3.1-pro,0.675,0.930,75,120,111.6,5.45,-18.05,-18.2,precio publicado + supuestos, sin factura
 attempts,Studio,99,160,fal-hunyuan-3.1-pro,0.675,0.930,100,160,148.8,5.45,-55.25,-55.8,precio publicado + supuestos, sin factura
-attempts,Trial pack,9,8,fal-tripo-h3.1,0.3,0.480,25,2,0.96,0.95,7.09,78.8,precio publicado + supuestos, sin factura
-attempts,Trial pack,9,8,fal-tripo-h3.1,0.3,0.480,50,4,1.92,0.95,6.13,68.1,precio publicado + supuestos, sin factura
-attempts,Trial pack,9,8,fal-tripo-h3.1,0.3,0.480,75,6,2.88,0.95,5.17,57.4,precio publicado + supuestos, sin factura
-attempts,Trial pack,9,8,fal-tripo-h3.1,0.3,0.480,100,8,3.84,0.95,4.21,46.8,precio publicado + supuestos, sin factura
+attempts,Trial pack,9,8,fal-trellis-1,0.02,0.144,25,2,0.29,0.95,7.76,86.2,precio publicado + supuestos, sin factura
+attempts,Trial pack,9,8,fal-trellis-1,0.02,0.144,50,4,0.58,0.95,7.47,83,precio publicado + supuestos, sin factura
+attempts,Trial pack,9,8,fal-trellis-1,0.02,0.144,75,6,0.86,0.95,7.19,79.9,precio publicado + supuestos, sin factura
+attempts,Trial pack,9,8,fal-trellis-1,0.02,0.144,100,8,1.15,0.95,6.9,76.7,precio publicado + supuestos, sin factura
 attempts,Trial pack,9,8,fal-hunyuan-3.1-pro,0.675,0.930,25,2,1.86,0.95,6.19,68.8,precio publicado + supuestos, sin factura
 attempts,Trial pack,9,8,fal-hunyuan-3.1-pro,0.675,0.930,50,4,3.72,0.95,4.33,48.1,precio publicado + supuestos, sin factura
 attempts,Trial pack,9,8,fal-hunyuan-3.1-pro,0.675,0.930,75,6,5.58,0.95,2.47,27.4,precio publicado + supuestos, sin factura
 attempts,Trial pack,9,8,fal-hunyuan-3.1-pro,0.675,0.930,100,8,7.44,0.95,0.61,6.8,precio publicado + supuestos, sin factura
-packs,Pack S,15,250,fal-tripo-h3.1,0.3,0.480,25,2,0.96,1.25,12.79,85.3,precio publicado + supuestos, sin factura
-packs,Pack S,15,250,fal-tripo-h3.1,0.3,0.480,50,5,2.4,1.25,11.35,75.7,precio publicado + supuestos, sin factura
-packs,Pack S,15,250,fal-tripo-h3.1,0.3,0.480,75,7,3.36,1.25,10.39,69.3,precio publicado + supuestos, sin factura
-packs,Pack S,15,250,fal-tripo-h3.1,0.3,0.480,100,10,4.8,1.25,8.95,59.7,precio publicado + supuestos, sin factura
+packs,Pack S,15,250,fal-trellis-1,0.02,0.144,25,7,1.01,1.25,12.74,84.9,precio publicado + supuestos, sin factura
+packs,Pack S,15,250,fal-trellis-1,0.02,0.144,50,15,2.16,1.25,11.59,77.3,precio publicado + supuestos, sin factura
+packs,Pack S,15,250,fal-trellis-1,0.02,0.144,75,23,3.31,1.25,10.44,69.6,precio publicado + supuestos, sin factura
+packs,Pack S,15,250,fal-trellis-1,0.02,0.144,100,31,4.46,1.25,9.29,61.9,precio publicado + supuestos, sin factura
 packs,Pack S,15,250,fal-hunyuan-3.1-pro,0.675,0.930,25,1,0.93,1.25,12.82,85.5,precio publicado + supuestos, sin factura
 packs,Pack S,15,250,fal-hunyuan-3.1-pro,0.675,0.930,50,2,1.86,1.25,11.89,79.3,precio publicado + supuestos, sin factura
 packs,Pack S,15,250,fal-hunyuan-3.1-pro,0.675,0.930,75,3,2.79,1.25,10.96,73.1,precio publicado + supuestos, sin factura
 packs,Pack S,15,250,fal-hunyuan-3.1-pro,0.675,0.930,100,5,4.65,1.25,9.1,60.7,precio publicado + supuestos, sin factura
-packs,Pack M,40,750,fal-tripo-h3.1,0.3,0.480,25,7,3.36,2.5,34.14,85.4,precio publicado + supuestos, sin factura
-packs,Pack M,40,750,fal-tripo-h3.1,0.3,0.480,50,15,7.2,2.5,30.3,75.8,precio publicado + supuestos, sin factura
-packs,Pack M,40,750,fal-tripo-h3.1,0.3,0.480,75,23,11.04,2.5,26.46,66.2,precio publicado + supuestos, sin factura
-packs,Pack M,40,750,fal-tripo-h3.1,0.3,0.480,100,31,14.88,2.5,22.62,56.6,precio publicado + supuestos, sin factura
+packs,Pack M,40,750,fal-trellis-1,0.02,0.144,25,23,3.31,2.5,34.19,85.5,precio publicado + supuestos, sin factura
+packs,Pack M,40,750,fal-trellis-1,0.02,0.144,50,46,6.62,2.5,30.88,77.2,precio publicado + supuestos, sin factura
+packs,Pack M,40,750,fal-trellis-1,0.02,0.144,75,69,9.94,2.5,27.56,68.9,precio publicado + supuestos, sin factura
+packs,Pack M,40,750,fal-trellis-1,0.02,0.144,100,93,13.39,2.5,24.11,60.3,precio publicado + supuestos, sin factura
 packs,Pack M,40,750,fal-hunyuan-3.1-pro,0.675,0.930,25,3,2.79,2.5,34.71,86.8,precio publicado + supuestos, sin factura
 packs,Pack M,40,750,fal-hunyuan-3.1-pro,0.675,0.930,50,7,6.51,2.5,30.99,77.5,precio publicado + supuestos, sin factura
 packs,Pack M,40,750,fal-hunyuan-3.1-pro,0.675,0.930,75,11,10.23,2.5,27.27,68.2,precio publicado + supuestos, sin factura
 packs,Pack M,40,750,fal-hunyuan-3.1-pro,0.675,0.930,100,15,13.95,2.5,23.55,58.9,precio publicado + supuestos, sin factura
-packs,Pack L,100,2000,fal-tripo-h3.1,0.3,0.480,25,20,9.6,5.5,84.9,84.9,precio publicado + supuestos, sin factura
-packs,Pack L,100,2000,fal-tripo-h3.1,0.3,0.480,50,41,19.68,5.5,74.82,74.8,precio publicado + supuestos, sin factura
-packs,Pack L,100,2000,fal-tripo-h3.1,0.3,0.480,75,62,29.76,5.5,64.74,64.7,precio publicado + supuestos, sin factura
-packs,Pack L,100,2000,fal-tripo-h3.1,0.3,0.480,100,83,39.84,5.5,54.66,54.7,precio publicado + supuestos, sin factura
+packs,Pack L,100,2000,fal-trellis-1,0.02,0.144,25,62,8.93,5.5,85.57,85.6,precio publicado + supuestos, sin factura
+packs,Pack L,100,2000,fal-trellis-1,0.02,0.144,50,125,18,5.5,76.5,76.5,precio publicado + supuestos, sin factura
+packs,Pack L,100,2000,fal-trellis-1,0.02,0.144,75,187,26.93,5.5,67.57,67.6,precio publicado + supuestos, sin factura
+packs,Pack L,100,2000,fal-trellis-1,0.02,0.144,100,250,36,5.5,58.5,58.5,precio publicado + supuestos, sin factura
 packs,Pack L,100,2000,fal-hunyuan-3.1-pro,0.675,0.930,25,10,9.3,5.5,85.2,85.2,precio publicado + supuestos, sin factura
 packs,Pack L,100,2000,fal-hunyuan-3.1-pro,0.675,0.930,50,21,19.53,5.5,74.97,75,precio publicado + supuestos, sin factura
 packs,Pack L,100,2000,fal-hunyuan-3.1-pro,0.675,0.930,75,31,28.83,5.5,65.67,65.7,precio publicado + supuestos, sin factura

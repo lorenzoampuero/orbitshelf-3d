@@ -3,8 +3,8 @@ import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { dataDir, maxActiveJobs, paidAttemptCap } from "@/lib/env";
-import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type ApiTokenRow, type EmbedRow, type ProjectRow, type IntegrationRow, type PublicationRow, mimeOf, nowIso, orgIdForEmail, versionKey, type CostEventRow, type VersionRow, type LedgerRow, type LocalDb, type ModelRow, type SourcePhoto } from "@/lib/store-shared";
-import type { UserProfile, FailureCode, ImageView, JobEventDto, JobState, PriceEvidence, UsageDto } from "@/lib/types";
+import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type ApiTokenRow, type DueWebhook, type WebhookDeliveryRow, type WebhookEndpointRow, type WebhookResult, type EmbedRow, type ProjectRow, type IntegrationRow, type PublicationRow, mimeOf, nowIso, orgIdForEmail, versionKey, type CostEventRow, type VersionRow, type LedgerRow, type LocalDb, type ModelRow, type SourcePhoto } from "@/lib/store-shared";
+import type { EngineStats, UserProfile, FailureCode, ImageView, JobEventDto, JobState, PriceEvidence, UsageDto } from "@/lib/types";
 
 /* ───────── persistence primitives ───────── */
 
@@ -29,6 +29,8 @@ function upgradeRows(db: LocalDb): LocalDb {
   db.integrations ??= [];
   db.publications ??= [];
   db.apiTokens ??= [];
+  db.webhookEndpoints ??= [];
+  db.webhookDeliveries ??= [];
   for (const m of db.models) {
     if ((m.source as string) === "sloyd") {
       m.source = "ai";
@@ -43,7 +45,7 @@ function upgradeRows(db: LocalDb): LocalDb {
 
 function readDb(): LocalDb {
   ensureDirs();
-  if (!existsSync(dbFile())) return { version: 1, orgs: [], users: [], models: [], ledger: [], audit: [], jobEvents: [], costEvents: [], versions: [], projects: [], embeds: [], integrations: [], publications: [], apiTokens: [] };
+  if (!existsSync(dbFile())) return { version: 1, orgs: [], users: [], models: [], ledger: [], audit: [], jobEvents: [], costEvents: [], versions: [], projects: [], embeds: [], integrations: [], publications: [], apiTokens: [], webhookEndpoints: [], webhookDeliveries: [] };
   let db: LocalDb;
   try {
     db = JSON.parse(readFileSync(dbFile(), "utf8")) as LocalDb;
@@ -609,6 +611,98 @@ export const localStore = {
   async claimPollable(limit = 20): Promise<ModelRow[]> {
     const now = Date.now();
     return tx((db) => db.models.filter((m) => m.source === "ai" && m.status === "processing" && !m.stalled && (!m.nextPollAt || Date.parse(m.nextPollAt) <= now)).slice(0, limit), false);
+  },
+
+  async createWebhookEndpoint(row: WebhookEndpointRow): Promise<void> {
+    await tx((db) => {
+      db.webhookEndpoints.push(row);
+      audit(db, row.orgId, "webhook.created", null);
+    });
+  },
+
+  async listWebhookEndpoints(orgId: string): Promise<WebhookEndpointRow[]> {
+    return tx((db) => db.webhookEndpoints.filter((e) => e.orgId === orgId).sort((a, b) => b.createdAt.localeCompare(a.createdAt)), false);
+  },
+
+  /** Also drops what was still waiting, so a disabled address gets nothing more. */
+  async disableWebhookEndpoint(orgId: string, id: string): Promise<boolean> {
+    return tx((db) => {
+      const e = db.webhookEndpoints.find((x) => x.orgId === orgId && x.id === id);
+      if (!e) return false;
+      e.disabledAt ??= nowIso();
+      for (const d of db.webhookDeliveries) if (d.endpointId === id) d.nextAttemptAt = null;
+      audit(db, orgId, "webhook.disabled", null);
+      return true;
+    });
+  },
+
+  /** One delivery for each active address. The same key on the same address is ignored. */
+  async enqueueWebhook(orgId: string, event: string, payload: string, dedupeKey: string, endpointId?: string): Promise<void> {
+    await tx((db) => {
+      for (const e of db.webhookEndpoints) {
+        if (e.orgId !== orgId || e.disabledAt || (endpointId && e.id !== endpointId)) continue;
+        if (db.webhookDeliveries.some((d) => d.endpointId === e.id && d.dedupeKey === dedupeKey)) continue;
+        const at = nowIso();
+        db.webhookDeliveries.push({ id: randomUUID(), endpointId: e.id, orgId, event, dedupeKey, payload, attempts: 0, nextAttemptAt: at, deliveredAt: null, lastStatus: null, lastError: null, createdAt: at });
+      }
+    });
+  },
+
+  async listWebhookDeliveries(orgId: string, limit = 20): Promise<WebhookDeliveryRow[]> {
+    return tx((db) => db.webhookDeliveries.filter((d) => d.orgId === orgId).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, limit), false);
+  },
+
+  /** Counts the attempt and holds the delivery for two minutes, so a crash mid-send is retried instead of lost. */
+  async claimWebhookDeliveries(limit = 10): Promise<DueWebhook[]> {
+    const now = Date.now();
+    return tx((db) => {
+      const due: DueWebhook[] = [];
+      for (const d of db.webhookDeliveries) {
+        if (due.length >= limit) break;
+        if (!d.nextAttemptAt || Date.parse(d.nextAttemptAt) > now) continue;
+        const e = db.webhookEndpoints.find((x) => x.id === d.endpointId && !x.disabledAt);
+        if (!e) continue;
+        d.attempts += 1;
+        d.nextAttemptAt = new Date(now + 120_000).toISOString();
+        due.push({ ...d, url: e.url, secretEnc: e.secretEnc });
+      }
+      return due;
+    });
+  },
+
+  async recordWebhookResult(id: string, result: WebhookResult): Promise<void> {
+    await tx((db) => {
+      const d = db.webhookDeliveries.find((x) => x.id === id);
+      if (d) Object.assign(d, result);
+    });
+  },
+
+  async pruneWebhookDeliveries(beforeIso: string): Promise<void> {
+    await tx((db) => {
+      db.webhookDeliveries = db.webhookDeliveries.filter((d) => d.nextAttemptAt || d.createdAt >= beforeIso);
+    });
+  },
+
+  /** Across every workspace, for the owner's report. A model in the trash still counts; a permanently deleted one keeps only its cost. */
+  async engineStats(): Promise<EngineStats[]> {
+    return tx((db) => {
+      const stats = new Map<string, EngineStats>();
+      const of = (engineId: string) => {
+        if (!stats.has(engineId)) stats.set(engineId, { engineId, jobs: 0, ready: 0, failed: 0, approved: 0, rejected: 0, publishedUsd: 0 });
+        return stats.get(engineId)!;
+      };
+      for (const c of db.costEvents) {
+        const s = of(c.engineId);
+        s.jobs += 1;
+        s.publishedUsd += c.usd;
+        const m = db.models.find((x) => x.id === c.modelId);
+        if (m?.status === "ready") s.ready += 1;
+        if (m?.status === "failed") s.failed += 1;
+        if (m?.reviewState === "approved") s.approved += 1;
+        if (m?.reviewState === "rejected") s.rejected += 1;
+      }
+      return [...stats.values()].sort((a, b) => a.engineId.localeCompare(b.engineId));
+    }, false);
   },
 
   /** Engines switched off without a deploy. Local mode has no switch table; ENGINES_DISABLED still applies. */

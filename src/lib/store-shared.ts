@@ -5,6 +5,8 @@ import {
   type AssetVersionDto,
   type ApiScope,
   type ApiTokenDto,
+  type WebhookDeliveryDto,
+  type WebhookEndpointDto,
   type EmbedDto,
   type PublicationDto,
   type PublicationState,
@@ -58,6 +60,12 @@ export type PublicationRow = { id: string; orgId: string; modelId: string; check
 
 export type ApiTokenRow = { id: string; orgId: string; name: string; tokenHash: string; prefix: string; scopes: ApiScope[]; createdAt: string; lastUsedAt: string | null; revokedAt: string | null };
 
+export type WebhookEndpointRow = { id: string; orgId: string; url: string; secretEnc: string; createdAt: string; disabledAt: string | null };
+export type WebhookDeliveryRow = { id: string; endpointId: string; orgId: string; event: string; dedupeKey: string; payload: string; attempts: number; nextAttemptAt: string | null; deliveredAt: string | null; lastStatus: number | null; lastError: string | null; createdAt: string };
+/** A delivery that is due, with where it goes. Only the worker sees this. */
+export type DueWebhook = WebhookDeliveryRow & { url: string; secretEnc: string };
+export type WebhookResult = { deliveredAt: string | null; lastStatus: number | null; lastError: string | null; nextAttemptAt: string | null };
+
 export type OrgRow = { id: string; name: string; createdAt: string };
 export type UserRow = { id: string; email: string; orgId: string; createdAt: string; profile?: UserProfile };
 export type LedgerRow = {
@@ -73,7 +81,7 @@ export type AuditRow = { id: string; orgId: string; action: string; modelId: str
 export type JobEventRow = JobEventDto & { orgId: string; modelId: string };
 /** What a provider job cost us. Separate from the ledger, which tracks what the customer used. */
 export type CostEventRow = { id: string; orgId: string; modelId: string; engineId: string; usd: number; evidence: PriceEvidence; at: string };
-export type LocalDb = { version: 1; orgs: OrgRow[]; users: UserRow[]; models: ModelRow[]; ledger: LedgerRow[]; audit: AuditRow[]; jobEvents: JobEventRow[]; costEvents: CostEventRow[]; versions: VersionRow[]; projects: ProjectRow[]; embeds: EmbedRow[]; integrations: IntegrationRow[]; publications: PublicationRow[]; apiTokens: ApiTokenRow[] };
+export type LocalDb = { version: 1; orgs: OrgRow[]; users: UserRow[]; models: ModelRow[]; ledger: LedgerRow[]; audit: AuditRow[]; jobEvents: JobEventRow[]; costEvents: CostEventRow[]; versions: VersionRow[]; projects: ProjectRow[]; embeds: EmbedRow[]; integrations: IntegrationRow[]; publications: PublicationRow[]; apiTokens: ApiTokenRow[]; webhookEndpoints: WebhookEndpointRow[]; webhookDeliveries: WebhookDeliveryRow[] };
 
 export const emptyChecklist = (): Checklist => Object.fromEntries(CHECKLIST_KEYS.map((k) => [k, false])) as Checklist;
 export const emptyDimensions = (): Dimensions => ({ widthMm: null, heightMm: null, depthMm: null });
@@ -139,6 +147,20 @@ export const thumbnailKey = (orgId: string, modelId: string, ext: string) => `th
 export const toEmbedDto = (e: EmbedRow): EmbedDto => ({ id: e.id, token: e.token, modelId: e.modelId, allowedDomains: e.allowedDomains, createdAt: e.createdAt, active: !e.revokedAt });
 
 export const toPublicationDto = (p: PublicationRow): PublicationDto => ({ id: p.id, modelId: p.modelId, shop: p.shop, productId: p.productId, productTitle: p.productTitle, state: p.state, error: p.error, createdAt: p.createdAt });
+
+/** Never includes the secret. */
+export const toWebhookEndpointDto = (e: WebhookEndpointRow): WebhookEndpointDto => ({ id: e.id, url: e.url, createdAt: e.createdAt, active: !e.disabledAt });
+/** Never includes the payload. */
+export const toWebhookDeliveryDto = (d: WebhookDeliveryRow): WebhookDeliveryDto => ({
+  id: d.id,
+  endpointId: d.endpointId,
+  event: d.event,
+  attempts: d.attempts,
+  state: d.deliveredAt ? "delivered" : d.nextAttemptAt ? "pending" : "failed",
+  lastStatus: d.lastStatus,
+  lastError: d.lastError,
+  createdAt: d.createdAt,
+});
 
 /** Never includes the hash. */
 export const toApiTokenDto = (t: ApiTokenRow): ApiTokenDto => ({ id: t.id, name: t.name, prefix: t.prefix, scopes: t.scopes, createdAt: t.createdAt, lastUsedAt: t.lastUsedAt, active: !t.revokedAt });

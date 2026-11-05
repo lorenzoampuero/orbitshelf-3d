@@ -47,12 +47,16 @@ Lanza 20 solicitudes simultáneas contra un saldo de 3 y comprueba que solo se g
 npx tsx scripts/migrate-json-to-postgres.ts
 ```
 
-Sin `--apply` solo informa qué copiaría. Con `--apply` copia, y se puede repetir sin duplicar.
+Sin `--apply` solo informa qué copiaría. Con `--apply` copia todas las tablas y archivos, incluidas versiones, miniaturas, proyectos, visores, tokens y webhooks, y se puede repetir sin duplicar. Los tokens de Shopify y los secretos de webhooks van cifrados: usa el mismo `INTEGRATIONS_KEY` en producción o habrá que reconectarlos.
+
+La copia de filas está probada en PGlite. La subida de archivos al bucket nunca se ha ejecutado.
 
 ## 7. Trabajos en segundo plano
 
 - **Servidor Node siempre encendido (recomendado):** la app revisa los trabajos sola. Se pueden correr varias instancias: no se pisan.
 - **Hosting sin proceso permanente:** define `CRON_SECRET` y haz que un programador llame a `POST /api/internal/poll` con `Authorization: Bearer <CRON_SECRET>`, idealmente cada minuto.
+
+Esta misma revisión envía los webhooks pendientes.
 
 ## 8. Apagar un motor sin desplegar
 

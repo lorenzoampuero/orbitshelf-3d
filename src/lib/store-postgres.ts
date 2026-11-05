@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { blobStoreFromEnv, type BlobStore } from "@/lib/blob";
 import { maxActiveJobs, paidAttemptCap } from "@/lib/env";
 import { pgClient, type Queryable, type SqlClient, type SqlRow } from "@/lib/sql";
-import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type ApiTokenRow, type EmbedRow, type ProjectRow, type PublicationRow, glbKey, mimeOf, nowIso, orgIdForEmail, sourceKey, versionKey, type VersionRow, type CostEventRow, type ExtraImage, type ModelRow, type OrgRow, type SourcePhoto, type UserRow } from "@/lib/store-shared";
+import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type ApiTokenRow, type DueWebhook, type WebhookDeliveryRow, type WebhookEndpointRow, type EmbedRow, type ProjectRow, type PublicationRow, glbKey, mimeOf, nowIso, orgIdForEmail, sourceKey, versionKey, type VersionRow, type CostEventRow, type ExtraImage, type ModelRow, type OrgRow, type SourcePhoto, type UserRow } from "@/lib/store-shared";
 import type { Store } from "@/lib/store-local";
 import type { UserProfile, FailureCode, ImageView, JobEventDto, JobState, LedgerEntryDto, PriceEvidence, UsageDto } from "@/lib/types";
 
@@ -192,6 +192,27 @@ const tokenFromRow = (r: SqlRow): ApiTokenRow => ({
   lastUsedAt: iso(r.last_used_at),
   revokedAt: iso(r.revoked_at),
 });
+
+function webhookEndpointFromRow(r: SqlRow): WebhookEndpointRow {
+  return { id: String(r.id), orgId: String(r.org_id), url: String(r.url), secretEnc: String(r.secret_enc), createdAt: iso(r.created_at)!, disabledAt: iso(r.disabled_at) };
+}
+
+function webhookDeliveryFromRow(r: SqlRow): WebhookDeliveryRow {
+  return {
+    id: String(r.id),
+    endpointId: String(r.endpoint_id),
+    orgId: String(r.org_id),
+    event: String(r.event),
+    dedupeKey: String(r.dedupe_key),
+    payload: String(r.payload),
+    attempts: Number(r.attempts),
+    nextAttemptAt: iso(r.next_attempt_at),
+    deliveredAt: iso(r.delivered_at),
+    lastStatus: r.last_status === null || r.last_status === undefined ? null : Number(r.last_status),
+    lastError: (r.last_error as string | null) ?? null,
+    createdAt: iso(r.created_at)!,
+  };
+}
 
 const asUuid = (id: string) => (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) ? id : null);
 
@@ -724,6 +745,87 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
         [limit, LEASE_SECONDS],
       );
       return res.rows.map(fromRow);
+    },
+
+    async createWebhookEndpoint(row) {
+      await sql.transaction(async (tx) => {
+        await tx.query("INSERT INTO public.webhook_endpoints (id, org_id, url, secret_enc, created_at) VALUES ($1, $2, $3, $4, $5)", [row.id, row.orgId, row.url, row.secretEnc, row.createdAt]);
+        await audit(tx, row.orgId, "webhook.created", null);
+      });
+    },
+
+    async listWebhookEndpoints(orgId) {
+      return (await sql.query("SELECT * FROM public.webhook_endpoints WHERE org_id = $1 ORDER BY created_at DESC", [orgId])).rows.map(webhookEndpointFromRow);
+    },
+
+    async disableWebhookEndpoint(orgId, id) {
+      if (!asUuid(id)) return false;
+      return sql.transaction(async (tx) => {
+        const r = (await tx.query("UPDATE public.webhook_endpoints SET disabled_at = COALESCE(disabled_at, now()) WHERE org_id = $1 AND id = $2 RETURNING id", [orgId, id])).rows[0];
+        if (!r) return false;
+        await tx.query("UPDATE public.webhook_deliveries SET next_attempt_at = NULL WHERE endpoint_id = $1", [id]);
+        await audit(tx, orgId, "webhook.disabled", null);
+        return true;
+      });
+    },
+
+    async enqueueWebhook(orgId, event, payload, dedupeKey, endpointId) {
+      await sql.query(
+        `INSERT INTO public.webhook_deliveries (id, endpoint_id, org_id, event, dedupe_key, payload, next_attempt_at, created_at)
+         SELECT gen_random_uuid(), e.id, e.org_id, $2, $3, $4, now(), now()
+         FROM public.webhook_endpoints e
+         WHERE e.org_id = $1 AND e.disabled_at IS NULL AND ($5::uuid IS NULL OR e.id = $5::uuid)
+         ON CONFLICT (endpoint_id, dedupe_key) DO NOTHING`,
+        [orgId, event, dedupeKey, payload, endpointId ?? null],
+      );
+    },
+
+    async listWebhookDeliveries(orgId, limit = 20) {
+      return (await sql.query("SELECT * FROM public.webhook_deliveries WHERE org_id = $1 ORDER BY created_at DESC LIMIT $2", [orgId, limit])).rows.map(webhookDeliveryFromRow);
+    },
+
+    /** Several workers can run at once. SKIP LOCKED and the two-minute hold keep them from sending the same delivery. */
+    async claimWebhookDeliveries(limit = 10): Promise<DueWebhook[]> {
+      const res = await sql.query(
+        `WITH due AS (
+           SELECT d.id FROM public.webhook_deliveries d
+           JOIN public.webhook_endpoints e ON e.id = d.endpoint_id
+           WHERE d.next_attempt_at <= now() AND e.disabled_at IS NULL
+           ORDER BY d.next_attempt_at
+           LIMIT $1
+           FOR UPDATE OF d SKIP LOCKED
+         )
+         UPDATE public.webhook_deliveries d
+         SET attempts = d.attempts + 1, next_attempt_at = now() + interval '120 seconds'
+         FROM due, public.webhook_endpoints e
+         WHERE d.id = due.id AND e.id = d.endpoint_id
+         RETURNING d.*, e.url, e.secret_enc`,
+        [limit],
+      );
+      return res.rows.map((r) => ({ ...webhookDeliveryFromRow(r), url: String(r.url), secretEnc: String(r.secret_enc) }));
+    },
+
+    async recordWebhookResult(id, result) {
+      await sql.query("UPDATE public.webhook_deliveries SET delivered_at = $2, last_status = $3, last_error = $4, next_attempt_at = $5 WHERE id = $1", [id, result.deliveredAt, result.lastStatus, result.lastError, result.nextAttemptAt]);
+    },
+
+    async pruneWebhookDeliveries(beforeIso) {
+      await sql.query("DELETE FROM public.webhook_deliveries WHERE next_attempt_at IS NULL AND created_at < $1", [beforeIso]);
+    },
+
+    /** Across every workspace, for the owner's report. A model in the trash still counts; a permanently deleted one keeps only its cost. */
+    async engineStats() {
+      const rows = (
+        await sql.query(
+          `SELECT c.engine_id, COUNT(*) AS jobs, COALESCE(SUM(c.usd), 0) AS usd,
+             COUNT(*) FILTER (WHERE m.status = 'ready') AS ready, COUNT(*) FILTER (WHERE m.status = 'failed') AS failed,
+             COUNT(*) FILTER (WHERE m.review_state = 'approved') AS approved, COUNT(*) FILTER (WHERE m.review_state = 'rejected') AS rejected
+           FROM public.provider_cost_events c
+           LEFT JOIN public.models m ON m.id = c.model_id
+           GROUP BY c.engine_id ORDER BY c.engine_id`,
+        )
+      ).rows;
+      return rows.map((r) => ({ engineId: String(r.engine_id), jobs: Number(r.jobs), ready: Number(r.ready), failed: Number(r.failed), approved: Number(r.approved), rejected: Number(r.rejected), publishedUsd: Number(r.usd) }));
     },
 
     async listDisabledEngines() {

@@ -3,6 +3,7 @@ node_modules/
 out/
 .data/
 .data-e2e/
+.benchmark/
 .env
 .env.*
 !.env.example

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { RotateCcw, Play, Pause, Box } from "lucide-react";
+import { RotateCcw, Play, Pause, Box, Grid3x3 } from "lucide-react";
 
 type Props = {
   src: string;
@@ -14,6 +14,9 @@ type Props = {
   autoRotateOffLabel?: string;
   loadingLabel?: string;
   errorLabel?: string;
+  /** Shows a button to see the mesh instead of the surface. Left out on pages where the mesh is of no use. */
+  wireframeLabel?: string;
+  surfaceLabel?: string;
   testId?: string;
   /** When false the wheel scrolls the page instead of zooming (marketing pages). */
   wheelZoom?: boolean;
@@ -31,6 +34,24 @@ type ModelViewerEl = HTMLElement & {
   getCameraOrbit?: () => { theta: number; phi: number; radius: number };
 };
 
+type SceneNode = { material?: { wireframe?: boolean } | { wireframe?: boolean }[] };
+type ThreeScene = { traverse?: (visit: (node: SceneNode) => void) => void; queueRender?: () => void };
+
+/**
+ * model-viewer has no wireframe option, so this reaches its three.js scene through an internal symbol.
+ * Returns false if a later version moves it, and the button then stays hidden rather than doing nothing.
+ */
+function applyWireframe(el: HTMLElement, on: boolean): boolean {
+  const symbol = Object.getOwnPropertySymbols(el).find((s) => s.description === "scene");
+  const scene = symbol ? (el as unknown as Record<symbol, ThreeScene | undefined>)[symbol] : undefined;
+  if (!scene?.traverse || !scene.queueRender) return false;
+  scene.traverse((node) => {
+    for (const material of [node.material].flat()) if (material) material.wireframe = on;
+  });
+  scene.queueRender();
+  return true;
+}
+
 export function ModelViewerBox({
   src,
   alt,
@@ -42,6 +63,8 @@ export function ModelViewerBox({
   autoRotateOffLabel = "Stop rotating",
   loadingLabel = "Loading 3D model…",
   errorLabel = "3D preview unavailable",
+  wireframeLabel,
+  surfaceLabel,
   testId = "model-viewer-box",
   wheelZoom = true,
   bare = false,
@@ -55,6 +78,9 @@ export function ModelViewerBox({
     failedSrc === src ? "error" : loadedSrc === src ? "ready" : "loading";
   const [orbit, setOrbit] = useState("25deg 72deg 105%");
   const [autoRotate, setAutoRotate] = useState(false);
+  const [wireframe, setWireframe] = useState(false);
+  const [wireframeReady, setWireframeReady] = useState(false);
+  const wireframeRef = useRef(false);
   const [reducedMotion, setReducedMotion] = useState(() =>
     typeof window !== "undefined" ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false,
   );
@@ -120,7 +146,10 @@ export function ModelViewerBox({
   useEffect(() => {
     const el = viewerRef.current;
     if (!el || status !== "ready") return;
-    const handle = () => onReadyRef.current?.(async () => (el.toBlob ? el.toBlob({ mimeType: "image/png" }) : null));
+    const handle = () => {
+      setWireframeReady(applyWireframe(el, wireframeRef.current));
+      onReadyRef.current?.(async () => (el.toBlob ? el.toBlob({ mimeType: "image/png" }) : null));
+    };
     el.addEventListener("load", handle);
     return () => el.removeEventListener("load", handle);
   }, [status]);
@@ -136,6 +165,8 @@ export function ModelViewerBox({
   }, [autoRotate, reducedMotion]);
 
   function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    // Capturing the pointer on a button press would send its click to this box, and the button would do nothing.
+    if ((e.target as Element).closest("button")) return;
     dragRef.current.active = true;
     dragRef.current.x = e.clientX;
     dragRef.current.y = e.clientY;
@@ -165,6 +196,15 @@ export function ModelViewerBox({
   function onWheel(e: React.WheelEvent<HTMLDivElement>) {
     dragRef.current.zoom = Math.max(60, Math.min(180, Math.round(dragRef.current.zoom + e.deltaY * 0.08)));
     setOrbit(`${dragRef.current.yaw}deg ${dragRef.current.pitch}deg ${dragRef.current.zoom}%`);
+  }
+
+  function toggleWireframe() {
+    const el = viewerRef.current;
+    if (!el) return;
+    const next = !wireframe;
+    if (!applyWireframe(el, next)) return setWireframeReady(false);
+    wireframeRef.current = next;
+    setWireframe(next);
   }
 
   function resetCamera() {
@@ -197,6 +237,19 @@ export function ModelViewerBox({
           <span />
         )}
         <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-1.5">
+          {wireframeLabel && wireframeReady && (
+            <button
+              type="button"
+              onClick={toggleWireframe}
+              aria-pressed={wireframe}
+              aria-label={wireframe ? surfaceLabel : wireframeLabel}
+              data-testid={`${testId}-wireframe`}
+              className="inline-flex items-center gap-1 rounded-full border border-line bg-bg px-2.5 py-1 text-xs font-medium text-fg hover:border-accent"
+            >
+              <Grid3x3 className="h-3 w-3" aria-hidden="true" />
+              <span className="hidden sm:inline">{wireframe ? surfaceLabel : wireframeLabel}</span>
+            </button>
+          )}
           {!reducedMotion && (
             <button
               type="button"

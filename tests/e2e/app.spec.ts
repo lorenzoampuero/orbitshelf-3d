@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import sharp from "sharp";
+import { createHmac } from "node:crypto";
 import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";
 
@@ -499,6 +500,39 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     const stats = await sharp(await thumb.body()).stats();
     expect(stats.channels.some((c) => c.stdev > 1)).toBe(true); // not a blank image
 
+    // The viewer's own buttons respond to a real click
+    const rotate = page.getByTestId("studio-viewer").getByRole("button", { name: "Auto-rotate" });
+    await rotate.click();
+    await expect(page.getByTestId("studio-viewer").getByRole("button", { name: "Stop rotating" })).toHaveAttribute("aria-pressed", "true");
+    await page.getByTestId("studio-viewer").getByRole("button", { name: "Stop rotating" }).click();
+    await expect(rotate).toHaveAttribute("aria-pressed", "false");
+
+    // The mesh view changes what is drawn and leaves the file alone
+    const wireframe = page.getByTestId("studio-viewer-wireframe");
+    await expect(wireframe).toHaveAttribute("aria-pressed", "false");
+    const usesWireframe = () =>
+      page.evaluate(() => {
+        const viewer = document.querySelector('[data-testid="studio-viewer"] model-viewer') as HTMLElement & Record<symbol, { traverse(f: (n: { material?: { wireframe?: boolean } }) => void): void }>;
+        const symbol = Object.getOwnPropertySymbols(viewer).find((s) => s.description === "scene")!;
+        const seen: boolean[] = [];
+        viewer[symbol].traverse((n) => {
+          if (n.material) seen.push(Boolean(n.material.wireframe));
+        });
+        return seen;
+      });
+    expect((await usesWireframe()).every((w) => !w)).toBe(true);
+    const shot = () => page.getByTestId("studio-viewer").locator("model-viewer").screenshot();
+    const surface = await shot();
+    await wireframe.click();
+    await expect(wireframe).toHaveAttribute("aria-pressed", "true");
+    const drawn = await usesWireframe();
+    expect(drawn.length).toBeGreaterThan(0);
+    expect(drawn.every(Boolean)).toBe(true);
+    await expect.poll(async () => Buffer.compare(await shot(), surface) !== 0, { timeout: 5_000 }).toBe(true);
+    await page.getByTestId("studio-viewer").screenshot({ path: path.join(SCREENSHOT_DIR, "visor-malla.png") });
+    await wireframe.click();
+    expect((await usesWireframe()).every((w) => !w)).toBe(true);
+
     // Diagnostics are measured from the file
     await expect(page.getByTestId("tools-metrics")).toBeVisible();
     await expect(page.getByTestId("preset-web-result")).toBeVisible();
@@ -865,6 +899,54 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     }).toPass({ timeout: 15_000 });
     await expect(page.getByTestId("studio-prompt")).toContainText("low-poly red fox");
     await expect(page.getByTestId("studio-source-photo")).toHaveCount(0);
+  });
+
+  test("7z. Webhooks: an address gets a secret once, a test arrives signed, and a disabled address gets nothing", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/login");
+    await page.fill("#login-email", "hooks@merchant.test");
+    await page.getByTestId("login-submit").click();
+    await page.waitForURL("**/dashboard");
+    await page.goto("/dashboard/api");
+
+    await page.getByTestId("webhook-url").fill("http://127.0.0.1:3999/hook");
+    await page.getByTestId("webhook-add").click();
+    const secret = (await page.getByTestId("webhook-secret").textContent())!;
+    expect(secret).toMatch(/^whsec_/);
+
+    // The secret is never in what the server returns afterwards
+    expect(await (await page.request.get("/api/integrations/webhooks")).text()).not.toContain(secret);
+
+    await page.getByTestId("webhook-test").click();
+    await expect(page.getByTestId("webhook-notice")).toBeVisible();
+    await expect(async () => {
+      await page.getByTestId("webhook-refresh").click();
+      await expect(page.getByTestId("webhook-deliveries").locator('[data-state="delivered"]')).toHaveCount(1, { timeout: 1500 });
+    }).toPass({ timeout: 30_000 });
+
+    const { hooks } = (await (await fetch("http://127.0.0.1:3999/__hooks")).json()) as { hooks: { signature: string; body: string }[] };
+    const ping = hooks.find((h) => JSON.parse(h.body).type === "ping")!;
+    const [, t, v1] = ping.signature.match(/^t=(\d+),v1=([0-9a-f]{64})$/)!;
+    expect(createHmac("sha256", secret).update(`${t}.${ping.body}`).digest("hex")).toBe(v1);
+
+    const a11y = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+    expect(a11y.violations).toEqual([]);
+    await page.getByTestId("webhooks").screenshot({ path: path.join(SCREENSHOT_DIR, "webhooks.png"), mask: [page.getByTestId("webhook-secret")] });
+
+    await page.getByTestId("webhook-disable").click();
+    await expect(page.getByTestId("webhook-test")).toHaveCount(0);
+    const [endpoint] = (await (await page.request.get("/api/integrations/webhooks")).json()).endpoints as { id: string; active: boolean }[];
+    expect(endpoint.active).toBe(false);
+    expect((await page.request.post(`/api/integrations/webhooks/${endpoint.id}`)).status()).toBe(404);
+
+    // Someone else's workspace cannot touch it
+    await page.request.post("/api/auth/logout");
+    await page.goto("/login");
+    await page.fill("#login-email", "other-hooks@merchant.test");
+    await page.getByTestId("login-submit").click();
+    await page.waitForURL("**/dashboard");
+    expect((await (await page.request.get("/api/integrations/webhooks")).json()).endpoints).toEqual([]);
+    expect((await page.request.delete(`/api/integrations/webhooks/${endpoint.id}`)).status()).toBe(404);
   });
 
   test("8. Marketing pages: accessible (axe), no horizontal overflow at 375 px, and no sub-12px text", async ({ page }) => {

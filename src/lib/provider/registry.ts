@@ -1,6 +1,7 @@
 import "server-only";
 import { IMAGE_VIEWS, PROVIDER_CREDITS_PER_USD, providerCreditsEstimate, type EngineDto, type ImageView, type TextureResolution } from "@/lib/types";
 import { dataUri, falAdapter } from "./fal";
+import { meshyAdapter } from "./meshy";
 import { sloydAdapter } from "./sloyd";
 import type { Deps, EngineDefinition, GenerationRequest, ModelAdapter, PriceLine, PriceQuery, ProviderId } from "./types";
 import type { NormalizedImage } from "@/lib/image";
@@ -26,6 +27,21 @@ const fileUrl = (value: unknown): string | null => {
 };
 
 const round = (usd: number) => Math.round(usd * 10_000) / 10_000;
+
+/** Hunyuan's `model_glb` holds "GLB if available, otherwise OBJ", and fal's own example is an OBJ. Only a real GLB is followed. */
+const hunyuanGlb = (o: unknown): string | null => {
+  const out = o as { model_glb?: { url?: unknown; content_type?: unknown }; model_urls?: { glb?: unknown } };
+  const named = fileUrl(out.model_urls?.glb);
+  if (named) return named;
+  const url = fileUrl(out.model_glb);
+  return url && out.model_glb?.content_type !== "model/obj" && !/\.obj(\?|$)/i.test(url) ? url : null;
+};
+
+/**
+ * Meshy sells credits in plans, not in dollars. Its Pro plan read CLP 19,000 for 1,000 credits on 2026-11-05 (https://www.meshy.ai/pricing);
+ * the Starter plan has no API. US$0.02 a credit converts that at about CLP 950, which is an assumption. Replace it with the invoice in the paid test.
+ */
+const MESHY_USD_PER_CREDIT = 0.02;
 
 const ENGINES: EngineDefinition[] = [
   {
@@ -77,7 +93,35 @@ const ENGINES: EngineDefinition[] = [
           face_count: FACE_TARGET,
         };
       },
-      glbUrl: (o) => fileUrl((o as { model_glb?: unknown }).model_glb) ?? fileUrl((o as { model_urls?: { glb?: unknown } }).model_urls?.glb),
+      glbUrl: hunyuanGlb,
+    },
+  },
+  {
+    id: "fal-hunyuan-3.1-rapid",
+    provider: "fal",
+    label: "Hunyuan3D 3.1 Rapid",
+    lifecycle: "disabled",
+    modes: ["image"],
+    maxPhotos: 1,
+    views: ["front"],
+    geometryOnly: true,
+    exports: ["glb", "obj"],
+    priceSource: "https://fal.ai/models/fal-ai/hunyuan-3d/v3.1/rapid/image-to-3d",
+    priceVerifiedAt: "2026-11-05",
+    priceEvidence: "published",
+    price: (q) => {
+      const lines: PriceLine[] = [{ code: "generation", usd: 0.225 }];
+      if (q.texture !== "none") lines.push({ code: "texture", usd: 0.15 });
+      return lines;
+    },
+    fal: {
+      endpoint: "fal-ai/hunyuan-3d/v3.1/rapid/image-to-3d",
+      buildInput: (req) => {
+        const p = photosOf(req);
+        const textured = req.textureResolution !== "none";
+        return { input_image_url: p.front && dataUri(p.front), enable_geometry: !textured, enable_pbr: textured };
+      },
+      glbUrl: hunyuanGlb,
     },
   },
   {
@@ -96,6 +140,33 @@ const ENGINES: EngineDefinition[] = [
     price: () => [{ code: "generation", usd: 0.4 }],
     fal: {
       endpoint: "fal-ai/hyper3d/rodin/v2.5",
+      buildInput: (req) => {
+        const p = photosOf(req);
+        return {
+          image_urls: IMAGE_VIEWS.flatMap((v) => (p[v] ? [dataUri(p[v]!)] : [])),
+          geometry_file_format: "glb",
+          material: req.textureResolution === "none" ? "None" : "PBR",
+        };
+      },
+      glbUrl: (o) => fileUrl((o as { model_mesh?: unknown }).model_mesh),
+    },
+  },
+  {
+    id: "fal-rodin-2.5-fast",
+    provider: "fal",
+    label: "Rodin 2.5 Fast",
+    lifecycle: "disabled",
+    modes: ["image", "multi-image"],
+    maxPhotos: 4,
+    views: ["front", "left", "back", "right"],
+    geometryOnly: true,
+    exports: ["glb", "usdz", "fbx", "obj", "stl"],
+    priceSource: "https://fal.ai/models/fal-ai/hyper3d/rodin/v2.5/fast",
+    priceVerifiedAt: "2026-11-05",
+    priceEvidence: "published",
+    price: () => [{ code: "generation", usd: 0.1 }],
+    fal: {
+      endpoint: "fal-ai/hyper3d/rodin/v2.5/fast",
       buildInput: (req) => {
         const p = photosOf(req);
         return {
@@ -162,9 +233,49 @@ const ENGINES: EngineDefinition[] = [
       glbUrl: (o) => fileUrl((o as { model_glb?: unknown }).model_glb),
     },
   },
+  {
+    id: "fal-trellis-1",
+    provider: "fal",
+    label: "TRELLIS",
+    lifecycle: "disabled",
+    modes: ["image"],
+    maxPhotos: 1,
+    views: ["front"],
+    geometryOnly: false,
+    exports: ["glb"],
+    priceSource: "https://fal.ai/models/fal-ai/trellis",
+    priceVerifiedAt: "2026-11-05",
+    priceEvidence: "published",
+    price: () => [{ code: "generation", usd: 0.02 }],
+    fal: {
+      endpoint: "fal-ai/trellis",
+      buildInput: (req) => {
+        const p = photosOf(req);
+        return { image_url: p.front && dataUri(p.front), texture_size: req.textureResolution === "2k" ? "2048" : req.textureResolution === "512" ? "512" : "1024" };
+      },
+      // fal's sample shows a PNG here. The bytes are validated as a GLB before anything is stored, so a wrong format fails the job.
+      glbUrl: (o) => fileUrl((o as { model_mesh?: unknown }).model_mesh),
+    },
+  },
+  {
+    id: "meshy-7.1",
+    provider: "meshy",
+    label: "Meshy 7.1",
+    lifecycle: "disabled",
+    modes: ["image"],
+    maxPhotos: 1,
+    views: ["front"],
+    geometryOnly: true,
+    exports: ["glb", "obj", "fbx", "stl", "usdz"],
+    priceSource: "https://docs.meshy.ai/en/api/pricing",
+    priceVerifiedAt: "2026-11-05",
+    priceEvidence: "published",
+    price: (q) => [{ code: "generation", usd: round((q.texture === "none" ? 20 : 30) * MESHY_USD_PER_CREDIT) }],
+    meshy: { aiModel: "meshy-7.1" },
+  },
 ];
 
-const ADAPTERS: Record<ProviderId, ModelAdapter> = { sloyd: sloydAdapter, fal: falAdapter };
+const ADAPTERS: Record<ProviderId, ModelAdapter> = { sloyd: sloydAdapter, fal: falAdapter, meshy: meshyAdapter };
 
 export const adapterFor = (engine: EngineDefinition): ModelAdapter => ADAPTERS[engine.provider];
 

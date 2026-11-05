@@ -1,8 +1,8 @@
 import "server-only";
 import { createHash, createPublicKey, verify as verifySignature } from "node:crypto";
 import { falConfig, type FalConfig } from "@/lib/env";
-import { MAX_GLB_BYTES } from "@/lib/glb";
 import type { NormalizedImage } from "@/lib/image";
+import { downloadGlb, isAllowedResultUrl } from "./download";
 import { ProviderError, type Deps, type EngineDefinition, type JobSnapshot, type ModelAdapter, type ProviderJobRef } from "./types";
 
 function cfg(deps?: Deps): FalConfig {
@@ -13,6 +13,8 @@ function cfg(deps?: Deps): FalConfig {
 
 /** Photos go inline, so no public URL to a private product photo ever exists. */
 export const dataUri = (image: NormalizedImage) => `data:${image.mime};base64,${image.buffer.toString("base64")}`;
+
+export { isAllowedResultUrl };
 
 export function redactFal(text: string, c: FalConfig | null): string {
   let out = text;
@@ -76,49 +78,6 @@ function webhookUrl(): string | null {
   const site = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "");
   if (!site || !site.startsWith("https://")) return null; // fal drops deliveries to private or loopback addresses
   return `${site}/api/webhooks/fal`;
-}
-
-/** Only https on an allowed host: the URL comes from a third party and the server fetches it. No credentials are sent. */
-export function isAllowedResultUrl(raw: string, c: FalConfig): boolean {
-  let u: URL;
-  try {
-    u = new URL(raw);
-  } catch {
-    return false;
-  }
-  if (u.protocol !== "https:" && !(c.allowInsecureResultHosts && u.protocol === "http:")) return false;
-  if (u.username || u.password) return false;
-  return c.resultHosts.some((h) => u.hostname === h || u.hostname.endsWith(`.${h}`));
-}
-
-async function downloadGlb(url: string, c: FalConfig, deps?: Deps): Promise<Buffer> {
-  if (!isAllowedResultUrl(url, c)) throw new ProviderError("invalid_response", "The provider returned a file location that is not allowed.");
-  const f = deps?.fetch ?? fetch;
-  let res: Response;
-  try {
-    res = await f(url, { signal: AbortSignal.timeout(deps?.timeoutMs ?? 120_000), cache: "no-store", redirect: "error" });
-  } catch (e) {
-    const name = e instanceof Error ? e.name : "";
-    throw new ProviderError(name === "TimeoutError" ? "timeout" : "network", "Could not download the generated file.");
-  }
-  if (!res.ok) throw new ProviderError(res.status >= 500 ? "server" : "not_ready", `Result download failed (HTTP ${res.status}).`, res.status);
-  if (Number(res.headers.get("content-length") ?? "0") > MAX_GLB_BYTES) throw new ProviderError("invalid_response", "Generated file is larger than the allowed maximum.");
-  const reader = res.body?.getReader();
-  if (!reader) throw new ProviderError("not_ready", "Empty result body.");
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    total += value.byteLength;
-    if (total > MAX_GLB_BYTES) {
-      await reader.cancel();
-      throw new ProviderError("invalid_response", "Generated file is larger than the allowed maximum.");
-    }
-    chunks.push(value);
-  }
-  if (total === 0) throw new ProviderError("not_ready", "The generated file is empty.");
-  return Buffer.concat(chunks);
 }
 
 export const falAdapter: ModelAdapter = {

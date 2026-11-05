@@ -99,3 +99,26 @@ export function falConfig(): FalConfig | null {
     allowInsecureResultHosts: test,
   };
 }
+
+export type MeshyConfig = {
+  key: string;
+  apiBase: string;
+  resultHosts: string[];
+  allowInsecureResultHosts: boolean;
+};
+
+export const DEFAULT_MESHY_API_BASE = "https://api.meshy.ai";
+
+/** Null → Meshy is off. As with fal, the base URL and hosts can only be changed in test mode, so a stray variable cannot send the key elsewhere. */
+export function meshyConfig(): MeshyConfig | null {
+  const key = process.env.MESHY_API_KEY?.trim();
+  if (!key) return null;
+  const test = process.env.ORBITSHELF_TEST === "1";
+  const hosts = test && process.env.MESHY_RESULT_HOSTS?.trim();
+  return {
+    key,
+    apiBase: ((test && process.env.MESHY_API_BASE_URL?.trim()) || DEFAULT_MESHY_API_BASE).replace(/\/+$/, ""),
+    resultHosts: hosts ? hosts.split(",").map((h) => h.trim()).filter(Boolean) : ["assets.meshy.ai"],
+    allowInsecureResultHosts: test,
+  };
+}

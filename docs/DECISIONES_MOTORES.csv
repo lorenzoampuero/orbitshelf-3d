@@ -1,7 +1,7 @@
 familia,modelo,endpoint,decision_documental,motivo,probado_con_dinero,licencia_aprobada
 Hyper3D Rodin,Rodin Gen-1.5,Hyper3D API / fal.ai,DESCARTADO,Superado por Rodin 2.5; precio sin verificar.,NO,PENDIENTE
 Hyper3D Rodin,Rodin Gen-2,fal-ai/hyper3d/rodin/v2,MAS_ADELANTE,Superado por 2.5 al mismo precio publicado.,NO,PENDIENTE
-Hyper3D Rodin,Rodin Gen-2.5 Fast,fal-ai/hyper3d/rodin/v2.5/fast,CANDIDATO,Opcion economica de imagen. Precio tomado del informe; verificar en ficha antes de habilitar.,NO,PENDIENTE
+Hyper3D Rodin,Rodin Gen-2.5 Fast,fal-ai/hyper3d/rodin/v2.5/fast,CANDIDATO,"Adaptado y apagado (fal-rodin-2.5-fast). US$0,10 por generacion segun la ficha de fal, leida el 2026-11-05.",NO,PENDIENTE
 Hyper3D Rodin,Rodin Gen-2.5 Standard,fal-ai/hyper3d/rodin/v2.5,CANDIDATO,"Alta fidelidad. Verificado 2026-11-05: US$0.40, HighPack +0.80, hasta 5 imagenes; exporta glb/usdz/fbx/obj/stl. Texto solo no documentado en fal.",NO,PENDIENTE
 Tripo,TripoSR,Replicate / fal.ai alternativo,DESCARTADO,Investigacion; superado.,NO,PENDIENTE
 Tripo,Tripo v1.4 / v2.0,Tripo OpenAPI,DESCARTADO,Version antigua.,NO,PENDIENTE
@@ -13,16 +13,16 @@ Hunyuan3D,Hunyuan3D 1.0,Replicate/Hugging Face,DESCARTADO,Version antigua.,NO,PE
 Hunyuan3D,Hunyuan3D 2.0,Replicate / open weights,DESCARTADO,Version antigua; licencia con exclusion territorial.,NO,PENDIENTE
 Hunyuan3D,Hunyuan3D 2.1,Replicate / open weights,DESCARTADO,"Version antigua; licencia excluye UE, Reino Unido y Corea del Sur (texto visto en espejo de terceros).",NO,PENDIENTE
 Hunyuan3D,Hunyuan3D 2.5,Tencent / fal.ai,DESCARTADO,Superado por 3.1.,NO,PENDIENTE
-Hunyuan3D,Hunyuan3D v3.1 Rapid,fal-ai/hunyuan-3d/v3.1/rapid/*,CANDIDATO,Equilibrado. Precio tomado del informe; verificar. Revisar licencia de la version 3.1.,NO,PENDIENTE
+Hunyuan3D,Hunyuan3D v3.1 Rapid,fal-ai/hunyuan-3d/v3.1/rapid/*,CANDIDATO,"Adaptado y apagado (fal-hunyuan-3.1-rapid). US$0,225 mas US$0,15 con PBR, leido el 2026-11-05. La salida puede ser OBJ en vez de GLB: comprobar. Revisar licencia de la version 3.1.",NO,PENDIENTE
 Hunyuan3D,Hunyuan3D v3.1 Pro,fal-ai/hunyuan-3d/v3.1/pro/*,CANDIDATO,"Alta fidelidad y multivista. Verificado 2026-11-05: US$0.375, PBR +0.15, multivista +0.15, 8 vistas etiquetadas. Revisar licencia de la version 3.1.",NO,PENDIENTE
-TRELLIS,TRELLIS 1,fal-ai/trellis,CANDIDATO,Vista previa muy barata. Precio tomado del informe; verificar.,NO,PENDIENTE
+TRELLIS,TRELLIS 1,fal-ai/trellis,CANDIDATO,"Adaptado y apagado (fal-trellis-1). US$0,02 por generacion, leido el 2026-11-05. La ficha no confirma que entregue GLB: comprobar.",NO,PENDIENTE
 TRELLIS,TRELLIS.2,fal-ai/trellis-2,CANDIDATO,Solo imagen. Verificado 2026-11-05: US$0.25/0.30/0.35 segun resolucion.,NO,PENDIENTE
 TRELLIS,TRELLIS.2 Retexture,fal-ai/trellis-2/retexture,MAS_ADELANTE,Posproceso; precio sin verificar.,NO,PENDIENTE
 Meshy,Meshy-4,Meshy API,DESCARTADO,Version antigua.,NO,PENDIENTE
 Meshy,Meshy-5,Meshy API,DESCARTADO,Retirado segun la documentacion citada en el informe.,NO,PENDIENTE
-Meshy,Meshy-6,Meshy API / fal-ai/meshy/v6-preview/image-to-3d,MAS_ADELANTE,Superado por Meshy-7.,NO,PENDIENTE
-Meshy,Meshy-7,Meshy API / fal.ai,CANDIDATO,Referencia de mercado. Tarifa en creditos Meshy; el valor en USD de la API no esta publicado en la pagina revisada.,NO,PENDIENTE
-Meshy,Meshy-7.1,Meshy API,MAS_ADELANTE,Revisar disponibilidad y precio en USD.,NO,PENDIENTE
+Meshy,Meshy-6,Meshy API / fal-ai/meshy/v6-preview/image-to-3d,MAS_ADELANTE,Superado por Meshy-7.1.,NO,PENDIENTE
+Meshy,Meshy-7,Meshy API / fal.ai,DESCARTADO,La documentacion de Meshy lo marca obsoleto y remite a Meshy-7.1. Mismo precio en creditos.,NO,PENDIENTE
+Meshy,Meshy-7.1,Meshy API,CANDIDATO,"Reemplaza a Meshy-7. Adaptado y apagado (meshy-7.1), con la API directa de Meshy. 20 creditos sin textura y 30 con textura 2K. US$0,02 por credito es una estimacion a partir del plan Pro; la API exige plan Pro o superior.",NO,PENDIENTE
 Meshy,Meshy T2 Smart Topology,Meshy API,MAS_ADELANTE,Posproceso: remesh a 5 creditos Meshy.,NO,PENDIENTE
 Stability AI,Stable Fast 3D,Stability AI API,MAS_ADELANTE,Tarifa en creditos Stability; sin conversion a USD verificada.,NO,PENDIENTE
 Stability AI,SPAR3D,Stability AI API,MAS_ADELANTE,Tarifa en creditos Stability; sin conversion a USD verificada.,NO,PENDIENTE

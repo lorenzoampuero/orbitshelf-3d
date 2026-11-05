@@ -3,8 +3,10 @@ import { isLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { currentUser } from "@/lib/api";
 import { buildPageMetadata } from "@/lib/seo";
-import { store, toApiTokenDto } from "@/lib/store";
+import { encryptionConfigured } from "@/lib/secrets";
+import { store, toApiTokenDto, toWebhookDeliveryDto, toWebhookEndpointDto } from "@/lib/store";
 import { ApiClient } from "./api-client";
+import { WebhooksClient } from "./webhooks-client";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -20,14 +22,15 @@ export default async function ApiPage({ params }: Props) {
   if (!isLocale(locale)) notFound();
   const dict = getDictionary(locale);
   const user = (await currentUser())!;
-  const tokens = (await store.listApiTokens(user.orgId)).map(toApiTokenDto);
+  const [tokens, endpoints, deliveries] = await Promise.all([store.listApiTokens(user.orgId), store.listWebhookEndpoints(user.orgId), store.listWebhookDeliveries(user.orgId)]);
   return (
     <div className="space-y-6">
       <div>
         <h1 className="font-display text-2xl sm:text-3xl font-bold">{dict.dash.apiAccess.title}</h1>
         <p className="mt-1 text-sm text-muted">{dict.dash.apiAccess.subtitle}</p>
       </div>
-      <ApiClient dict={dict} initial={tokens} locale={locale} />
+      <ApiClient dict={dict} initial={tokens.map(toApiTokenDto)} locale={locale} />
+      <WebhooksClient dict={dict} locale={locale} available={encryptionConfigured()} initialEndpoints={endpoints.map(toWebhookEndpointDto)} initialDeliveries={deliveries.map(toWebhookDeliveryDto)} />
     </div>
   );
 }

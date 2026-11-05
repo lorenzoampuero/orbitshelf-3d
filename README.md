@@ -71,9 +71,11 @@ npm run start
 | --- | --- |
 | Photo and GLB validation, private storage, review checklist | **Live** |
 | Sloyd adapter: 1 photo, 2-4 photos, text | **Mock-tested only.** Never called with real credentials |
-| fal adapter: Hunyuan 3.1 Pro, Rodin 2.5, Tripo H3.1, TRELLIS.2 | **Mock-tested only and disabled.** Enable one with `ENGINES_ENABLED` |
+| fal adapter: Hunyuan 3.1 Pro and Rapid, Rodin 2.5 and Fast, Tripo H3.1, TRELLIS and TRELLIS.2 | **Mock-tested only and disabled.** Enable one with `ENGINES_ENABLED` |
+| Meshy 7.1 adapter | **Mock-tested only and disabled.** Its dollar price is an estimate from a plan |
+| Paid engine comparison (`npm run benchmark`) | **Mock-tested only.** Never run with money. See `docs/benchmark/README.md` |
 | Server quotes, job history, cost records at published prices | **Live.** Costs are published prices, never invoices |
-| GLB import, mesh diagnostics, optimization versions, OBJ and STL export | **Live** |
+| GLB import, mesh diagnostics, mesh view, optimization versions, OBJ and STL export | **Live** |
 | Onboarding, workspaces, Explore, generation presets | **Live.** Presets choose by published price and capability: no quality benchmark exists |
 | Projects, tags, favorites, 30-day trash, real thumbnails | **Live** |
 | Public viewer with revocable links and allowed sites | **Live** |
@@ -82,6 +84,8 @@ npm run start
 | Magic-link sign-in | **Code ready, unconfirmed** with a real email |
 | Shopify publishing | **Mock-tested only.** See `docs/SHOPIFY.md` |
 | Public API `/api/v1`, tokens | **Live.** Starting jobs through it is off (`API_GENERATION_ENABLED`) |
+| Signed webhooks for finished jobs, with retries | **Tested against a local receiver only.** Needs `INTEGRATIONS_KEY` |
+| Cost and approval per engine (`npm run report:engines`) | **Live**, command line only. Costs are published prices |
 | MCP server | **Tested with our own test client only** |
 | Blender add-on | **Never run inside Blender** |
 | Payments | **Not built.** Needs a provider, company details and an explicit decision |

@@ -230,6 +230,8 @@ export function AssetTools({ model, t, onModelChange }: { model: ModelDto; t: Di
                 autoRotateOffLabel={t.dash.detail.autoRotateOff}
                 loadingLabel={t.dash.detail.viewerLoading}
                 errorLabel={t.dash.detail.viewerError}
+                wireframeLabel={t.dash.detail.wireframe}
+                surfaceLabel={t.dash.detail.surface}
                 heightClass="h-[240px]"
                 testId={`compare-viewer-${v.preset}`}
               />

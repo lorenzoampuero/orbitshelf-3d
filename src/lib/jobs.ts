@@ -7,6 +7,7 @@ import { chargeFor } from "@/lib/quotes";
 import { adapterFor, capabilityProblem, engineEnabled, getEngine, priceOf, setSwitchedOffEngines } from "@/lib/provider/registry";
 import { redact } from "@/lib/provider/sloyd";
 import { ProviderError, type Deps, type ProviderInput, type ProviderJobRef } from "@/lib/provider/types";
+import { deliverDueWebhooks, emitModelEvent } from "@/lib/webhooks";
 import { emptyChecklist, emptyDimensions, estimateProviderCredits, nowIso, store, type ExtraImage, type ModelRow, type SourcePhoto } from "@/lib/store";
 import type { Category, DemoAsset, FailureCode, ImageView, InputKind, JobState, TextureResolution } from "@/lib/types";
 
@@ -184,6 +185,7 @@ export async function createProviderModel(
       : "ambiguous";
     // Refund only when the provider definitely did not start the job. Timeouts / 5xx are ambiguous: no automatic refund.
     const failed = await store.markFailed(orgId, row.id, { error: redact(pe.message), failureCode: code, refund: pe.definite });
+    if (failed) await emitModelEvent(failed);
     const http = pe.kind === "payment_required" ? 402 : pe.kind === "rate_limited" ? 429 : pe.kind === "auth" || pe.kind === "not_configured" ? 502 : pe.kind === "rejected" ? 422 : 502;
     return { ok: false, code, message: redact(pe.message), model: failed ?? undefined, httpStatus: http };
   }
@@ -191,12 +193,14 @@ export async function createProviderModel(
 
 let trashCheckedAt = 0;
 const TRASH_CHECK_MS = 60 * 60_000;
+const WEBHOOK_HISTORY_MS = 30 * 24 * 60 * 60_000;
 
 /** Removes models past the retention period, at most once an hour. The usage ledger stays. */
 export async function purgeExpiredTrash(now = Date.now()) {
   if (now - trashCheckedAt < TRASH_CHECK_MS) return;
   trashCheckedAt = now;
   for (const m of await store.listExpiredTrash(now)) await store.deleteModel(m.orgId, m.id);
+  await store.pruneWebhookDeliveries(new Date(now - WEBHOOK_HISTORY_MS).toISOString());
 }
 
 let switchesReadAt = 0;
@@ -223,65 +227,71 @@ export async function refreshJob(orgId: string, modelId: string, deps?: Deps): P
   if (inflight.has(key)) return current;
   inflight.add(key);
   try {
-    const age = Date.now() - Date.parse(current.createdAt);
-    if (!current.providerJobId) {
-      if (age > AMBIGUOUS_AFTER_MS) {
-        return await store.markFailed(orgId, modelId, {
-          error: "The provider job could not be confirmed. Check your provider dashboard before retrying; no automatic refund was issued.",
-          failureCode: "ambiguous",
-          refund: false,
-        });
-      }
-      return current;
-    }
-    // Rows from before the multi-engine version have no engine: they can only be Sloyd jobs.
-    const engine = getEngine(current.engineId ?? DEFAULT_ENGINE_ID);
-    if (!engine) {
-      return await store.markFailed(orgId, modelId, { error: "The engine for this job no longer exists. Check your provider dashboard; no automatic refund was issued.", failureCode: "ambiguous", refund: false });
-    }
-    const adapter = adapterFor(engine);
-    const job: ProviderJobRef = { jobId: current.providerJobId, urls: current.providerJobUrls ?? null };
-    let status;
-    try {
-      status = await adapter.getStatus(engine, job, deps);
-    } catch (e) {
-      const pe = e instanceof ProviderError ? e : null;
-      if (pe?.kind === "auth") {
-        return await store.markFailed(orgId, modelId, { error: pe.message, failureCode: "provider_auth", refund: false });
-      }
-      return await scheduleNext(current, redact(pe?.message ?? "Polling failed."));
-    }
-    if (status.status === "error") {
-      return await store.markFailed(orgId, modelId, {
-        error: status.errorMessage || "Provider generation failed.",
-        failureCode: "provider_error",
-        refund: true, // verified provider error → automatic refund of the local attempt
-      });
-    }
-    if (status.status === "success") {
-      try {
-        if (current.jobState !== "processing") await store.updateModel(orgId, modelId, { jobState: "processing" });
-        const glb = await adapter.fetchResult(engine, job, deps);
-        const info = validateGlb(glb);
-        return await store.completeJob(orgId, modelId, glb, { sha256: info.sha256, bytes: info.bytes });
-      } catch (e) {
-        if (e instanceof ProviderError && (e.kind === "not_ready" || e.kind === "network" || e.kind === "timeout" || e.kind === "server")) {
-          return await scheduleNext(current, e.message, "processing");
-        }
-        if (e instanceof GlbError || (e instanceof ProviderError && e.kind === "invalid_response")) {
-          return await store.markFailed(orgId, modelId, {
-            error: `The provider reported success but the file failed validation: ${e.message} No automatic refund was issued.`,
-            failureCode: "invalid_output",
-            refund: false,
-          });
-        }
-        throw e;
-      }
-    }
-    return await scheduleNext(current, null, status.status === "pending" ? "queued" : "running");
+    const next = await advanceJob(orgId, modelId, current, deps);
+    if (next && next.status !== "processing") await emitModelEvent(next);
+    return next;
   } finally {
     inflight.delete(key);
   }
+}
+
+async function advanceJob(orgId: string, modelId: string, current: ModelRow, deps?: Deps): Promise<ModelRow | null> {
+  const age = Date.now() - Date.parse(current.createdAt);
+  if (!current.providerJobId) {
+    if (age > AMBIGUOUS_AFTER_MS) {
+      return await store.markFailed(orgId, modelId, {
+        error: "The provider job could not be confirmed. Check your provider dashboard before retrying; no automatic refund was issued.",
+        failureCode: "ambiguous",
+        refund: false,
+      });
+    }
+    return current;
+  }
+  // Rows from before the multi-engine version have no engine: they can only be Sloyd jobs.
+  const engine = getEngine(current.engineId ?? DEFAULT_ENGINE_ID);
+  if (!engine) {
+    return await store.markFailed(orgId, modelId, { error: "The engine for this job no longer exists. Check your provider dashboard; no automatic refund was issued.", failureCode: "ambiguous", refund: false });
+  }
+  const adapter = adapterFor(engine);
+  const job: ProviderJobRef = { jobId: current.providerJobId, urls: current.providerJobUrls ?? null };
+  let status;
+  try {
+    status = await adapter.getStatus(engine, job, deps);
+  } catch (e) {
+    const pe = e instanceof ProviderError ? e : null;
+    if (pe?.kind === "auth") {
+      return await store.markFailed(orgId, modelId, { error: pe.message, failureCode: "provider_auth", refund: false });
+    }
+    return await scheduleNext(current, redact(pe?.message ?? "Polling failed."));
+  }
+  if (status.status === "error") {
+    return await store.markFailed(orgId, modelId, {
+      error: status.errorMessage || "Provider generation failed.",
+      failureCode: "provider_error",
+      refund: true, // verified provider error → automatic refund of the local attempt
+    });
+  }
+  if (status.status === "success") {
+    try {
+      if (current.jobState !== "processing") await store.updateModel(orgId, modelId, { jobState: "processing" });
+      const glb = await adapter.fetchResult(engine, job, deps);
+      const info = validateGlb(glb);
+      return await store.completeJob(orgId, modelId, glb, { sha256: info.sha256, bytes: info.bytes });
+    } catch (e) {
+      if (e instanceof ProviderError && (e.kind === "not_ready" || e.kind === "network" || e.kind === "timeout" || e.kind === "server")) {
+        return await scheduleNext(current, e.message, "processing");
+      }
+      if (e instanceof GlbError || (e instanceof ProviderError && e.kind === "invalid_response")) {
+        return await store.markFailed(orgId, modelId, {
+          error: `The provider reported success but the file failed validation: ${e.message} No automatic refund was issued.`,
+          failureCode: "invalid_output",
+          refund: false,
+        });
+      }
+      throw e;
+    }
+  }
+  return await scheduleNext(current, null, status.status === "pending" ? "queued" : "running");
 }
 
 async function scheduleNext(row: ModelRow, pollError: string | null, state: JobState = "running") {
@@ -312,6 +322,7 @@ export async function pollerTick(deps?: Deps) {
     for (const r of rows) {
       await refreshJob(r.orgId, r.id, deps).catch((e) => console.error("[poller] refresh failed:", redact(String(e?.message ?? e))));
     }
+    await deliverDueWebhooks().catch((e) => console.error("[poller] webhook delivery failed:", e instanceof Error ? e.message : "unknown"));
   } finally {
     pg.__osTicking = false;
   }

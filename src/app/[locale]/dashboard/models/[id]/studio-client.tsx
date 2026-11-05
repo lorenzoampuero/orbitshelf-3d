@@ -320,6 +320,8 @@ export function StudioClient({
               autoRotateOffLabel={t.dash.detail.autoRotateOff}
               loadingLabel={t.dash.detail.viewerLoading}
               errorLabel={t.dash.detail.viewerError}
+              wireframeLabel={t.dash.detail.wireframe}
+              surfaceLabel={t.dash.detail.surface}
               testId="studio-viewer"
               onReady={async (capture) => {
                 // A real picture of this model for the library. If the browser cannot produce one, the card simply has no image.

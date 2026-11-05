@@ -35,8 +35,28 @@ No tiene herramientas para comprar ni para publicar en tiendas. `create_generati
 
 **Por ahora solo importa modelos.** El origen del modelo y su estado de revisión quedan como propiedades del objeto. Hay que comprobar en Blender la orientación y la escala de lo importado.
 
+## Webhooks
+
+En *API*, en el panel, agrega la dirección https de tu servidor. Te avisamos con `model.ready` y `model.failed`, y puedes enviar un `ping` de prueba.
+
+Cada envío trae `OrbitShelf-Signature: t=<segundos>,v1=<firma>`. Para comprobarlo, calcula HMAC-SHA256 de `<segundos>.<cuerpo sin modificar>` con tu secreto y compáralo con `v1`. Rechaza firmas de más de 5 minutos.
+
+```js
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+function firmaValida(secreto, cabecera, cuerpo) {
+  const [, t, v1] = cabecera?.match(/^t=(\d+),v1=([0-9a-f]{64})$/) ?? [];
+  if (!t || Math.abs(Date.now() / 1000 - Number(t)) > 300) return false;
+  const esperada = createHmac("sha256", secreto).update(`${t}.${cuerpo}`).digest();
+  return timingSafeEqual(esperada, Buffer.from(v1, "hex"));
+}
+```
+
+Responde con un código 2xx. Si no, reintentamos hasta 6 veces durante unas 9 horas, así que el mismo `id` puede llegar más de una vez. No seguimos redirecciones ni aceptamos direcciones privadas.
+
+Requiere `INTEGRATIONS_KEY`, porque el secreto se guarda cifrado. Solo se ha probado contra un receptor local.
+
 ## Pendiente, según demanda
 
-- Webhooks firmados de la API: por ahora se consulta el estado con `GET /api/v1/assets/{id}`.
 - Generar desde Blender.
 - WooCommerce, Unity y Unreal.

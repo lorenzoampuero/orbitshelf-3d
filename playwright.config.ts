@@ -50,6 +50,7 @@ export default defineConfig({
         SHOPIFY_CLIENT_ID: "test-shopify-client",
         SHOPIFY_CLIENT_SECRET: "test-shopify-secret-never-leak",
         INTEGRATIONS_KEY: "test-integrations-key-32-characters-long",
+        WEBHOOK_ALLOW_INSECURE: "true",
         SHOPIFY_TEST_BASE: "http://127.0.0.1:3999/shopify",
         LOCAL_PAID_ATTEMPT_CAP: "5",
         MAX_ACTIVE_JOBS_PER_ORG: "3",

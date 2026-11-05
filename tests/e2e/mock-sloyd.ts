@@ -37,6 +37,8 @@ function hasValidAuth(headers: Record<string, string | string[] | undefined>): b
   );
 }
 
+const hooks: { signature: string; body: string }[] = [];
+
 const server = createServer(async (req, res) => {
   const url = new URL(req.url || "/", `http://127.0.0.1:${PORT}`);
 
@@ -54,6 +56,22 @@ const server = createServer(async (req, res) => {
     if ("nextJobOutcome" in body) nextJobOutcome = body.nextJobOutcome;
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ ok: true, nextCreateStatus, nextJobOutcome }));
+    return;
+  }
+
+  // Stands in for a customer's server receiving webhooks.
+  if (req.method === "POST" && url.pathname === "/hook") {
+    let body = "";
+    for await (const chunk of req) body += chunk;
+    hooks.push({ signature: String(req.headers["orbitshelf-signature"] ?? ""), body });
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  if (req.method === "GET" && url.pathname === "/__hooks") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ hooks }));
     return;
   }
 

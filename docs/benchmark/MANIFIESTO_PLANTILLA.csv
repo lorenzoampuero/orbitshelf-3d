@@ -1,0 +1,3 @@
+id,categoria,front,left,back,right,derechos_confirmados
+# Una fila por producto. Solo front es obligatoria. Borra estas dos lineas de ayuda si quieres: las que empiezan con # se ignoran.
+# Ejemplo: poleron-01,apparel,fotos/poleron-frente.jpg,,fotos/poleron-espalda.jpg,,si

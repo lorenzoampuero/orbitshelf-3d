@@ -16,6 +16,36 @@
       "Error": { "description": "Error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
     }
   },
+  "webhooks": {
+    "modelEvent": {
+      "post": {
+        "summary": "A model is ready or failed",
+        "description": "Add addresses under API in the dashboard. Each delivery carries OrbitShelf-Signature: t=<seconds>,v1=<hex>, where v1 is HMAC-SHA256 of \"<seconds>.<raw body>\" with the secret shown when the address was added. Reject signatures older than 5 minutes. Answer 2xx, or it is retried up to 6 times over about 9 hours, so the same id can arrive more than once. Redirects are not followed.",
+        "parameters": [
+          { "name": "OrbitShelf-Signature", "in": "header", "required": true, "schema": { "type": "string" } },
+          { "name": "OrbitShelf-Delivery", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["id", "type", "createdAt", "data"],
+                "properties": {
+                  "id": { "type": "string", "description": "Stays the same across retries." },
+                  "type": { "type": "string", "enum": ["model.ready", "model.failed", "ping"] },
+                  "createdAt": { "type": "string", "format": "date-time" },
+                  "data": { "type": "object" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Received" } }
+      }
+    }
+  },
   "paths": {
     "/models": {
       "get": {

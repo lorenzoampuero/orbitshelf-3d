@@ -123,6 +123,11 @@ export type PublicationDto = { id: string; modelId: string; shop: string; produc
 
 export const API_SCOPES = ["models:read", "assets:read", "credits:read", "jobs:write"] as const;
 export type ApiScope = (typeof API_SCOPES)[number];
+export const WEBHOOK_EVENTS = ["model.ready", "model.failed"] as const;
+export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number];
+export type WebhookEndpointDto = { id: string; url: string; createdAt: string; active: boolean };
+export type WebhookDeliveryDto = { id: string; endpointId: string; event: string; attempts: number; state: "pending" | "delivered" | "failed"; lastStatus: number | null; lastError: string | null; createdAt: string };
+export type EngineStats = { engineId: string; jobs: number; ready: number; failed: number; approved: number; rejected: number; publishedUsd: number };
 export type ApiTokenDto = { id: string; name: string; prefix: string; scopes: ApiScope[]; createdAt: string; lastUsedAt: string | null; active: boolean };
 
 export type JobEventDto = { id: string; state: JobState; detail: string | null; at: string };

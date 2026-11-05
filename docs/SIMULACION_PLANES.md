@@ -18,11 +18,15 @@ Generado con `scripts/simulate-plans.ts`. El detalle está en `PLANES_MARGEN_SIM
 |---|---|---:|---:|---:|
 | Sloyd | multi-image | US$0.40 | US$0.60 | 30 |
 | Hunyuan3D 3.1 Pro | multi-image | US$0.68 | US$0.93 | 47 |
+| Hunyuan3D 3.1 Rapid | image | US$0.38 | US$0.57 | 29 |
 | Rodin 2.5 | multi-image | US$0.40 | US$0.60 | 30 |
+| Rodin 2.5 Fast | multi-image | US$0.10 | US$0.24 | 12 |
 | Tripo H3.1 | image | US$0.30 | US$0.48 | 24 |
 | TRELLIS.2 | image | US$0.30 | US$0.48 | 24 |
+| TRELLIS | image | US$0.02 | US$0.14 | 8 |
+| Meshy 7.1 | image | US$0.60 | US$0.84 | 42 |
 
-Casos extremos usados abajo: el más barato es Tripo H3.1 (US$0.30) y el más caro Hunyuan3D 3.1 Pro (US$0.68).
+Casos extremos usados abajo: el más barato es TRELLIS (US$0.02) y el más caro Hunyuan3D 3.1 Pro (US$0.68).
 
 ## Spec hypothesis (credits)
 
@@ -30,10 +34,10 @@ Margen de contribución con el plan usado al 100 %, el peor caso.
 
 | Plan | Precio | Unidades | Modelos, motor barato | Margen | Modelos, motor caro | Margen |
 |---|---:|---:|---:|---:|---:|---:|
-| Starter | US$19.00 | 150 | 6 | 77.2 % | 3 | 77.7 % |
-| Creator | US$49.00 | 500 | 20 | 74.4 % | 10 | 75 % |
-| Commerce | US$99.00 | 1100 | 45 | 72.7 % | 23 | 72.9 % |
-| Studio | US$199.00 | 2400 | 100 | 70.6 % | 51 | 70.9 % |
+| Starter | US$19.00 | 150 | 18 | 78.7 % | 3 | 77.7 % |
+| Creator | US$49.00 | 500 | 62 | 75.8 % | 10 | 75 % |
+| Commerce | US$99.00 | 1100 | 137 | 74.6 % | 23 | 72.9 % |
+| Studio | US$199.00 | 2400 | 300 | 73 % | 51 | 70.9 % |
 
 ## Current proposal (flat attempts)
 
@@ -41,10 +45,10 @@ Margen de contribución con el plan usado al 100 %, el peor caso.
 
 | Plan | Precio | Unidades | Modelos, motor barato | Margen | Modelos, motor caro | Margen |
 |---|---:|---:|---:|---:|---:|---:|
-| Starter | US$19.00 | 25 | 25 | 29.2 % | 25 | -30 % |
-| Growth | US$49.00 | 70 | 70 | 25.4 % | 70 | -38.9 % |
-| Studio | US$99.00 | 160 | 160 | 16.9 % | 160 | -55.8 % |
-| Trial pack (único) | US$9.00 | 8 | 8 | 46.8 % | 8 | 6.8 % |
+| Starter | US$19.00 | 25 | 25 | 73.4 % | 25 | -30 % |
+| Growth | US$49.00 | 70 | 70 | 73.4 % | 70 | -38.9 % |
+| Studio | US$99.00 | 160 | 160 | 71.2 % | 160 | -55.8 % |
+| Trial pack (único) | US$9.00 | 8 | 8 | 76.7 % | 8 | 6.8 % |
 
 ## Prepaid packs only (credits, no subscription)
 
@@ -52,9 +56,9 @@ Margen de contribución con el plan usado al 100 %, el peor caso.
 
 | Plan | Precio | Unidades | Modelos, motor barato | Margen | Modelos, motor caro | Margen |
 |---|---:|---:|---:|---:|---:|---:|
-| Pack S (único) | US$15.00 | 250 | 10 | 59.7 % | 5 | 60.7 % |
-| Pack M (único) | US$40.00 | 750 | 31 | 56.6 % | 15 | 58.9 % |
-| Pack L (único) | US$100.00 | 2000 | 83 | 54.7 % | 42 | 55.4 % |
+| Pack S (único) | US$15.00 | 250 | 31 | 61.9 % | 5 | 60.7 % |
+| Pack M (único) | US$40.00 | 750 | 93 | 60.3 % | 15 | 58.9 % |
+| Pack L (único) | US$100.00 | 2000 | 250 | 58.5 % | 42 | 55.4 % |
 
 ## Si los proveedores suben 50 %
 
