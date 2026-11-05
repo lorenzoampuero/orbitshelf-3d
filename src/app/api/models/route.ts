@@ -1,6 +1,6 @@
 import { apiError, apiJson, readBodyCapped, withUser } from "@/lib/api";
 import { ImageError, MAX_IMAGE_BYTES, validateAndNormalizeImage, type NormalizedImage } from "@/lib/image";
-import { createDemoModel, createProviderModel, type ProviderInput } from "@/lib/jobs";
+import { createDemoModel, createProviderModel, refreshEngineSwitches, type ProviderInput } from "@/lib/jobs";
 import { availableEngines } from "@/lib/provider/registry";
 import { checkQuote } from "@/lib/quotes";
 import { rateLimit } from "@/lib/rate-limit";
@@ -48,11 +48,12 @@ async function readJson(req: Request) {
   }
 }
 
-function checkProviderLimits(orgId: string) {
+async function checkProviderLimits(orgId: string) {
+  await refreshEngineSwitches().catch(() => undefined);
   if (availableEngines().length === 0) {
     return apiError(503, "provider_not_configured", "AI generation is not configured on this server. Use a demo sample or add provider credentials.");
   }
-  const rl = rateLimit(`create-job:${orgId}`, 5, 60_000);
+  const rl = await rateLimit(`create-job:${orgId}`, 5, 60_000);
   if (!rl.ok) return apiError(429, "rate_limited", "Too many generation requests. Try again shortly.", undefined, { "Retry-After": String(rl.retryAfterSeconds) });
   return null;
 }
@@ -75,7 +76,7 @@ export const POST = withUser(async (req, user) => {
   const contentType = req.headers.get("content-type") ?? "";
 
   if (contentType.startsWith("application/json")) {
-    const rl = rateLimit(`create-demo:${user.orgId}`, 30, 60_000);
+    const rl = await rateLimit(`create-demo:${user.orgId}`, 30, 60_000);
     if (!rl.ok) return apiError(429, "rate_limited", "Too many requests.", undefined, { "Retry-After": String(rl.retryAfterSeconds) });
     const body = await readJson(req);
     if (body.error) return body.error;
@@ -83,7 +84,7 @@ export const POST = withUser(async (req, user) => {
 
     // -- Paid provider job (text -> 3D) --
     if (source === "ai-text" || source === "sloyd-text") {
-      const blocked = checkProviderLimits(user.orgId);
+      const blocked = await checkProviderLimits(user.orgId);
       if (blocked) return blocked;
       const parsed = textCreateSchema.safeParse(body.json);
       if (!parsed.success) return apiError(422, "validation", "Check the highlighted fields.", { fields: fieldErrors(parsed.error) });
@@ -112,7 +113,7 @@ export const POST = withUser(async (req, user) => {
   if (!contentType.startsWith("multipart/form-data")) return apiError(415, "unsupported_media_type", "Send JSON (demo or text) or multipart/form-data (photo job).");
 
   // -- Paid provider job (1 to 4 photos -> 3D) --
-  const blocked = checkProviderLimits(user.orgId);
+  const blocked = await checkProviderLimits(user.orgId);
   if (blocked) return blocked;
 
   const raw = await readBodyCapped(req, IMAGE_VIEWS.length * MAX_IMAGE_BYTES + 256 * 1024);

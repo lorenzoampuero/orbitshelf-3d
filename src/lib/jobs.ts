@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { validateGlb, GlbError } from "@/lib/glb";
-import { adapterFor, capabilityProblem, engineEnabled, getEngine, priceOf } from "@/lib/provider/registry";
+import { adapterFor, capabilityProblem, engineEnabled, getEngine, priceOf, setSwitchedOffEngines } from "@/lib/provider/registry";
 import { redact } from "@/lib/provider/sloyd";
 import { ProviderError, type Deps, type ProviderInput, type ProviderJobRef } from "@/lib/provider/types";
 import { emptyChecklist, emptyDimensions, estimateProviderCredits, nowIso, store, type ExtraImage, type ModelRow, type SourcePhoto } from "@/lib/store";
@@ -133,7 +133,15 @@ export async function createProviderModel(
     extraImages,
     sourceImageSha256: frontImage?.sha256 ?? null,
   });
-  const reserved = await store.reserveProviderJob(orgId, row, photos);
+  let reserved;
+  try {
+    reserved = await store.reserveProviderJob(orgId, row, photos);
+  } catch (e) {
+    // The photos could not be stored after the attempt was debited. The provider was never called, so the attempt goes back.
+    console.error("[jobs] reservation failed:", e instanceof Error ? e.message : "unknown");
+    const failed = await store.markFailed(orgId, row.id, { error: "The photos could not be stored. Your attempt was refunded.", failureCode: "internal", refund: true }).catch(() => null);
+    return { ok: false, code: "internal", message: "The photos could not be stored. Try again.", model: failed ?? undefined, httpStatus: 503 };
+  }
   if (!reserved.ok) {
     return reserved.reason === "insufficient"
       ? { ok: false, code: "insufficient_attempts", message: "No paid generation attempts left under the local cap.", httpStatus: 402 }
@@ -165,6 +173,16 @@ export async function createProviderModel(
     const http = pe.kind === "payment_required" ? 402 : pe.kind === "rate_limited" ? 429 : pe.kind === "auth" || pe.kind === "not_configured" ? 502 : pe.kind === "rejected" ? 422 : 502;
     return { ok: false, code, message: redact(pe.message), model: failed ?? undefined, httpStatus: http };
   }
+}
+
+let switchesReadAt = 0;
+const SWITCHES_TTL_MS = 30_000;
+
+/** Reads the kill switch from the database, at most every 30 seconds, so turning an engine off needs no deploy. */
+export async function refreshEngineSwitches(now = Date.now()) {
+  if (now - switchesReadAt < SWITCHES_TTL_MS) return;
+  switchesReadAt = now;
+  setSwitchedOffEngines(await store.listDisabledEngines());
 }
 
 const inflight = new Set<string>();
@@ -264,11 +282,9 @@ export async function pollerTick(deps?: Deps) {
   if (pg.__osTicking) return;
   pg.__osTicking = true;
   try {
-    const rows = await store.listPollable();
-    const now = Date.now();
+    await refreshEngineSwitches().catch(() => undefined);
+    const rows = await store.claimPollable();
     for (const r of rows) {
-      if (r.nextPollAt && Date.parse(r.nextPollAt) > now) continue;
-      if (r.stalled) continue;
       await refreshJob(r.orgId, r.id, deps).catch((e) => console.error("[poller] refresh failed:", redact(String(e?.message ?? e))));
     }
   } finally {

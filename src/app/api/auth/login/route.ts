@@ -19,13 +19,13 @@ export async function POST(req: Request) {
   if (!sameOrigin(req)) return apiError(403, "bad_origin", "Cross-site requests are not allowed.");
   const mode = authMode();
   if (mode === "disabled") return apiError(403, "auth_disabled", "Sign-in is not configured on this server.");
-  const rl = rateLimit(`login:${clientIp(req)}`, 20, 60_000);
+  const rl = await rateLimit(`login:${clientIp(req)}`, 20, 60_000);
   if (!rl.ok) return apiError(429, "rate_limited", "Too many sign-in attempts.", undefined, { "Retry-After": String(rl.retryAfterSeconds) });
   const read = await readJsonCapped(req, 2048);
   if (!read.ok) return read.response;
   const parsed = loginSchema.safeParse(read.value);
   if (!parsed.success) return apiError(422, "validation", "Enter a valid email address.", { fields: fieldErrors(parsed.error) });
-  const perEmail = rateLimit(`login-email:${parsed.data.email}`, mode === "supabase" ? 3 : 10, 10 * 60_000);
+  const perEmail = await rateLimit(`login-email:${parsed.data.email}`, mode === "supabase" ? 3 : 10, 10 * 60_000);
   if (!perEmail.ok) return apiError(429, "rate_limited", "Too many sign-in attempts.", undefined, { "Retry-After": String(perEmail.retryAfterSeconds) });
 
   if (mode === "supabase") {

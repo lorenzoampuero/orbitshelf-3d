@@ -1,0 +1,107 @@
+import "server-only";
+import { createHash } from "node:crypto";
+import {
+  CHECKLIST_KEYS,
+  providerCreditsEstimate,
+  type Checklist,
+  type Dimensions,
+  type FailureCode,
+  type ImageView,
+  type JobEventDto,
+  type JobState,
+  type LedgerEntryDto,
+  type ModelDto,
+  type PriceEvidence,
+  type UsageDto,
+} from "@/lib/types";
+
+export type ImageExt = "png" | "jpg";
+/** A stored source photo for a view other than `front` (the front photo keeps the original `sourceImageExt` fields). */
+export type ExtraImage = { view: Exclude<ImageView, "front">; ext: ImageExt };
+
+/** Everything a stored model has: the client-safe DTO plus private fields. */
+export type ModelRow = ModelDto & {
+  orgId: string;
+  providerJobId: string | null;
+  /** The provider's own URLs for this job, when it requires using them as given. */
+  providerJobUrls?: { status: string; response: string; cancel?: string } | null;
+  idempotencyKey: string | null;
+  hasSourceImage: boolean;
+  sourceImageExt: ImageExt | null;
+  /** Rows written before multi-photo support have no `extraImages`. */
+  extraImages?: ExtraImage[];
+  sourceImageSha256: string | null;
+  nextPollAt: string | null;
+  pollCount: number;
+  lastPolledAt: string | null;
+  lastPollError: string | null;
+};
+
+export type OrgRow = { id: string; name: string; createdAt: string };
+export type UserRow = { id: string; email: string; orgId: string; createdAt: string };
+export type LedgerRow = {
+  id: string;
+  orgId: string;
+  idempotencyKey: string;
+  delta: number;
+  reason: LedgerEntryDto["reason"];
+  modelId: string | null;
+  createdAt: string;
+};
+export type AuditRow = { id: string; orgId: string; action: string; modelId: string | null; at: string; detail?: string };
+export type JobEventRow = JobEventDto & { orgId: string; modelId: string };
+/** What a provider job cost us. Separate from the ledger, which tracks what the customer used. */
+export type CostEventRow = { id: string; orgId: string; modelId: string; engineId: string; usd: number; evidence: PriceEvidence; at: string };
+export type LocalDb = { version: 1; orgs: OrgRow[]; users: UserRow[]; models: ModelRow[]; ledger: LedgerRow[]; audit: AuditRow[]; jobEvents: JobEventRow[]; costEvents: CostEventRow[] };
+
+export const emptyChecklist = (): Checklist => Object.fromEntries(CHECKLIST_KEYS.map((k) => [k, false])) as Checklist;
+export const emptyDimensions = (): Dimensions => ({ widthMm: null, heightMm: null, depthMm: null });
+export const nowIso = () => new Date().toISOString();
+
+export function toDto(row: ModelRow): ModelDto {
+  const {
+    orgId: _o,
+    providerJobId,
+    providerJobUrls: _u,
+    idempotencyKey: _i,
+    hasSourceImage: _h,
+    sourceImageExt: _e,
+    extraImages: _x,
+    sourceImageSha256: _s,
+    nextPollAt: _n,
+    pollCount: _p,
+    lastPolledAt: _l,
+    lastPollError: _le,
+    ...dto
+  } = row;
+  // Rows saved before multi-photo / text support lack these fields: derive them.
+  return {
+    ...dto,
+    engineId: row.engineId ?? null,
+    estimatedCostUsd: row.estimatedCostUsd ?? null,
+    inputKind: row.inputKind ?? (row.source === "ai" ? "image" : null),
+    sourceViews: row.sourceViews ?? (row.hasSourceImage ? ["front"] : []),
+    prompt: row.prompt ?? null,
+    providerJobRef: providerJobId ? "…" + providerJobId.slice(-6) : null,
+  };
+}
+
+export function orgIdForEmail(email: string): string {
+  return "org_" + createHash("sha256").update(email.trim().toLowerCase()).digest("hex").slice(0, 24);
+}
+
+/** A source photo to persist alongside a reserved job. */
+export type SourcePhoto = { view: ImageView; ext: ImageExt; buffer: Buffer };
+export const mimeOf = (ext: string) => (ext === "jpg" ? "image/jpeg" : "image/png");
+
+export const assertSafeId = (id: string) => {
+  if (!/^[A-Za-z0-9_-]{1,64}$/.test(id)) throw new Error("Invalid identifier.");
+  return id;
+};
+
+/** Where a model's files live in any blob store. Org and model ids are server-generated and checked by `assertSafeId`. */
+export const glbKey = (orgId: string, modelId: string) => `files/${assertSafeId(orgId)}/${assertSafeId(modelId)}.glb`;
+export const sourceKey = (orgId: string, modelId: string, ext: string, view: ImageView = "front") =>
+  `uploads/${assertSafeId(orgId)}/${view === "front" ? `${assertSafeId(modelId)}.${ext}` : `${assertSafeId(modelId)}.${view}.${ext}`}`;
+
+export const estimateProviderCredits = providerCreditsEstimate;

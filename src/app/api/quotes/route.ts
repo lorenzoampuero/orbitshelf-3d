@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { apiError, apiJson, readBodyCapped, withUser } from "@/lib/api";
+import { refreshEngineSwitches } from "@/lib/jobs";
 import { createQuote } from "@/lib/quotes";
 import { fieldErrors } from "@/lib/schemas";
 import { INPUT_KINDS, TEXTURE_RESOLUTIONS } from "@/lib/types";
@@ -25,6 +26,7 @@ export const POST = withUser(async (req, user) => {
   }
   const parsed = quoteSchema.safeParse(json);
   if (!parsed.success) return apiError(422, "validation", "Check the highlighted fields.", { fields: fieldErrors(parsed.error) });
+  await refreshEngineSwitches().catch(() => undefined);
   const { engineId, ...q } = parsed.data;
   const result = createQuote(user.orgId, engineId, q);
   if (!result.ok) {

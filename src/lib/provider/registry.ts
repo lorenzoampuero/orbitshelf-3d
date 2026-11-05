@@ -170,9 +170,15 @@ export const adapterFor = (engine: EngineDefinition): ModelAdapter => ADAPTERS[e
 
 const listEnv = (name: string) => (process.env[name] ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 
-/** ENGINES_DISABLED is the kill switch. ENGINES_ENABLED pilots a disabled engine; it can never override the kill switch. */
+let switchedOff = new Set<string>();
+/** Set from the `engine_switches` table. It can only turn engines off. */
+export const setSwitchedOffEngines = (ids: string[]) => {
+  switchedOff = new Set(ids);
+};
+
+/** ENGINES_DISABLED and the database switch both turn an engine off. ENGINES_ENABLED pilots a disabled engine; it can never override them. */
 function effectiveLifecycle(engine: EngineDefinition): EngineDefinition["lifecycle"] {
-  if (listEnv("ENGINES_DISABLED").includes(engine.id)) return "disabled";
+  if (switchedOff.has(engine.id) || listEnv("ENGINES_DISABLED").includes(engine.id)) return "disabled";
   if (engine.lifecycle === "disabled" && listEnv("ENGINES_ENABLED").includes(engine.id)) return "pilot";
   return engine.lifecycle;
 }

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { isLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { currentUser } from "@/lib/api";
+import { refreshEngineSwitches } from "@/lib/jobs";
 import { availableEngines, toEngineDto } from "@/lib/provider/registry";
 import { store } from "@/lib/store";
 import { buildPageMetadata } from "@/lib/seo";
@@ -22,6 +23,7 @@ export default async function CreateModelPage({ params }: Props) {
   const dict = getDictionary(locale);
   const user = (await currentUser())!;
   const usage = await store.usage(user.orgId);
+  await refreshEngineSwitches().catch(() => undefined);
 
   return (
     <div className="space-y-6">

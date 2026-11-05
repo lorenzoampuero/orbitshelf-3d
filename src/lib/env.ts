@@ -22,6 +22,19 @@ export function localAuthAllowed(): boolean {
   return process.env.ALLOW_LOCAL_AUTH === "true";
 }
 
+/** Postgres connection string. Server-only, and it contains a password. Null → the local JSON store. */
+export const databaseUrl = () => process.env.DATABASE_URL?.trim() || null;
+
+export type SupabaseStorageConfig = { url: string; secretKey: string; bucket: string };
+
+/** The private file bucket. Needs the secret key, which must never reach the browser or a log. Null → files stay on local disk. */
+export function supabaseStorageConfig(): SupabaseStorageConfig | null {
+  const url = process.env.SUPABASE_URL?.trim().replace(/\/+$/, "");
+  const secretKey = process.env.SUPABASE_SECRET_KEY?.trim();
+  if (!url || !secretKey || !url.startsWith("https://")) return null;
+  return { url, secretKey, bucket: process.env.SUPABASE_STORAGE_BUCKET?.trim() || "orbitshelf-private" };
+}
+
 export type SupabaseConfig = { url: string; publishableKey: string };
 
 /** Supabase Auth (magic link). Null → no Supabase; AUTH_MODE=local forces the local sign-in (tests, offline dev). */
