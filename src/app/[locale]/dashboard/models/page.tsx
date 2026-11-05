@@ -29,5 +29,5 @@ export default async function ModelsPage({ params }: { params: Promise<{ locale:
   const rows = await store.listModels(session.orgId);
   const models = rows.map(toDto);
 
-  return <LibraryClient locale={locale} t={t} initialModels={models} />;
+  return <LibraryClient initialProjects={(await store.listProjects(session.orgId)).map(({ id, name, createdAt }) => ({ id, name, createdAt }))} locale={locale} t={t} initialModels={models} />;
 }

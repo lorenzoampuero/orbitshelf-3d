@@ -113,6 +113,9 @@ export type MeshDiagnostics = {
 
 export type AssetVersionDto = { id: string; preset: VersionPreset; bytes: number; sha256: string; diagnostics: MeshDiagnostics; createdAt: string; current: boolean };
 
+export type ProjectDto = { id: string; name: string; createdAt: string };
+export type EmbedDto = { id: string; token: string; modelId: string; allowedDomains: string[]; createdAt: string; active: boolean };
+
 export type JobEventDto = { id: string; state: JobState; detail: string | null; at: string };
 export type ModelStatus = "processing" | "ready" | "failed";
 export type ReviewState = "pending" | "approved" | "rejected";
@@ -147,6 +150,12 @@ export type ModelDto = {
   estimatedCostUsd: number | null;
   /** The optimized version in use. null means the original file. */
   currentVersionId: string | null;
+  projectId: string | null;
+  tags: string[];
+  favorite: boolean;
+  hasThumbnail: boolean;
+  /** Set while the model is in the trash. */
+  deletedAt: string | null;
   /** null for demo samples. */
   inputKind: InputKind | null;
   /** Photo views stored for this model (empty for text and demo). */

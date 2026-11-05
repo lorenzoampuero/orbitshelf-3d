@@ -24,6 +24,11 @@ function row(orgId: string, over: Partial<ModelRow> = {}): ModelRow {
     engineId: "sloyd",
     estimatedCostUsd: 0.27,
     currentVersionId: null,
+    projectId: null,
+    tags: [],
+    favorite: false,
+    hasThumbnail: false,
+    deletedAt: null,
     inputKind: "image",
     sourceViews: ["front"],
     prompt: null,
@@ -273,6 +278,73 @@ describe("Postgres store", () => {
     expect(p).toMatchObject({ useCase: "game", experience: "advanced", goal: "assets", activeWorkspace: "commerce" });
     expect(p.onboardedAt).not.toBeNull();
     expect((await store.usage(org.id)).balance).toBe(3);
+  });
+
+  it("trash hides a model from everything, stops its public links, and can be undone", async () => {
+    const { org } = await store.signIn("a@example.com");
+    const other = await store.signIn("b@example.com");
+    const r = row(org.id, { source: "demo", provenance: "demo-sample", status: "ready", jobState: "succeeded", engineId: null, reviewState: "approved" });
+    await store.insertReadyModel(org.id, r, glb);
+    const embed = { id: uuid(), token: "t".repeat(32), orgId: org.id, modelId: r.id, allowedDomains: ["shop.test"], createdAt: nowIso(), revokedAt: null };
+    await store.createEmbed(embed);
+    expect((await store.getPublicEmbed(embed.token))?.model.id).toBe(r.id);
+
+    expect(await store.trashModel(other.org.id, r.id)).toBe("not_found");
+    expect(await store.trashModel(org.id, r.id)).toBe("trashed");
+    expect(await store.getModel(org.id, r.id)).toBeNull();
+    expect(await store.listModels(org.id)).toEqual([]);
+    expect(await store.readGlb(org.id, r.id)).toBeNull();
+    expect((await store.listTrash(org.id)).map((m) => m.id)).toEqual([r.id]);
+    expect(await store.isInTrash(org.id, r.id)).toBe(true);
+    expect(await store.isInTrash(other.org.id, r.id)).toBe(false);
+    expect(await store.getPublicEmbed(embed.token)).toBeNull();
+
+    expect(await store.restoreModel(other.org.id, r.id)).toBeNull();
+    expect((await store.restoreModel(org.id, r.id))?.deletedAt).toBeNull();
+    expect(await store.getPublicEmbed(embed.token)).toBeNull(); // a restored model does not republish itself
+
+    await store.trashModel(org.id, r.id);
+    expect(await store.listExpiredTrash(Date.now() + 29 * 86_400_000)).toEqual([]);
+    expect(await store.listExpiredTrash(Date.now() + 31 * 86_400_000)).toEqual([{ orgId: org.id, id: r.id }]);
+  });
+
+  it("a running job cannot be trashed", async () => {
+    const { org } = await store.signIn("a@example.com");
+    const r = row(org.id);
+    await store.reserveProviderJob(org.id, r, []);
+    expect(await store.trashModel(org.id, r.id)).toBe("busy");
+  });
+
+  it("a public link needs an active link and an approved model", async () => {
+    const { org } = await store.signIn("a@example.com");
+    const other = await store.signIn("b@example.com");
+    const r = row(org.id, { source: "demo", provenance: "demo-sample", status: "ready", jobState: "succeeded", engineId: null, reviewState: "approved" });
+    await store.insertReadyModel(org.id, r, glb);
+    const embed = { id: uuid(), token: "x".repeat(32), orgId: org.id, modelId: r.id, allowedDomains: [], createdAt: nowIso(), revokedAt: null };
+    await store.createEmbed(embed);
+    expect(await store.getPublicEmbed("nope")).toBeNull();
+    await store.updateModel(org.id, r.id, { reviewState: "rejected" });
+    expect(await store.getPublicEmbed(embed.token)).toBeNull();
+    await store.updateModel(org.id, r.id, { reviewState: "approved" });
+    expect(await store.getPublicEmbed(embed.token)).not.toBeNull();
+    expect(await store.revokeEmbed(other.org.id, embed.id)).toBe(false);
+    expect(await store.getPublicEmbed(embed.token)).not.toBeNull();
+    expect(await store.revokeEmbed(org.id, embed.id)).toBe(true);
+    expect(await store.getPublicEmbed(embed.token)).toBeNull();
+  });
+
+  it("projects belong to one organization, and deleting one keeps its models", async () => {
+    const { org } = await store.signIn("a@example.com");
+    const other = await store.signIn("b@example.com");
+    const p = await store.createProject(org.id, { id: uuid(), name: "Winter", createdAt: nowIso() });
+    expect(await store.listProjects(other.org.id)).toEqual([]);
+    const r = row(org.id, { source: "demo", provenance: "demo-sample", status: "ready", jobState: "succeeded", engineId: null });
+    await store.insertReadyModel(org.id, r, glb);
+    await store.updateModel(org.id, r.id, { projectId: p.id, tags: ["a", "b"], favorite: true });
+    expect(await store.getModel(org.id, r.id)).toMatchObject({ projectId: p.id, tags: ["a", "b"], favorite: true });
+    expect(await store.deleteProject(other.org.id, p.id)).toBe(false);
+    expect(await store.deleteProject(org.id, p.id)).toBe(true);
+    expect((await store.getModel(org.id, r.id))?.projectId).toBeNull();
   });
 
   it("reads the engine kill switch", async () => {

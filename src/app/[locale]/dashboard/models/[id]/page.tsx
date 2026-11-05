@@ -43,5 +43,5 @@ export default async function ModelDetailPage({
   const events = await store.listJobEvents(session.orgId, id);
   const engine = row.engineId ? getEngine(row.engineId)?.label ?? row.engineId : null;
 
-  return <StudioClient locale={locale} t={t} initialModel={toDto(row)} initialEvents={events} engineLabel={engine} />;
+  return <StudioClient locale={locale} t={t} initialModel={toDto(row)} initialEvents={events} engineLabel={engine} projects={(await store.listProjects(session.orgId)).map(({ id, name, createdAt }) => ({ id, name, createdAt }))} />;
 }

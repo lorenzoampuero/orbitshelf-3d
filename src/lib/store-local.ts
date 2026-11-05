@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { dataDir, maxActiveJobs, paidAttemptCap } from "@/lib/env";
-import { assertSafeId, emptyChecklist, emptyProfile, mimeOf, nowIso, orgIdForEmail, versionKey, type CostEventRow, type VersionRow, type LedgerRow, type LocalDb, type ModelRow, type SourcePhoto } from "@/lib/store-shared";
+import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type EmbedRow, type ProjectRow, mimeOf, nowIso, orgIdForEmail, versionKey, type CostEventRow, type VersionRow, type LedgerRow, type LocalDb, type ModelRow, type SourcePhoto } from "@/lib/store-shared";
 import type { UserProfile, FailureCode, ImageView, JobEventDto, JobState, PriceEvidence, UsageDto } from "@/lib/types";
 
 /* ───────── persistence primitives ───────── */
@@ -24,6 +24,8 @@ function upgradeRows(db: LocalDb): LocalDb {
   db.jobEvents ??= [];
   db.costEvents ??= [];
   db.versions ??= [];
+  db.projects ??= [];
+  db.embeds ??= [];
   for (const m of db.models) {
     if ((m.source as string) === "sloyd") {
       m.source = "ai";
@@ -38,7 +40,7 @@ function upgradeRows(db: LocalDb): LocalDb {
 
 function readDb(): LocalDb {
   ensureDirs();
-  if (!existsSync(dbFile())) return { version: 1, orgs: [], users: [], models: [], ledger: [], audit: [], jobEvents: [], costEvents: [], versions: [] };
+  if (!existsSync(dbFile())) return { version: 1, orgs: [], users: [], models: [], ledger: [], audit: [], jobEvents: [], costEvents: [], versions: [], projects: [], embeds: [] };
   let db: LocalDb;
   try {
     db = JSON.parse(readFileSync(dbFile(), "utf8")) as LocalDb;
@@ -80,6 +82,7 @@ function tx<T>(fn: (db: LocalDb) => T | Promise<T>, write = true): Promise<T> {
 
 const fileFor = (orgId: string, modelId: string) => path.join(dataDir(), "files", orgId, `${modelId}.glb`);
 const versionFile = (orgId: string, modelId: string, versionId: string) => path.join(dataDir(), ...versionKey(orgId, modelId, versionId).split("/"));
+const thumbFile = (orgId: string, modelId: string, ext: string) => path.join(dataDir(), ...thumbnailKey(orgId, modelId, ext).split("/"));
 const sourceFor = (orgId: string, modelId: string, ext: string, view: ImageView = "front") =>
   path.join(dataDir(), "uploads", orgId, view === "front" ? `${modelId}.${ext}` : `${modelId}.${view}.${ext}`);
 
@@ -148,12 +151,12 @@ export const localStore = {
   },
 
   async listModels(orgId: string): Promise<ModelRow[]> {
-    return tx((db) => db.models.filter((m) => m.orgId === orgId).sort((a, b) => b.createdAt.localeCompare(a.createdAt)), false);
+    return tx((db) => db.models.filter((m) => m.orgId === orgId && !m.deletedAt).sort((a, b) => b.createdAt.localeCompare(a.createdAt)), false);
   },
 
   /** Every read is scoped by organisation: another tenant's id simply does not exist. */
   async getModel(orgId: string, id: string): Promise<ModelRow | null> {
-    return tx((db) => db.models.find((m) => m.orgId === orgId && m.id === id) ?? null, false);
+    return tx((db) => db.models.find((m) => m.orgId === orgId && m.id === id && !m.deletedAt) ?? null, false);
   },
 
   /** A model that is complete from the start: a demo sample or an imported file. */
@@ -269,7 +272,7 @@ export const localStore = {
     assertSafeId(modelId);
     return tx((db) => {
       const m = db.models.find((x) => x.orgId === orgId && x.id === modelId);
-      if (!m || m.status !== "ready") return null;
+      if (!m || m.status !== "ready" || m.deletedAt) return null;
       const current = m.currentVersionId ? db.versions.find((v) => v.orgId === orgId && v.id === m.currentVersionId) : null;
       const f = current ? versionFile(orgId, modelId, current.id) : fileFor(orgId, modelId);
       return existsSync(f) ? readFileSync(f) : null;
@@ -295,6 +298,8 @@ export const localStore = {
       const idx = db.models.findIndex((m) => m.orgId === orgId && m.id === id);
       if (idx < 0) return false;
       const [m] = db.models.splice(idx, 1);
+      if (m.thumbnailExt) rmSync(thumbFile(orgId, id, m.thumbnailExt), { force: true });
+      db.embeds = db.embeds.filter((e) => !(e.orgId === orgId && e.modelId === id));
       rmSync(fileFor(orgId, id), { force: true });
       for (const v of db.versions.filter((x) => x.orgId === orgId && x.modelId === id)) rmSync(versionFile(orgId, id, v.id), { force: true });
       db.versions = db.versions.filter((x) => !(x.orgId === orgId && x.modelId === id));
@@ -303,6 +308,119 @@ export const localStore = {
       audit(db, orgId, "model.deleted", id); // the ledger is intentionally preserved
       return true;
     });
+  },
+
+  /** Moves a model to the trash. A running job is left alone, because it is still being paid for and may still finish. Public links stop at once. */
+  async trashModel(orgId: string, id: string): Promise<"trashed" | "not_found" | "busy"> {
+    return tx((db) => {
+      const m = db.models.find((x) => x.orgId === orgId && x.id === id && !x.deletedAt);
+      if (!m) return "not_found" as const;
+      if (m.status === "processing") return "busy" as const;
+      m.deletedAt = nowIso();
+      for (const e of db.embeds) if (e.orgId === orgId && e.modelId === id && !e.revokedAt) e.revokedAt = m.deletedAt;
+      audit(db, orgId, "model.trashed", id);
+      return "trashed" as const;
+    });
+  },
+
+  async restoreModel(orgId: string, id: string): Promise<ModelRow | null> {
+    return tx((db) => {
+      const m = db.models.find((x) => x.orgId === orgId && x.id === id && x.deletedAt);
+      if (!m) return null;
+      m.deletedAt = null;
+      audit(db, orgId, "model.restored", id);
+      return m;
+    });
+  },
+
+  async listTrash(orgId: string): Promise<ModelRow[]> {
+    return tx((db) => db.models.filter((m) => m.orgId === orgId && m.deletedAt).sort((a, b) => (b.deletedAt ?? "").localeCompare(a.deletedAt ?? "")), false);
+  },
+
+  async isInTrash(orgId: string, id: string): Promise<boolean> {
+    return tx((db) => db.models.some((m) => m.orgId === orgId && m.id === id && Boolean(m.deletedAt)), false);
+  },
+
+  /** Models past the retention period, across organizations. */
+  async listExpiredTrash(now = Date.now()): Promise<{ orgId: string; id: string }[]> {
+    const cutoff = now - TRASH_RETENTION_DAYS * 86_400_000;
+    return tx((db) => db.models.filter((m) => m.deletedAt && Date.parse(m.deletedAt) < cutoff).map((m) => ({ orgId: m.orgId, id: m.id })), false);
+  },
+
+  async saveThumbnail(orgId: string, id: string, data: Buffer, ext: "png" | "jpg"): Promise<void> {
+    await tx((db) => {
+      const m = db.models.find((x) => x.orgId === orgId && x.id === id);
+      if (!m) return;
+      const f = thumbFile(orgId, id, ext);
+      mkdirSync(path.dirname(f), { recursive: true });
+      writeFileSync(f, data);
+      m.thumbnailExt = ext;
+      m.hasThumbnail = true;
+    });
+  },
+
+  async readThumbnail(orgId: string, id: string): Promise<{ data: Buffer; mime: string } | null> {
+    return tx((db) => {
+      const m = db.models.find((x) => x.orgId === orgId && x.id === id && !x.deletedAt);
+      if (!m?.thumbnailExt) return null;
+      const f = thumbFile(orgId, id, m.thumbnailExt);
+      return existsSync(f) ? { data: readFileSync(f), mime: mimeOf(m.thumbnailExt) } : null;
+    }, false);
+  },
+
+  async listProjects(orgId: string): Promise<ProjectRow[]> {
+    return tx((db) => db.projects.filter((p) => p.orgId === orgId).sort((a, b) => a.createdAt.localeCompare(b.createdAt)), false);
+  },
+
+  async createProject(orgId: string, p: { id: string; name: string; createdAt: string }): Promise<ProjectRow> {
+    return tx((db) => {
+      const row = { ...p, orgId };
+      db.projects.push(row);
+      return row;
+    });
+  },
+
+  async deleteProject(orgId: string, id: string): Promise<boolean> {
+    return tx((db) => {
+      const idx = db.projects.findIndex((p) => p.orgId === orgId && p.id === id);
+      if (idx < 0) return false;
+      db.projects.splice(idx, 1);
+      for (const m of db.models) if (m.orgId === orgId && m.projectId === id) m.projectId = null;
+      return true;
+    });
+  },
+
+  async createEmbed(row: EmbedRow): Promise<EmbedRow> {
+    return tx((db) => {
+      db.embeds.push(row);
+      audit(db, row.orgId, "embed.created", row.modelId);
+      return row;
+    });
+  },
+
+  async listEmbeds(orgId: string): Promise<EmbedRow[]> {
+    return tx((db) => db.embeds.filter((e) => e.orgId === orgId).sort((a, b) => b.createdAt.localeCompare(a.createdAt)), false);
+  },
+
+  async revokeEmbed(orgId: string, id: string): Promise<boolean> {
+    return tx((db) => {
+      const e = db.embeds.find((x) => x.orgId === orgId && x.id === id);
+      if (!e) return false;
+      e.revokedAt ??= nowIso();
+      audit(db, orgId, "embed.revoked", e.modelId);
+      return true;
+    });
+  },
+
+  /** A public link works only while it is active and its model is ready, approved and not in the trash. */
+  async getPublicEmbed(token: string): Promise<{ embed: EmbedRow; model: ModelRow } | null> {
+    return tx((db) => {
+      const embed = db.embeds.find((e) => e.token === token && !e.revokedAt);
+      if (!embed) return null;
+      const model = db.models.find((m) => m.orgId === embed.orgId && m.id === embed.modelId);
+      if (!model || model.status !== "ready" || model.reviewState !== "approved" || model.deletedAt) return null;
+      return { embed, model };
+    }, false);
   },
 
   async listVersions(orgId: string, modelId: string): Promise<VersionRow[]> {

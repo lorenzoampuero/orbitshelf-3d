@@ -3,6 +3,8 @@ import { createHash } from "node:crypto";
 import {
   CHECKLIST_KEYS,
   type AssetVersionDto,
+  type EmbedDto,
+  type ProjectDto,
   providerCreditsEstimate,
   type Checklist,
   type Dimensions,
@@ -17,6 +19,7 @@ import {
 } from "@/lib/types";
 
 export type ImageExt = "png" | "jpg";
+export type ThumbnailExt = ImageExt;
 /** A stored source photo for a view other than `front` (the front photo keeps the original `sourceImageExt` fields). */
 export type ExtraImage = { view: Exclude<ImageView, "front">; ext: ImageExt };
 
@@ -24,6 +27,8 @@ export type ExtraImage = { view: Exclude<ImageView, "front">; ext: ImageExt };
 export type ModelRow = ModelDto & {
   orgId: string;
   providerJobId: string | null;
+  /** Extension of the stored thumbnail, when there is one. */
+  thumbnailExt?: ImageExt | null;
   /** The provider's own URLs for this job, when it requires using them as given. */
   providerJobUrls?: { status: string; response: string; cancel?: string } | null;
   idempotencyKey: string | null;
@@ -40,6 +45,10 @@ export type ModelRow = ModelDto & {
 
 export type VersionRow = { id: string; orgId: string; modelId: string; preset: VersionPreset; bytes: number; sha256: string; diagnostics: MeshDiagnostics; createdAt: string };
 
+export type EmbedRow = { id: string; token: string; orgId: string; modelId: string; allowedDomains: string[]; createdAt: string; revokedAt: string | null };
+export type ProjectRow = ProjectDto & { orgId: string };
+export const TRASH_RETENTION_DAYS = 30;
+
 export type OrgRow = { id: string; name: string; createdAt: string };
 export type UserRow = { id: string; email: string; orgId: string; createdAt: string; profile?: UserProfile };
 export type LedgerRow = {
@@ -55,7 +64,7 @@ export type AuditRow = { id: string; orgId: string; action: string; modelId: str
 export type JobEventRow = JobEventDto & { orgId: string; modelId: string };
 /** What a provider job cost us. Separate from the ledger, which tracks what the customer used. */
 export type CostEventRow = { id: string; orgId: string; modelId: string; engineId: string; usd: number; evidence: PriceEvidence; at: string };
-export type LocalDb = { version: 1; orgs: OrgRow[]; users: UserRow[]; models: ModelRow[]; ledger: LedgerRow[]; audit: AuditRow[]; jobEvents: JobEventRow[]; costEvents: CostEventRow[]; versions: VersionRow[] };
+export type LocalDb = { version: 1; orgs: OrgRow[]; users: UserRow[]; models: ModelRow[]; ledger: LedgerRow[]; audit: AuditRow[]; jobEvents: JobEventRow[]; costEvents: CostEventRow[]; versions: VersionRow[]; projects: ProjectRow[]; embeds: EmbedRow[] };
 
 export const emptyChecklist = (): Checklist => Object.fromEntries(CHECKLIST_KEYS.map((k) => [k, false])) as Checklist;
 export const emptyDimensions = (): Dimensions => ({ widthMm: null, heightMm: null, depthMm: null });
@@ -84,6 +93,11 @@ export function toDto(row: ModelRow): ModelDto {
     engineId: row.engineId ?? null,
     estimatedCostUsd: row.estimatedCostUsd ?? null,
     currentVersionId: row.currentVersionId ?? null,
+    projectId: row.projectId ?? null,
+    tags: row.tags ?? [],
+    favorite: row.favorite ?? false,
+    hasThumbnail: row.hasThumbnail ?? false,
+    deletedAt: row.deletedAt ?? null,
     inputKind: row.inputKind ?? (row.source === "ai" ? "image" : null),
     sourceViews: row.sourceViews ?? (row.hasSourceImage ? ["front"] : []),
     prompt: row.prompt ?? null,
@@ -110,6 +124,10 @@ export const sourceKey = (orgId: string, modelId: string, ext: string, view: Ima
   `uploads/${assertSafeId(orgId)}/${view === "front" ? `${assertSafeId(modelId)}.${ext}` : `${assertSafeId(modelId)}.${view}.${ext}`}`;
 
 export const versionKey = (orgId: string, modelId: string, versionId: string) => `files/${assertSafeId(orgId)}/${assertSafeId(modelId)}.${assertSafeId(versionId)}.glb`;
+
+export const thumbnailKey = (orgId: string, modelId: string, ext: string) => `thumbs/${assertSafeId(orgId)}/${assertSafeId(modelId)}.${ext}`;
+
+export const toEmbedDto = (e: EmbedRow): EmbedDto => ({ id: e.id, token: e.token, modelId: e.modelId, allowedDomains: e.allowedDomains, createdAt: e.createdAt, active: !e.revokedAt });
 
 export function toVersionDto(v: VersionRow, model: Pick<ModelRow, "currentVersionId">): AssetVersionDto {
   const current = model.currentVersionId ? model.currentVersionId === v.id : v.preset === "original";

@@ -73,6 +73,9 @@ export const patchSchema = z
     sku,
     category: category.optional(),
     dimensions: z.object({ widthMm: mm, heightMm: mm, depthMm: mm }).optional(),
+    tags: z.array(z.string().trim().min(1).max(30).refine(noControl, "invalid_chars")).max(10).optional(),
+    favorite: z.boolean().optional(),
+    projectId: z.string().uuid().nullable().optional(),
   })
   .strict();
 

@@ -36,7 +36,8 @@ const nextConfig: NextConfig = {
     root: __dirname,
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    // The public viewer sets its own headers, because it is the one page other sites may frame.
+    return [{ source: "/((?!embed/).*)", headers: securityHeaders }];
   },
 };
 

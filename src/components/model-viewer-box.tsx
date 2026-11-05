@@ -19,12 +19,15 @@ type Props = {
   wheelZoom?: boolean;
   /** Frameless variant for use on a coloured field: transparent, no controls bar, no hint. Drag to rotate only. */
   bare?: boolean;
+  /** Called once the model is on screen, with a way to capture what is shown. */
+  onReady?: (capture: () => Promise<Blob | null>) => void;
 };
 
 type ModelViewerEl = HTMLElement & {
   cameraOrbit?: string;
   autoRotate?: boolean;
   resetTurntableRotation?: () => void;
+  toBlob?: (options?: { mimeType?: string; qualityArgument?: number; idealAspect?: boolean }) => Promise<Blob>;
   getCameraOrbit?: () => { theta: number; phi: number; radius: number };
 };
 
@@ -42,6 +45,7 @@ export function ModelViewerBox({
   testId = "model-viewer-box",
   wheelZoom = true,
   bare = false,
+  onReady,
 }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<ModelViewerEl | null>(null);
@@ -107,6 +111,19 @@ export function ModelViewerBox({
     if (!el) return;
     el.cameraOrbit = orbit;
   }, [orbit, status]);
+
+  const onReadyRef = useRef(onReady);
+  useEffect(() => {
+    onReadyRef.current = onReady;
+  }, [onReady]);
+
+  useEffect(() => {
+    const el = viewerRef.current;
+    if (!el || status !== "ready") return;
+    const handle = () => onReadyRef.current?.(async () => (el.toBlob ? el.toBlob({ mimeType: "image/png" }) : null));
+    el.addEventListener("load", handle);
+    return () => el.removeEventListener("load", handle);
+  }, [status]);
 
   useEffect(() => {
     if (!autoRotate || reducedMotion) return;

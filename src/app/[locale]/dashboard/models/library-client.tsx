@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { localePath } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries/en";
-import type { Locale, ModelDto, ModelStatus, ModelSource, ReviewState } from "@/lib/types";
+import type { Locale, ModelDto, ModelStatus, ModelSource, ProjectDto, ReviewState } from "@/lib/types";
 import { filterModels } from "@/lib/model-filter";
 import { formatBytes, formatDate } from "@/lib/utils";
 
@@ -12,11 +12,18 @@ export function LibraryClient({
   locale,
   t,
   initialModels,
+  initialProjects,
 }: {
   locale: Locale;
   t: Dictionary;
   initialModels: ModelDto[];
+  initialProjects: ProjectDto[];
 }) {
+  const [projects, setProjects] = useState(initialProjects);
+  const [project, setProject] = useState("");
+  const [tag, setTag] = useState("");
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [newProject, setNewProject] = useState("");
   const [models, setModels] = useState<ModelDto[]>(initialModels);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<ModelStatus | "">("");
@@ -32,15 +39,39 @@ export function LibraryClient({
         status: status || undefined,
         source: source || undefined,
         review: review || undefined,
+        project: project || undefined,
+        tag: tag || undefined,
+        favorite: favoritesOnly,
       }),
-    [models, query, status, source, review],
+    [models, query, status, source, review, project, tag, favoritesOnly],
   );
+  const allTags = useMemo(() => [...new Set(models.flatMap((m) => m.tags))].sort(), [models]);
+
+  async function addProject(e: React.FormEvent) {
+    e.preventDefault();
+    const name = newProject.trim();
+    if (!name) return;
+    const res = await fetch("/api/projects", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) }).catch(() => null);
+    const body = res?.ok ? await res.json().catch(() => null) : null;
+    if (body?.project) {
+      setProjects((prev) => [...prev, body.project]);
+      setNewProject("");
+    }
+  }
+
+  async function toggleFavorite(m: ModelDto) {
+    const res = await fetch(`/api/models/${encodeURIComponent(m.id)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ favorite: !m.favorite }) }).catch(() => null);
+    if (res?.ok) setModels((prev) => prev.map((x) => (x.id === m.id ? { ...x, favorite: !m.favorite } : x)));
+  }
 
   function clearFilters() {
     setQuery("");
     setStatus("");
     setSource("");
     setReview("");
+    setProject("");
+    setTag("");
+    setFavoritesOnly(false);
   }
 
   async function confirmDelete() {
@@ -157,9 +188,44 @@ export function LibraryClient({
         </div>
       </div>
 
+      <div className="flex flex-wrap items-end gap-3 text-xs">
+        <div>
+          <label htmlFor="lib-project" className="block font-medium text-muted">{t.dash.library.project}</label>
+          <select id="lib-project" value={project} onChange={(e) => setProject(e.target.value)} data-testid="library-filter-project" className="mt-1 rounded-xl border border-line bg-bg px-3 py-2 text-sm text-fg">
+            <option value="">{t.dash.library.all}</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+        {allTags.length > 0 && (
+          <div>
+            <label htmlFor="lib-tag" className="block font-medium text-muted">{t.dash.library.tag}</label>
+            <select id="lib-tag" value={tag} onChange={(e) => setTag(e.target.value)} data-testid="library-filter-tag" className="mt-1 rounded-xl border border-line bg-bg px-3 py-2 text-sm text-fg">
+              <option value="">{t.dash.library.all}</option>
+              {allTags.map((x) => (
+                <option key={x} value={x}>{x}</option>
+              ))}
+            </select>
+          </div>
+        )}
+        <label className="flex cursor-pointer items-center gap-2 py-2 text-fg">
+          <input type="checkbox" checked={favoritesOnly} onChange={(e) => setFavoritesOnly(e.target.checked)} data-testid="library-filter-favorites" />
+          {t.dash.library.favoritesOnly}
+        </label>
+        <form onSubmit={addProject} className="ml-auto flex items-end gap-2">
+          <div>
+            <label htmlFor="lib-new-project" className="block font-medium text-muted">{t.dash.library.newProject}</label>
+            <input id="lib-new-project" value={newProject} maxLength={60} onChange={(e) => setNewProject(e.target.value)} data-testid="library-new-project" className="mt-1 rounded-xl border border-line bg-bg px-3 py-2 text-sm text-fg" />
+          </div>
+          <button type="submit" data-testid="library-add-project" className="rounded-xl border border-line bg-bg px-3 py-2 font-medium text-fg hover:border-accent">{t.dash.library.addProject}</button>
+        </form>
+        <Link href={localePath(locale, "/dashboard/models/trash")} data-testid="library-trash-link" className="py-2 font-medium text-accent hover:underline">{t.dash.trash.title}</Link>
+      </div>
+
       <div className="flex items-center justify-between text-xs text-muted">
         <span>{t.dash.library.count.replace("{n}", String(filtered.length))}</span>
-        {(query || status || source || review) && (
+        {(query || status || source || review || project || tag || favoritesOnly) && (
           <button
             type="button"
             onClick={clearFilters}
@@ -202,6 +268,10 @@ export function LibraryClient({
               className="flex flex-col justify-between rounded-[16px] border border-line bg-surface p-5"
             >
               <div>
+                {m.hasThumbnail && (
+                  // eslint-disable-next-line @next/next/no-img-element -- private, authenticated image: the optimizer cannot fetch it
+                  <img src={`/api/models/${encodeURIComponent(m.id)}/thumbnail`} alt="" loading="lazy" className="mb-3 aspect-square w-full rounded-xl bg-bg object-contain" data-testid={`model-thumb-${m.id}`} />
+                )}
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="rounded-full border border-line bg-surface-2 px-2.5 py-0.5 text-xs font-medium text-accent">
                     {t.dash.provenance[m.provenance]}
@@ -209,12 +279,17 @@ export function LibraryClient({
                   <span className="rounded-full border border-line bg-bg px-2.5 py-0.5 text-xs font-medium text-fg">
                     {t.dash.status[m.status]}
                   </span>
+                  <button type="button" aria-pressed={m.favorite} aria-label={t.dash.library.favorite} onClick={() => toggleFavorite(m)} data-testid={`favorite-${m.id}`} className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${m.favorite ? "border-accent text-accent" : "border-line text-muted hover:border-accent"}`}>
+                    {m.favorite ? t.dash.library.favoriteOn : t.dash.library.favorite}
+                  </button>
                 </div>
                 <h2 className="mt-3 font-display text-base font-semibold text-fg">{m.title}</h2>
                 <p className="mt-0.5 text-xs text-muted">
                   {m.sku ? `${m.sku} · ` : ""}
                   {t.dash.categories[m.category]}
+                  {m.projectId ? ` · ${projects.find((p) => p.id === m.projectId)?.name ?? ""}` : ""}
                 </p>
+                {m.tags.length > 0 && <p className="mt-1 text-xs text-muted">{m.tags.join(", ")}</p>}
                 <dl className="mt-4 space-y-1 text-xs text-muted">
                   <div className="flex justify-between">
                     <dt>{t.dash.library.columns.source}</dt>

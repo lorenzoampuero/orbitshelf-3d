@@ -1,8 +1,11 @@
-import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { isLocale, localePath } from "@/i18n/config";
+import { isLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { currentUser } from "@/lib/api";
 import { buildPageMetadata } from "@/lib/seo";
+import { store, toDto, toEmbedDto } from "@/lib/store";
+import { EmbedsClient } from "./embeds-client";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -21,6 +24,12 @@ export default async function EmbedsPage({ params }: { params: Promise<{ locale:
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const t = getDictionary(locale);
+  const user = (await currentUser())!;
+  const approved = (await store.listModels(user.orgId)).filter((m) => m.reviewState === "approved" && m.status === "ready").map(toDto);
+  const embeds = (await store.listEmbeds(user.orgId)).map(toEmbedDto);
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "";
+  const origin = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "") || `${h.get("x-forwarded-proto") ?? "http"}://${host}`;
 
   return (
     <div className="space-y-6">
@@ -28,28 +37,7 @@ export default async function EmbedsPage({ params }: { params: Promise<{ locale:
         <h1 className="font-display text-2xl sm:text-3xl font-bold">{t.dash.embeds.title}</h1>
         <p className="mt-1 text-sm text-muted">{t.dash.embeds.subtitle}</p>
       </div>
-
-      <div className="rounded-[16px] border border-line bg-surface p-6">
-        <span className="inline-flex rounded-full border border-line bg-surface-2 px-2.5 py-0.5 text-xs font-medium text-amber">
-          {t.dash.settings.planned}
-        </span>
-        <h2 className="mt-3 font-display text-base font-semibold text-fg">{t.dash.embeds.plannedTitle}</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{t.dash.embeds.plannedText}</p>
-        <ul className="mt-4 space-y-1.5 text-xs text-muted">
-          {t.dash.embeds.bullets.map((b) => (
-            <li key={b} className="flex gap-2">
-              <span className="text-accent">•</span>
-              <span>{b}</span>
-            </li>
-          ))}
-        </ul>
-        <Link
-          href={localePath(locale, "/dashboard/models")}
-          className="mt-5 inline-flex rounded-xl bg-accent px-4 py-2 text-xs font-semibold text-bg hover:bg-accent-strong"
-        >
-          {t.dash.embeds.cta}
-        </Link>
-      </div>
+      <EmbedsClient locale={locale} dict={t} approved={approved} initialEmbeds={embeds} origin={origin} />
     </div>
   );
 }

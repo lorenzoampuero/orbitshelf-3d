@@ -33,7 +33,7 @@ describe.skipIf(!url)("lock contention on a real Postgres", () => {
         id: randomUUID(), orgId: org.id, title: "Race", sku: null, category: "other", source: "ai", provenance: "ai-generated", engineId: "sloyd", estimatedCostUsd: 0, inputKind: "text",
         sourceViews: [], prompt: null, demoAsset: null, status: "processing", jobState: "reserved", providerJobRef: null, providerJobId: null, providerJobUrls: null, idempotencyKey: null, error: null,
         failureCode: null, attemptsDebited: 0, attemptsRefunded: 0, providerCreditsEstimate: 0, textureResolution: "1k", reviewState: "pending", checklist: emptyChecklist(), reviewNote: null,
-        reviewedAt: null, dimensions: emptyDimensions(), fileSize: null, checksum: null, stalled: false, rightsAffirmed: true, hasSourceImage: false, sourceImageExt: null, extraImages: [], currentVersionId: null,
+        reviewedAt: null, dimensions: emptyDimensions(), fileSize: null, checksum: null, stalled: false, rightsAffirmed: true, hasSourceImage: false, sourceImageExt: null, extraImages: [], currentVersionId: null, projectId: null, tags: [], favorite: false, hasThumbnail: false, deletedAt: null,
         sourceImageSha256: null, nextPollAt: null, pollCount: 0, lastPolledAt: null, lastPollError: null, createdAt: t, updatedAt: t,
       };
     };

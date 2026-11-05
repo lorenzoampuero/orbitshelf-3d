@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { blobStoreFromEnv, type BlobStore } from "@/lib/blob";
 import { maxActiveJobs, paidAttemptCap } from "@/lib/env";
 import { pgClient, type Queryable, type SqlClient, type SqlRow } from "@/lib/sql";
-import { assertSafeId, emptyChecklist, emptyProfile, glbKey, mimeOf, nowIso, orgIdForEmail, sourceKey, versionKey, type VersionRow, type CostEventRow, type ExtraImage, type ModelRow, type OrgRow, type SourcePhoto, type UserRow } from "@/lib/store-shared";
+import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type EmbedRow, type ProjectRow, glbKey, mimeOf, nowIso, orgIdForEmail, sourceKey, versionKey, type VersionRow, type CostEventRow, type ExtraImage, type ModelRow, type OrgRow, type SourcePhoto, type UserRow } from "@/lib/store-shared";
 import type { Store } from "@/lib/store-local";
 import type { UserProfile, FailureCode, ImageView, JobEventDto, JobState, LedgerEntryDto, PriceEvidence, UsageDto } from "@/lib/types";
 
@@ -20,6 +20,11 @@ const COLUMNS = {
   engineId: "engine_id",
   estimatedCostUsd: "estimated_cost_usd",
   currentVersionId: "current_version_id",
+  projectId: "project_id",
+  tags: "tags",
+  favorite: "favorite",
+  hasThumbnail: "has_thumbnail",
+  deletedAt: "deleted_at",
   inputKind: "input_kind",
   sourceViews: "source_views",
   prompt: "prompt",
@@ -72,6 +77,11 @@ function fromRow(r: SqlRow): ModelRow {
     engineId: (r.engine_id as string | null) ?? null,
     estimatedCostUsd: r.estimated_cost_usd == null ? null : Number(r.estimated_cost_usd),
     currentVersionId: r.current_version_id ? String(r.current_version_id) : null,
+    projectId: r.project_id ? String(r.project_id) : null,
+    tags: (r.tags as string[] | null) ?? [],
+    favorite: Boolean(r.favorite),
+    hasThumbnail: Boolean(r.has_thumbnail),
+    deletedAt: iso(r.deleted_at),
     inputKind: (r.input_kind as ModelRow["inputKind"]) ?? null,
     sourceViews: (r.source_views as ImageView[] | null) ?? [],
     prompt: (r.prompt as string | null) ?? null,
@@ -150,6 +160,11 @@ function profileFromRow(r: SqlRow): UserProfile {
     skippedAt: iso(r.onboarding_skipped_at),
   };
 }
+
+function embedFromRow(r: SqlRow): EmbedRow {
+  return { id: String(r.id), token: String(r.token), orgId: String(r.org_id), modelId: String(r.model_id), allowedDomains: (r.allowed_domains as string[]) ?? [], createdAt: iso(r.created_at)!, revokedAt: iso(r.revoked_at) };
+}
+const projectFromRow = (r: SqlRow): ProjectRow => ({ id: String(r.id), orgId: String(r.org_id), name: String(r.name), createdAt: iso(r.created_at)! });
 
 const asUuid = (id: string) => (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) ? id : null);
 
@@ -247,13 +262,13 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
     },
 
     async listModels(orgId) {
-      return (await sql.query("SELECT * FROM public.models WHERE org_id = $1 ORDER BY created_at DESC", [orgId])).rows.map(fromRow);
+      return (await sql.query("SELECT * FROM public.models WHERE org_id = $1 AND deleted_at IS NULL ORDER BY created_at DESC", [orgId])).rows.map(fromRow);
     },
 
     /** Every read is scoped by organisation: another tenant's id simply does not exist. */
     async getModel(orgId, id) {
       if (!asUuid(id)) return null;
-      const r = (await sql.query("SELECT * FROM public.models WHERE org_id = $1 AND id = $2", [orgId, id])).rows[0];
+      const r = (await sql.query("SELECT * FROM public.models WHERE org_id = $1 AND id = $2 AND deleted_at IS NULL", [orgId, id])).rows[0];
       return r ? fromRow(r) : null;
     },
 
@@ -381,10 +396,106 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
       });
       if (!m) return false;
       await blobs.delete(glbKey(orgId, id));
+      if (m.hasThumbnail) for (const ext of ["png", "jpg"]) await blobs.delete(thumbnailKey(orgId, id, ext));
       for (const v of versionIds) await blobs.delete(versionKey(orgId, id, v));
       if (m.sourceImageExt) await blobs.delete(sourceKey(orgId, id, m.sourceImageExt));
       for (const e of m.extraImages ?? []) await blobs.delete(sourceKey(orgId, id, e.ext, e.view));
       return true;
+    },
+
+    /** Moves a model to the trash. A running job is left alone. Public links stop at once. */
+    async trashModel(orgId, id) {
+      if (!asUuid(id)) return "not_found";
+      return sql.transaction(async (tx) => {
+        const m = await selectForUpdate(tx, orgId, id);
+        if (!m || m.deletedAt) return "not_found" as const;
+        if (m.status === "processing") return "busy" as const;
+        const at = nowIso();
+        await applyPatch(tx, orgId, id, { deletedAt: at });
+        await tx.query("UPDATE public.embeds SET revoked_at = $3 WHERE org_id = $1 AND model_id = $2 AND revoked_at IS NULL", [orgId, id, at]);
+        await audit(tx, orgId, "model.trashed", id);
+        return "trashed" as const;
+      });
+    },
+
+    async restoreModel(orgId, id) {
+      if (!asUuid(id)) return null;
+      return sql.transaction(async (tx) => {
+        const m = await selectForUpdate(tx, orgId, id);
+        if (!m?.deletedAt) return null;
+        await audit(tx, orgId, "model.restored", id);
+        return applyPatch(tx, orgId, id, { deletedAt: null });
+      });
+    },
+
+    async listTrash(orgId) {
+      return (await sql.query("SELECT * FROM public.models WHERE org_id = $1 AND deleted_at IS NOT NULL ORDER BY deleted_at DESC", [orgId])).rows.map(fromRow);
+    },
+
+    async isInTrash(orgId, id) {
+      if (!asUuid(id)) return false;
+      return (await sql.query("SELECT 1 FROM public.models WHERE org_id = $1 AND id = $2 AND deleted_at IS NOT NULL", [orgId, id])).rows.length > 0;
+    },
+
+    async listExpiredTrash(now = Date.now()) {
+      const cutoff = new Date(now - TRASH_RETENTION_DAYS * 86_400_000).toISOString();
+      return (await sql.query("SELECT org_id, id FROM public.models WHERE deleted_at < $1", [cutoff])).rows.map((r) => ({ orgId: String(r.org_id), id: String(r.id) }));
+    },
+
+    async saveThumbnail(orgId, id, data, ext) {
+      await blobs.put(thumbnailKey(orgId, id, ext), data, mimeOf(ext));
+      await sql.query("UPDATE public.models SET has_thumbnail = true, thumbnail_ext = $3 WHERE org_id = $1 AND id = $2", [orgId, id, ext]);
+    },
+
+    async readThumbnail(orgId, id) {
+      if (!asUuid(id)) return null;
+      const r = (await sql.query("SELECT thumbnail_ext FROM public.models WHERE org_id = $1 AND id = $2 AND deleted_at IS NULL", [orgId, id])).rows[0];
+      if (!r?.thumbnail_ext) return null;
+      const ext = String(r.thumbnail_ext);
+      const data = await blobs.get(thumbnailKey(orgId, id, ext));
+      return data ? { data, mime: mimeOf(ext) } : null;
+    },
+
+    async listProjects(orgId) {
+      return (await sql.query("SELECT * FROM public.projects WHERE org_id = $1 ORDER BY created_at", [orgId])).rows.map(projectFromRow);
+    },
+
+    async createProject(orgId, p) {
+      await sql.query("INSERT INTO public.projects (id, org_id, name, created_at) VALUES ($1, $2, $3, $4)", [p.id, orgId, p.name, p.createdAt]);
+      return { ...p, orgId };
+    },
+
+    async deleteProject(orgId, id) {
+      if (!asUuid(id)) return false;
+      return (await sql.query("DELETE FROM public.projects WHERE org_id = $1 AND id = $2 RETURNING id", [orgId, id])).rows.length > 0;
+    },
+
+    async createEmbed(row) {
+      await sql.transaction(async (tx) => {
+        await tx.query("INSERT INTO public.embeds (id, token, org_id, model_id, allowed_domains, created_at) VALUES ($1, $2, $3, $4, $5, $6)", [row.id, row.token, row.orgId, row.modelId, row.allowedDomains, row.createdAt]);
+        await audit(tx, row.orgId, "embed.created", row.modelId);
+      });
+      return row;
+    },
+
+    async listEmbeds(orgId) {
+      return (await sql.query("SELECT * FROM public.embeds WHERE org_id = $1 ORDER BY created_at DESC", [orgId])).rows.map(embedFromRow);
+    },
+
+    async revokeEmbed(orgId, id) {
+      if (!asUuid(id)) return false;
+      const r = (await sql.query("UPDATE public.embeds SET revoked_at = COALESCE(revoked_at, now()) WHERE org_id = $1 AND id = $2 RETURNING model_id", [orgId, id])).rows[0];
+      if (r) await audit(sql, orgId, "embed.revoked", String(r.model_id));
+      return Boolean(r);
+    },
+
+    /** A public link works only while it is active and its model is ready, approved and not in the trash. */
+    async getPublicEmbed(token) {
+      const r = (await sql.query("SELECT * FROM public.embeds WHERE token = $1 AND revoked_at IS NULL", [token])).rows[0];
+      if (!r) return null;
+      const embed = embedFromRow(r);
+      const m = (await sql.query("SELECT * FROM public.models WHERE org_id = $1 AND id = $2 AND status = 'ready' AND review_state = 'approved' AND deleted_at IS NULL", [embed.orgId, embed.modelId])).rows[0];
+      return m ? { embed, model: fromRow(m) } : null;
     },
 
     async listVersions(orgId, modelId) {

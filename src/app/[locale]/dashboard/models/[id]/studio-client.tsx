@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { localePath } from "@/i18n/config";
@@ -14,6 +14,7 @@ import {
   type JobEventDto,
   type Locale,
   type ModelDto,
+  type ProjectDto,
 } from "@/lib/types";
 import { ModelViewerBox } from "@/components/model-viewer-box";
 import { AssetTools } from "./asset-tools";
@@ -25,12 +26,14 @@ export function StudioClient({
   initialModel,
   initialEvents,
   engineLabel,
+  projects,
 }: {
   locale: Locale;
   t: Dictionary;
   initialModel: ModelDto;
   initialEvents: JobEventDto[];
   engineLabel: string | null;
+  projects: ProjectDto[];
 }) {
   const router = useRouter();
   const [model, setModelState] = useState<ModelDto>(initialModel);
@@ -52,6 +55,8 @@ export function StudioClient({
   const [depthMm, setDepthMm] = useState(
     initialModel.dimensions.depthMm ? String(initialModel.dimensions.depthMm) : "",
   );
+  const [projectId, setProjectId] = useState(initialModel.projectId ?? "");
+  const [tags, setTags] = useState(initialModel.tags.join(", "));
   const [savingMeta, setSavingMeta] = useState(false);
   const [metaSaved, setMetaSaved] = useState(false);
 
@@ -59,8 +64,12 @@ export function StudioClient({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  const thumbnailStale = useRef(false);
   const setModel = useCallback((next: ModelDto) => {
-    setModelState(next);
+    setModelState((prev) => {
+      if (prev.currentVersionId !== next.currentVersionId) thumbnailStale.current = true;
+      return next;
+    });
     setChecklist(next.checklist);
     setReviewNote(next.reviewNote ?? "");
   }, []);
@@ -159,6 +168,8 @@ export function StudioClient({
           sku: sku.trim() ? sku.trim() : null,
           category,
           dimensions: { widthMm: w, heightMm: h, depthMm: d },
+          projectId: projectId || null,
+          tags: tags.split(",").map((x) => x.trim()).filter(Boolean).slice(0, 10),
         }),
       });
       const body = await res.json().catch(() => null);
@@ -309,6 +320,14 @@ export function StudioClient({
               loadingLabel={t.dash.detail.viewerLoading}
               errorLabel={t.dash.detail.viewerError}
               testId="studio-viewer"
+              onReady={async (capture) => {
+                // A real picture of this model for the library. If the browser cannot produce one, the card simply has no image.
+                if (model.hasThumbnail && !thumbnailStale.current) return;
+                const blob = await capture().catch(() => null);
+                if (!blob) return;
+                const res = await fetch(`/api/models/${encodeURIComponent(model.id)}/thumbnail`, { method: "PUT", headers: { "Content-Type": blob.type }, body: blob }).catch(() => null);
+                if (res?.ok) thumbnailStale.current = false;
+              }}
             />
           ) : (
             <div className="flex h-80 items-center justify-center rounded-[16px] border border-dashed border-line bg-surface p-6 text-sm text-muted">
@@ -642,6 +661,38 @@ export function StudioClient({
                     className="mt-1 w-full rounded-xl border border-line bg-bg px-2.5 py-1.5 text-xs text-fg"
                   />
                 </div>
+              </div>
+              <div>
+                <label htmlFor="meta-project" className="block text-xs font-medium text-muted">
+                  {t.dash.detail.projectLabel}
+                </label>
+                <select
+                  id="meta-project"
+                  value={projectId}
+                  onChange={(e) => setProjectId(e.target.value)}
+                  data-testid="meta-project"
+                  className="mt-1 w-full rounded-xl border border-line bg-bg px-2.5 py-1.5 text-xs text-fg"
+                >
+                  <option value="">{t.dash.detail.noProject}</option>
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="meta-tags" className="block text-xs font-medium text-muted">
+                  {t.dash.detail.tagsLabel}
+                </label>
+                <input
+                  id="meta-tags"
+                  value={tags}
+                  onChange={(e) => setTags(e.target.value)}
+                  data-testid="meta-tags"
+                  className="mt-1 w-full rounded-xl border border-line bg-bg px-2.5 py-1.5 text-xs text-fg"
+                />
+                <p className="mt-1 text-xs text-muted">{t.dash.detail.tagsHint}</p>
               </div>
               <div className="flex items-center gap-3 pt-1">
                 <button

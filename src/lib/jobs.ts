@@ -30,6 +30,11 @@ function baseRow(orgId: string, v: Pick<ModelRow, "title" | "sku" | "category" |
     engineId: null,
     estimatedCostUsd: null,
     currentVersionId: null,
+    projectId: null,
+    tags: [],
+    favorite: false,
+    hasThumbnail: false,
+    deletedAt: null,
     inputKind: null,
     sourceViews: [],
     prompt: null,
@@ -183,6 +188,16 @@ export async function createProviderModel(
   }
 }
 
+let trashCheckedAt = 0;
+const TRASH_CHECK_MS = 60 * 60_000;
+
+/** Removes models past the retention period, at most once an hour. The usage ledger stays. */
+export async function purgeExpiredTrash(now = Date.now()) {
+  if (now - trashCheckedAt < TRASH_CHECK_MS) return;
+  trashCheckedAt = now;
+  for (const m of await store.listExpiredTrash(now)) await store.deleteModel(m.orgId, m.id);
+}
+
 let switchesReadAt = 0;
 const SWITCHES_TTL_MS = 30_000;
 
@@ -291,6 +306,7 @@ export async function pollerTick(deps?: Deps) {
   pg.__osTicking = true;
   try {
     await refreshEngineSwitches().catch(() => undefined);
+    await purgeExpiredTrash().catch((e) => console.error("[poller] trash purge failed:", e instanceof Error ? e.message : "unknown"));
     const rows = await store.claimPollable();
     for (const r of rows) {
       await refreshJob(r.orgId, r.id, deps).catch((e) => console.error("[poller] refresh failed:", redact(String(e?.message ?? e))));

@@ -61,7 +61,7 @@ export function DashboardShell({
   ];
 
   const manageItems: NavItem[] = [
-    { href: "/dashboard/embeds", label: dict.dash.nav.embeds, icon: Share2, planned: true },
+    { href: "/dashboard/embeds", label: dict.dash.nav.embeds, icon: Share2 },
     { href: "/dashboard/usage", label: dict.dash.nav.usage, icon: Activity },
     { href: "/dashboard/billing", label: dict.dash.nav.billing, icon: CreditCard, planned: true },
   ];

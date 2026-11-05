@@ -489,6 +489,16 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     expect(created.provenance).toBe("imported");
     expect((await (await page.request.get("/api/usage")).json()).usage.debited).toBe(0);
 
+    // The library's picture is a real render of this model, taken once it is on screen
+    await expect(async () => {
+      expect((await (await page.request.get(`/api/models/${id}`)).json()).model.hasThumbnail).toBe(true);
+    }).toPass({ timeout: 15_000 });
+    const thumb = await page.request.get(`/api/models/${id}/thumbnail`);
+    expect(thumb.status()).toBe(200);
+    expect(thumb.headers()["content-type"]).toMatch(/^image\//);
+    const stats = await sharp(await thumb.body()).stats();
+    expect(stats.channels.some((c) => c.stdev > 1)).toBe(true); // not a blank image
+
     // Diagnostics are measured from the file
     await expect(page.getByTestId("tools-metrics")).toBeVisible();
     await expect(page.getByTestId("preset-web-result")).toBeVisible();
@@ -599,6 +609,95 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await expect(page.getByTestId("profile-saved")).toBeVisible();
     expect((await (await page.request.get("/api/usage")).json()).usage.balance).toBe(before);
     expect((await (await page.request.get("/api/models")).json()).models).toHaveLength(1);
+  });
+
+  test("6e. Library and public viewer: tags, projects, favorites, trash, and a viewer that only lives while approved and not revoked", async ({ page, request }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/login");
+    await page.fill("#login-email", "publisher@merchant.test");
+    await page.getByTestId("login-submit").click();
+    await page.waitForURL("**/dashboard");
+
+    const made = await (await page.request.post("/api/models", { data: { source: "demo", title: "Published Vase", category: "home-decor", demoAsset: "vase" } })).json();
+    const id = made.model.id as string;
+
+    // Project, tags and favorite
+    const project = (await (await page.request.post("/api/projects", { data: { name: "Winter" } })).json()).project;
+    expect((await page.request.patch(`/api/models/${id}`, { data: { projectId: "00000000-0000-4000-8000-000000000000" } })).status()).toBe(422);
+    expect((await page.request.patch(`/api/models/${id}`, { data: { projectId: project.id, tags: ["vase", "vase", "ceramic"], favorite: true } })).ok()).toBe(true);
+    expect((await (await page.request.get(`/api/models/${id}`)).json()).model).toMatchObject({ projectId: project.id, tags: ["vase", "ceramic"], favorite: true });
+    await page.goto("/dashboard/models");
+    await page.getByTestId("library-filter-tag").selectOption("ceramic");
+    await expect(page.getByTestId(`model-card-${id}`)).toBeVisible();
+    await page.getByTestId("library-filter-project").selectOption(project.id);
+    await expect(page.getByTestId(`model-card-${id}`)).toBeVisible();
+
+    // Only an approved model can be published
+    expect((await page.request.post("/api/embeds", { data: { modelId: id, allowedDomains: [] } })).status()).toBe(409);
+    await page.goto("/dashboard/embeds");
+    await expect(page.getByTestId("embeds-none-approved")).toBeVisible();
+
+    const checklist = { shape: true, surfaces: true, hiddenAngles: true, material: true, labels: true };
+    await page.request.post(`/api/models/${id}/review`, { data: { decision: "approve", checklist, note: null } });
+    expect((await page.request.post("/api/embeds", { data: { modelId: id, allowedDomains: ["not a domain!"] } })).status()).toBe(422);
+
+    await page.goto("/dashboard/embeds");
+    await page.getByTestId("embed-domains-input").fill("https://www.MiTienda.cl/producto");
+    await page.getByTestId("embed-create-btn").click();
+    await expect(page.getByTestId("embed-snippet")).toContainText("<iframe");
+    const embed = (await (await page.request.get("/api/embeds")).json()).embeds[0];
+    expect(embed.allowedDomains).toEqual(["www.mitienda.cl"]);
+
+    // Public, with no session: only the listed sites may frame it, and it says what it is
+    const view = await request.get(`/embed/${embed.token}`, { headers: { cookie: "" } });
+    expect(view.status()).toBe(200);
+    const csp = view.headers()["content-security-policy"];
+    expect(csp).toContain("frame-ancestors https://www.mitienda.cl https://*.www.mitienda.cl");
+    expect(view.headers()["x-frame-options"]).toBeUndefined();
+    expect(view.headers()["x-robots-tag"]).toBe("noindex");
+    expect(await view.text()).toContain("Sample 3D model.");
+    const file = await request.get(`/api/public/embed/${embed.token}/file`, { headers: { cookie: "" } });
+    expect(file.status()).toBe(200);
+    expect((await file.body()).subarray(0, 4).toString()).toBe("glTF");
+    expect((await request.get(`/api/public/embed/${embed.token}/file`, { headers: { cookie: "", referer: "https://evil.test/x" } })).status()).toBe(403);
+    expect((await request.get(`/api/public/embed/${embed.token}/file`, { headers: { cookie: "", referer: "https://www.mitienda.cl/p/1" } })).status()).toBe(200);
+    expect((await request.get("/embed/unknown-token-unknown-token-unknown")).status()).toBe(404);
+
+    // The viewer actually draws the model
+    await page.goto(`/embed/${embed.token}`);
+    await page.waitForFunction(() => (document.querySelector("model-viewer") as (HTMLElement & { loaded?: boolean }) | null)?.loaded === true, undefined, { timeout: 15_000 });
+
+    // Rejecting ends it; approving again brings it back
+    await page.goto("/dashboard/models");
+    await page.request.post(`/api/models/${id}/review`, { data: { decision: "reject", checklist, note: null } });
+    expect((await request.get(`/embed/${embed.token}`)).status()).toBe(404);
+    await page.request.post(`/api/models/${id}/review`, { data: { decision: "approve", checklist, note: null } });
+    expect((await request.get(`/embed/${embed.token}`)).status()).toBe(200);
+
+    // Revoking ends it for good
+    await page.goto("/dashboard/embeds");
+    await page.getByTestId("embed-revoke-btn").click();
+    await expect(page.getByTestId("embed-snippet")).toHaveCount(0);
+    expect((await request.get(`/embed/${embed.token}`)).status()).toBe(404);
+
+    // Trash: hidden, public links stop, restorable, and only then deletable for good
+    const second = (await (await page.request.post("/api/embeds", { data: { modelId: id, allowedDomains: [] } })).json()).embed;
+    expect((await request.get(`/embed/${second.token}`)).status()).toBe(200);
+    expect((await page.request.delete(`/api/models/${id}?permanent=1`)).status()).toBe(404); // not in the trash yet
+    expect((await page.request.delete(`/api/models/${id}`)).ok()).toBe(true);
+    expect((await page.request.get(`/api/models/${id}`)).status()).toBe(404);
+    expect((await request.get(`/embed/${second.token}`)).status()).toBe(404);
+    await page.goto("/dashboard/models/trash");
+    await page.getByTestId(`trash-restore-${id}`).click();
+    await expect(page.getByTestId("trash-empty")).toBeVisible();
+    expect((await page.request.get(`/api/models/${id}`)).ok()).toBe(true);
+    expect((await request.get(`/embed/${second.token}`)).status()).toBe(404); // restoring does not publish again
+    await page.request.delete(`/api/models/${id}`);
+    await page.reload();
+    await page.getByTestId(`trash-purge-${id}`).click();
+    await expect(page.getByTestId("trash-empty")).toBeVisible();
+    expect((await (await page.request.get("/api/models/trash")).json()).models).toHaveLength(0);
+    expect((await (await page.request.get("/api/projects")).json()).projects).toHaveLength(1);
   });
 
   test("7. Text to 3D: prompt validation, text endpoint, prompt shown in the studio, and a refund when the provider refuses", async ({ page }) => {
