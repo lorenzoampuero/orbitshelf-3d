@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { dataDir, maxActiveJobs, paidAttemptCap } from "@/lib/env";
-import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type EmbedRow, type ProjectRow, type IntegrationRow, type PublicationRow, mimeOf, nowIso, orgIdForEmail, versionKey, type CostEventRow, type VersionRow, type LedgerRow, type LocalDb, type ModelRow, type SourcePhoto } from "@/lib/store-shared";
+import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type ApiTokenRow, type EmbedRow, type ProjectRow, type IntegrationRow, type PublicationRow, mimeOf, nowIso, orgIdForEmail, versionKey, type CostEventRow, type VersionRow, type LedgerRow, type LocalDb, type ModelRow, type SourcePhoto } from "@/lib/store-shared";
 import type { UserProfile, FailureCode, ImageView, JobEventDto, JobState, PriceEvidence, UsageDto } from "@/lib/types";
 
 /* ───────── persistence primitives ───────── */
@@ -28,6 +28,7 @@ function upgradeRows(db: LocalDb): LocalDb {
   db.embeds ??= [];
   db.integrations ??= [];
   db.publications ??= [];
+  db.apiTokens ??= [];
   for (const m of db.models) {
     if ((m.source as string) === "sloyd") {
       m.source = "ai";
@@ -42,7 +43,7 @@ function upgradeRows(db: LocalDb): LocalDb {
 
 function readDb(): LocalDb {
   ensureDirs();
-  if (!existsSync(dbFile())) return { version: 1, orgs: [], users: [], models: [], ledger: [], audit: [], jobEvents: [], costEvents: [], versions: [], projects: [], embeds: [], integrations: [], publications: [] };
+  if (!existsSync(dbFile())) return { version: 1, orgs: [], users: [], models: [], ledger: [], audit: [], jobEvents: [], costEvents: [], versions: [], projects: [], embeds: [], integrations: [], publications: [], apiTokens: [] };
   let db: LocalDb;
   try {
     db = JSON.parse(readFileSync(dbFile(), "utf8")) as LocalDb;
@@ -435,6 +436,38 @@ export const localStore = {
       pushLedger(db, { orgId, idempotencyKey: `adjust:${key}`, delta, reason, modelId: null });
       audit(db, orgId, "ledger.adjusted", null, reason);
       return "applied" as const;
+    });
+  },
+
+  async createApiToken(row: ApiTokenRow): Promise<void> {
+    await tx((db) => {
+      db.apiTokens.push(row);
+      audit(db, row.orgId, "token.created", null, row.name);
+    });
+  },
+
+  async listApiTokens(orgId: string): Promise<ApiTokenRow[]> {
+    return tx((db) => db.apiTokens.filter((t) => t.orgId === orgId).sort((a, b) => b.createdAt.localeCompare(a.createdAt)), false);
+  },
+
+  async findApiToken(tokenHash: string): Promise<ApiTokenRow | null> {
+    return tx((db) => db.apiTokens.find((t) => t.tokenHash === tokenHash) ?? null, false);
+  },
+
+  async touchApiToken(id: string): Promise<void> {
+    await tx((db) => {
+      const t = db.apiTokens.find((x) => x.id === id);
+      if (t) t.lastUsedAt = nowIso();
+    });
+  },
+
+  async revokeApiToken(orgId: string, id: string): Promise<boolean> {
+    return tx((db) => {
+      const t = db.apiTokens.find((x) => x.orgId === orgId && x.id === id);
+      if (!t) return false;
+      t.revokedAt ??= nowIso();
+      audit(db, orgId, "token.revoked", null, t.name);
+      return true;
     });
   },
 

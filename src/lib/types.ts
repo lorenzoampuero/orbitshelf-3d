@@ -121,6 +121,10 @@ export type EmbedDto = { id: string; token: string; modelId: string; allowedDoma
 export type PublicationState = "processing" | "published" | "failed";
 export type PublicationDto = { id: string; modelId: string; shop: string; productId: string; productTitle: string; state: PublicationState; error: string | null; createdAt: string };
 
+export const API_SCOPES = ["models:read", "assets:read", "credits:read", "jobs:write"] as const;
+export type ApiScope = (typeof API_SCOPES)[number];
+export type ApiTokenDto = { id: string; name: string; prefix: string; scopes: ApiScope[]; createdAt: string; lastUsedAt: string | null; active: boolean };
+
 export type JobEventDto = { id: string; state: JobState; detail: string | null; at: string };
 export type ModelStatus = "processing" | "ready" | "failed";
 export type ReviewState = "pending" | "approved" | "rejected";

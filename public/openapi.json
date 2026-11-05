@@ -1,0 +1,111 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OrbitShelf 3D API",
+    "version": "1.0.0",
+    "description": "Same engines, quotes, balance and limits as the web app. Create tokens under API in the dashboard. Prices are published provider prices, not invoices."
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "security": [{ "token": [] }],
+  "components": {
+    "securitySchemes": { "token": { "type": "http", "scheme": "bearer" } },
+    "schemas": {
+      "Error": { "type": "object", "properties": { "error": { "type": "object", "properties": { "code": { "type": "string" }, "message": { "type": "string" } } } } }
+    },
+    "responses": {
+      "Error": { "description": "Error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+    }
+  },
+  "paths": {
+    "/models": {
+      "get": {
+        "summary": "Engines available right now",
+        "description": "Permission: models:read",
+        "parameters": [{ "name": "mode", "in": "query", "schema": { "type": "string", "enum": ["image", "multi-image", "text"] } }],
+        "responses": { "200": { "description": "Engines" }, "401": { "$ref": "#/components/responses/Error" } }
+      }
+    },
+    "/quotes": {
+      "post": {
+        "summary": "Cost of a generation, valid for 15 minutes",
+        "description": "Permission: jobs:write",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["engineId", "mode", "photoCount", "texture"],
+                "properties": {
+                  "engineId": { "type": "string" },
+                  "mode": { "type": "string", "enum": ["image", "multi-image", "text"] },
+                  "photoCount": { "type": "integer" },
+                  "texture": { "type": "string", "enum": ["none", "512", "1k", "2k"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Quote" }, "422": { "$ref": "#/components/responses/Error" }, "503": { "$ref": "#/components/responses/Error" } }
+      }
+    },
+    "/jobs": {
+      "post": {
+        "summary": "Start a generation",
+        "description": "Permission: jobs:write. Off unless the server enables it. Needs a current quote and an idempotency key, so retrying cannot pay twice. Send either prompt or images.",
+        "parameters": [{ "name": "Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string", "minLength": 8, "maxLength": 80 } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["quoteId", "engineId", "title", "category", "texture", "rightsAffirmed"],
+                "properties": {
+                  "quoteId": { "type": "string" },
+                  "engineId": { "type": "string" },
+                  "title": { "type": "string", "maxLength": 75 },
+                  "sku": { "type": "string", "maxLength": 64 },
+                  "category": { "type": "string", "enum": ["apparel", "footwear", "furniture", "home-decor", "lighting", "accessories", "other"] },
+                  "texture": { "type": "string", "enum": ["none", "512", "1k", "2k"] },
+                  "prompt": { "type": "string", "minLength": 10, "maxLength": 1000 },
+                  "images": { "type": "object", "description": "Base64 photos by view. front is required.", "properties": { "front": { "type": "string" }, "left": { "type": "string" }, "back": { "type": "string" }, "right": { "type": "string" } } },
+                  "rightsAffirmed": { "type": "boolean", "const": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "The same key was already used: the existing job" },
+          "202": { "description": "Started" },
+          "402": { "$ref": "#/components/responses/Error" },
+          "409": { "$ref": "#/components/responses/Error" },
+          "503": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/assets": {
+      "get": { "summary": "The workspace's models", "description": "Permission: assets:read", "responses": { "200": { "description": "Assets" } } }
+    },
+    "/assets/{id}": {
+      "get": {
+        "summary": "A model or job, with its state history",
+        "description": "Permission: assets:read",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Asset" }, "404": { "$ref": "#/components/responses/Error" } }
+      }
+    },
+    "/assets/{id}/file": {
+      "get": {
+        "summary": "Download the GLB in use",
+        "description": "Permission: assets:read. X-OrbitShelf-Provenance says where the file came from.",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "GLB file", "content": { "model/gltf-binary": {} } }, "409": { "$ref": "#/components/responses/Error" } }
+      }
+    },
+    "/credits": {
+      "get": { "summary": "Balance and active jobs", "description": "Permission: credits:read", "responses": { "200": { "description": "Balance" } } }
+    }
+  }
+}

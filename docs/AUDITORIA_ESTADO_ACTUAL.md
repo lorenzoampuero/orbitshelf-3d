@@ -1,5 +1,7 @@
 # Auditoría del estado actual de OrbitShelf 3D
 
+> Esta es la foto del punto de partida, antes de las Fases 1 a 9. El estado actual está en el README.
+
 Fecha: 2026-11-05. Rama de trabajo: `feat/plataforma-multimodelo`. La especificación de origen está en `docs/spec-2026-11/`.
 
 ## Arquitectura

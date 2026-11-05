@@ -763,6 +763,67 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     expect((await page.request.get(`/api/models/${id}`)).ok()).toBe(true);
   });
 
+  test("6g. Public API: scoped tokens, the same data and balance as the web, shown once, and revocable", async ({ page, request }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/login");
+    await page.fill("#login-email", "api-user@merchant.test");
+    await page.getByTestId("login-submit").click();
+    await page.waitForURL("**/dashboard");
+    const made = (await (await page.request.post("/api/models", { data: { source: "demo", title: "API Lamp", category: "lighting", demoAsset: "lamp" } })).json()).model;
+
+    await page.goto("/dashboard/api");
+    await page.fill("#token-name", "Blender");
+    await page.getByTestId("token-create").click();
+    const token = (await page.getByTestId("token-value").textContent())!;
+    expect(token).toMatch(/^os_/);
+    const bearer = { Authorization: `Bearer ${token}` };
+
+    // Without a valid token, nothing. A session cookie is not enough either.
+    expect((await request.get("/api/v1/assets")).status()).toBe(401);
+    expect((await page.request.get("/api/v1/assets")).status()).toBe(401);
+    expect((await request.get("/api/v1/assets", { headers: { Authorization: "Bearer os_this-token-does-not-exist-at-all" } })).status()).toBe(401);
+
+    // Exactly what the permission allows
+    const assets = (await (await request.get("/api/v1/assets", { headers: bearer })).json()).assets;
+    expect(assets.map((a: { id: string }) => a.id)).toEqual([made.id]);
+    expect((await request.get("/api/v1/credits", { headers: bearer })).status()).toBe(403);
+    expect((await request.post("/api/v1/quotes", { headers: bearer, data: {} })).status()).toBe(403);
+    const file = await request.get(`/api/v1/assets/${made.id}/file`, { headers: bearer });
+    expect((await file.body()).subarray(0, 4).toString()).toBe("glTF");
+    expect(file.headers()["x-orbitshelf-provenance"]).toBe("demo-sample");
+
+    // The list never shows the token or its hash
+    const listed = await (await page.request.get("/api/tokens")).text();
+    expect(listed).not.toContain(token);
+    expect(listed).not.toContain("tokenHash");
+
+    // Everything: same engines, same quote, same balance as the web
+    const full = (await (await page.request.post("/api/tokens", { data: { name: "All", scopes: ["models:read", "assets:read", "credits:read", "jobs:write"] } })).json()).token;
+    const auth = { Authorization: `Bearer ${full}` };
+    const engines = (await (await request.get("/api/v1/models", { headers: auth })).json()).models.map((m: { id: string }) => m.id);
+    expect(engines).toEqual(["sloyd", "fal-rodin-2.5"]); // never a disabled engine
+    expect((await (await request.get("/api/v1/credits", { headers: auth })).json()).balance).toBe((await (await page.request.get("/api/usage")).json()).usage.balance);
+    const quote = await (await request.post("/api/v1/quotes", { headers: auth, data: { engineId: "sloyd", mode: "text", photoCount: 0, texture: "1k" } })).json();
+    expect(quote.quote.usd).toBeCloseTo(0.3333, 3);
+    expect((await request.post("/api/v1/quotes", { headers: auth, data: { engineId: "fal-trellis-2", mode: "image", photoCount: 1, texture: "1k" } })).status()).toBe(503);
+
+    // Starting paid jobs through the API stays off, and it says so before anything is charged
+    const before = (await (await request.get("/api/v1/credits", { headers: auth })).json()).balance;
+    const job = await request.post("/api/v1/jobs", { headers: { ...auth, "Idempotency-Key": "key-12345678" }, data: { quoteId: quote.quote.id, engineId: "sloyd", title: "X", category: "other", texture: "1k", prompt: "a wooden chair", rightsAffirmed: true } });
+    expect(job.status()).toBe(503);
+    expect((await job.json()).error.code).toBe("api_generation_disabled");
+    expect((await (await request.get("/api/v1/credits", { headers: auth })).json()).balance).toBe(before);
+
+    // Another workspace's asset does not exist for this token, and a revoked token stops at once
+    await page.getByTestId("token-revoke").first().click();
+    await expect(async () => {
+      expect((await request.get("/api/v1/assets", { headers: bearer })).status()).toBe(401);
+    }).toPass({ timeout: 5_000 });
+    expect((await (await page.request.get("/openapi.json")).json()).openapi).toBe("3.1.0");
+    const a11y = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+    expect(a11y.violations.map((v) => v.id)).toEqual([]);
+  });
+
   test("7. Text to 3D: prompt validation, text endpoint, prompt shown in the studio, and a refund when the provider refuses", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 840 });
     await page.goto("/login");

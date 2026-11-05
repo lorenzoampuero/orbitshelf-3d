@@ -41,7 +41,7 @@ npm run start
 | --- | --- |
 | `npm run lint` | Run ESLint across the repository |
 | `npm run typecheck` | Run TypeScript (`tsc --noEmit`) |
-| `npm run test` | Run Vitest unit tests + PGlite PostgreSQL RLS tests |
+| `npm run test` | Run Vitest unit tests + PGlite PostgreSQL store and RLS tests |
 | `npm run seed:check` | Validate all demo GLB binaries (`vase.glb`, `lamp.glb`, `chair.glb`) |
 | `npm run build` | Compile Next.js production build |
 | `npm run test:e2e` | Run Playwright E2E + API + Accessibility + Screenshot suite |
@@ -65,22 +65,25 @@ npm run start
 
 ---
 
-## Demo vs. Live vs. Planned Matrix
+## What is real today
 
-| Capability | Status | Details |
-| --- | --- | --- |
-| **Demo 3D sample workflow** (`vase`, `lamp`, `chair`) | **Demo (Real GLB files)** | Instant, free, copies verified glTF 2.0 binaries into private org storage. Explicitly labeled `Demo sample` (`demo-sample`), never described as an AI reconstruction. |
-| **Interactive 3D viewer (`@google/model-viewer`)** | **Live** | Orbit, zoom, reset view, auto-rotate toggle, `prefers-reduced-motion` support, and binary `glTF` header check before render. |
-| **Strict GLB binary validation (`src/lib/glb.ts`)** | **Live** | Validates magic (`glTF`), version (`2`), byte length, 4-byte chunk alignment, JSON structure, external URI rejection (prevents SSRF/path traversal), bufferView/accessor bounds, and SHA-256 checksum. |
-| **Strict image validation & EXIF stripping (`src/lib/image.ts`)** | **Live** | Rejects SVG/HTML/scripts, checks magic bytes against MIME, decodes with `sharp`, enforces 256–8192 px bounds and ≤8 MB size, and re-encodes to strip EXIF/GPS metadata before provider upload. |
-| **Sloyd Image-to-3D adapter (`src/lib/provider/sloyd.ts`)** | **Live (Code + Mock-tested)** | Implements `POST /jobs/image-to-3d` (`x-client-id`/`x-client-secret`), `GET /jobs/{jobId}` status normalization (`pending`/`running`/`success`/`error`), private GLB copy, 401/402/403/422/429/5xx mapping, and secret redaction. **Live smoke test against `api.sloyd.ai` was not performed** because no real `SLOYD_CLIENT_ID`/`SLOYD_CLIENT_SECRET` with prepaid credits were provided in this environment. |
-| **Durable job polling & single-flight refresh (`src/lib/jobs.ts`)** | **Live** | Background poller started via `src/instrumentation.ts` plus manual `POST /api/models/[id]/refresh`. Persists poll state on disk and resumes across server restarts. |
-| **Usage ledger, cost guardrails & automatic refunds** | **Live** | Atomic attempt reservation before provider call, idempotency keys, concurrency caps, and automatic refund on verified provider errors (`402`, `401`, `429`, `422`, or job `error`). Ambiguous timeouts are not auto-refunded. |
-| **Mandatory 5-point review checklist & metadata** | **Live** | Requires all 5 quality checks before a model can be marked `Approved`. User-supplied dimensions (`widthMm`, `heightMm`, `depthMm`) are stored as metadata and never inferred from photos. |
-| **Private authenticated GLB & CSV export** | **Live** | `GET /api/models/[id]/file` and `GET /api/export/jobs.csv` (RFC 4180 + formula-injection neutralization) scoped strictly to the authenticated workspace (`orgId`). |
-| **Bilingual UI & SEO (`/` English, `/es` Spanish)** | **Live** | Full EN/ES dictionary parity across marketing and dashboard routes, `hreflang`, canonical URLs, `robots.txt`, and `sitemap.xml`. |
-| **Supabase PostgreSQL schema + RLS (`supabase/migrations/0001_init.sql`)** | **Migration Delivered & PGlite-Tested / Runtime Planned** | Complete multi-tenant SQL schema and Row Level Security policies verified with `@electric-sql/pglite` (`tests/db/rls.test.ts`). Runtime uses the local atomic store (`src/lib/store.ts`); connecting a live Supabase project is **Planned**. |
-| **Production authentication (Supabase Auth)** | **Code ready, unconfirmed** | Magic-link sign-in is implemented (`src/lib/supabase-auth.ts`). A real email link has not been confirmed end to end. Local signed-cookie sign-in (`ALLOW_LOCAL_AUTH`) stays for development and tests and is disabled by default in production. |
-| **Billing & subscription checkout** | **Planned** | Pricing tiers on `/pricing` are transparent proposals derived from Sloyd's published credit rates (20 credits ≈ US$0.27 per textured attempt). No checkout or payment processor is connected. |
-| **Public hosted embeds & CDN delivery** | **Planned** | `/dashboard/embeds` explains what is required before public embeds can be enabled (signed tokens, bandwidth/storage quotas, revocation). Models cannot be published publicly in this build. |
-| **Shopify direct catalog push** | **Planned** | Listed as Planned in Settings; merchants export validated `.glb` files manually today. |
+| Capability | Status |
+| --- | --- |
+| Photo and GLB validation, private storage, review checklist | **Live** |
+| Sloyd adapter: 1 photo, 2-4 photos, text | **Mock-tested only.** Never called with real credentials |
+| fal adapter: Hunyuan 3.1 Pro, Rodin 2.5, Tripo H3.1, TRELLIS.2 | **Mock-tested only and disabled.** Enable one with `ENGINES_ENABLED` |
+| Server quotes, job history, cost records at published prices | **Live.** Costs are published prices, never invoices |
+| GLB import, mesh diagnostics, optimization versions, OBJ and STL export | **Live** |
+| Onboarding, workspaces, Explore, generation presets | **Live.** Presets choose by published price and capability: no quality benchmark exists |
+| Projects, tags, favorites, 30-day trash, real thumbnails | **Live** |
+| Public viewer with revocable links and allowed sites | **Live** |
+| Ledger by attempts or credits, plan simulation | **Live, no charges.** Attempts is the default (`BILLING_UNIT`) |
+| Postgres store, private bucket, job leases, shared rate limit | **Tested on PGlite only.** Not yet run on a real Supabase project. See `docs/PUESTA_EN_MARCHA.md` |
+| Magic-link sign-in | **Code ready, unconfirmed** with a real email |
+| Shopify publishing | **Mock-tested only.** See `docs/SHOPIFY.md` |
+| Public API `/api/v1`, tokens | **Live.** Starting jobs through it is off (`API_GENERATION_ENABLED`) |
+| MCP server | **Tested with our own test client only** |
+| Blender add-on | **Never run inside Blender** |
+| Payments | **Not built.** Needs a provider, company details and an explicit decision |
+
+More: `docs/AUDITORIA_ESTADO_ACTUAL.md`, `docs/DECISIONES_MOTORES.csv`, `docs/SIMULACION_PLANES.md`, `integrations/README.md`.

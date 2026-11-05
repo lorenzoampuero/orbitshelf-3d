@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { blobStoreFromEnv, type BlobStore } from "@/lib/blob";
 import { maxActiveJobs, paidAttemptCap } from "@/lib/env";
 import { pgClient, type Queryable, type SqlClient, type SqlRow } from "@/lib/sql";
-import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type EmbedRow, type ProjectRow, type PublicationRow, glbKey, mimeOf, nowIso, orgIdForEmail, sourceKey, versionKey, type VersionRow, type CostEventRow, type ExtraImage, type ModelRow, type OrgRow, type SourcePhoto, type UserRow } from "@/lib/store-shared";
+import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type ApiTokenRow, type EmbedRow, type ProjectRow, type PublicationRow, glbKey, mimeOf, nowIso, orgIdForEmail, sourceKey, versionKey, type VersionRow, type CostEventRow, type ExtraImage, type ModelRow, type OrgRow, type SourcePhoto, type UserRow } from "@/lib/store-shared";
 import type { Store } from "@/lib/store-local";
 import type { UserProfile, FailureCode, ImageView, JobEventDto, JobState, LedgerEntryDto, PriceEvidence, UsageDto } from "@/lib/types";
 
@@ -179,6 +179,18 @@ const publicationFromRow = (r: SqlRow): PublicationRow => ({
   error: (r.error as string | null) ?? null,
   createdAt: iso(r.created_at)!,
   updatedAt: iso(r.updated_at)!,
+});
+
+const tokenFromRow = (r: SqlRow): ApiTokenRow => ({
+  id: String(r.id),
+  orgId: String(r.org_id),
+  name: String(r.name),
+  tokenHash: String(r.token_hash),
+  prefix: String(r.prefix),
+  scopes: r.scopes as ApiTokenRow["scopes"],
+  createdAt: iso(r.created_at)!,
+  lastUsedAt: iso(r.last_used_at),
+  revokedAt: iso(r.revoked_at),
 });
 
 const asUuid = (id: string) => (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) ? id : null);
@@ -530,6 +542,33 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
         await audit(tx, orgId, "ledger.adjusted", null, reason);
         return "applied" as const;
       });
+    },
+
+    async createApiToken(row) {
+      await sql.transaction(async (tx) => {
+        await tx.query("INSERT INTO public.api_tokens (id, org_id, name, token_hash, prefix, scopes, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)", [row.id, row.orgId, row.name, row.tokenHash, row.prefix, row.scopes, row.createdAt]);
+        await audit(tx, row.orgId, "token.created", null, row.name);
+      });
+    },
+
+    async listApiTokens(orgId) {
+      return (await sql.query("SELECT * FROM public.api_tokens WHERE org_id = $1 ORDER BY created_at DESC", [orgId])).rows.map(tokenFromRow);
+    },
+
+    async findApiToken(tokenHash) {
+      const r = (await sql.query("SELECT * FROM public.api_tokens WHERE token_hash = $1", [tokenHash])).rows[0];
+      return r ? tokenFromRow(r) : null;
+    },
+
+    async touchApiToken(id) {
+      await sql.query("UPDATE public.api_tokens SET last_used_at = now() WHERE id = $1", [id]);
+    },
+
+    async revokeApiToken(orgId, id) {
+      if (!asUuid(id)) return false;
+      const r = (await sql.query("UPDATE public.api_tokens SET revoked_at = COALESCE(revoked_at, now()) WHERE org_id = $1 AND id = $2 RETURNING name", [orgId, id])).rows[0];
+      if (r) await audit(sql, orgId, "token.revoked", null, String(r.name));
+      return Boolean(r);
     },
 
     async getIntegration(orgId) {

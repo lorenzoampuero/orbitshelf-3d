@@ -8,6 +8,7 @@ import {
   PlusSquare,
   Boxes,
   Compass,
+  KeyRound,
   Share2,
   Activity,
   CreditCard,
@@ -63,6 +64,7 @@ export function DashboardShell({
   const manageItems: NavItem[] = [
     { href: "/dashboard/embeds", label: dict.dash.nav.embeds, icon: Share2 },
     { href: "/dashboard/usage", label: dict.dash.nav.usage, icon: Activity },
+    { href: "/dashboard/api", label: dict.dash.nav.api, icon: KeyRound },
     { href: "/dashboard/billing", label: dict.dash.nav.billing, icon: CreditCard, planned: true },
   ];
 
