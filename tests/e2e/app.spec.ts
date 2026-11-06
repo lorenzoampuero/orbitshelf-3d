@@ -901,20 +901,47 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await expect(page.getByTestId("studio-source-photo")).toHaveCount(0);
   });
 
-  test("7y. Billing: choosing credits shows the lowest price that keeps the margin, and nothing can be bought", async ({ page }) => {
+  test("7y. Plans: the fixed plan has no slider, and moving a slider raises credits, price and models", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/pricing");
+    await expect(page.getByTestId("plan-starter-price")).toHaveText("US$19");
+    await expect(page.getByTestId("plan-starter-credits")).toContainText("300");
+    await expect(page.getByTestId("plan-starter-slider")).toHaveCount(0);
+
+    const steps = { creator: ["US$49", "800", "US$89", "1,500"], commerce: ["US$99", "1,700", "US$179", "3,100"], studio: ["US$199", "3,450", "US$499", "8,700"] };
+    for (const [id, [basePrice, baseCredits, topPrice, topCredits]] of Object.entries(steps)) {
+      await expect(page.getByTestId(`plan-${id}-price`)).toHaveText(basePrice);
+      await expect(page.getByTestId(`plan-${id}-credits`)).toContainText(baseCredits);
+      const modelsBefore = await page.getByTestId(`plan-${id}-models`).textContent();
+      await page.getByTestId(`plan-${id}-slider`).fill("4");
+      await expect(page.getByTestId(`plan-${id}-price`)).toHaveText(topPrice);
+      await expect(page.getByTestId(`plan-${id}-credits`)).toContainText(topCredits);
+      await expect(page.getByTestId(`plan-${id}-models`)).not.toHaveText(modelsBefore!);
+    }
+    await page.getByTestId("plan-creator-slider").focus();
+    await page.keyboard.press("ArrowLeft");
+    await expect(page.getByTestId("plan-creator-price")).toHaveText("US$79");
+
+    await expect(page.getByRole("button", { name: /buy|checkout|pay/i })).toHaveCount(0);
+    const a11y = await new AxeBuilder({ page }).exclude("model-viewer").withTags(["wcag2a", "wcag2aa"]).analyze();
+    expect(a11y.violations).toEqual([]);
+    await page.getByTestId("plan-cards").screenshot({ path: path.join(SCREENSHOT_DIR, "planes.png") });
+
+    // The same plans in Spanish, on a phone, without horizontal overflow
+    await page.setViewportSize({ width: 375, height: 800 });
+    await page.goto("/es/pricing");
+    await expect(page.getByTestId("plan-studio-credits")).toContainText("3.450 créditos al mes");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/login");
     await page.fill("#login-email", "credits@merchant.test");
     await page.getByTestId("login-submit").click();
     await page.waitForURL("**/dashboard");
     await page.goto("/dashboard/billing");
-    await page.getByTestId("credit-range").fill("1000");
-    await expect(page.getByTestId("credit-amount")).toHaveText("1,000");
-    await expect(page.getByTestId("credit-price")).toHaveText("US$58.58");
+    await expect(page.getByTestId("plan-commerce-slider")).toBeVisible();
     await expect(page.getByTestId("billing-calculator")).toContainText("Starter (300)");
-    await expect(page.getByRole("button", { name: /buy|checkout|pay/i })).toHaveCount(0);
-    const a11y = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
-    expect(a11y.violations).toEqual([]);
+    await expect(page.getByTestId("billing-calculator")).toContainText("Studio (3450)");
   });
 
   test("7z. Webhooks: an address gets a secret once, a test arrives signed, and a disabled address gets nothing", async ({ page }) => {

@@ -5,7 +5,7 @@
  */
 import { writeFileSync } from "node:fs";
 import path from "node:path";
-import { ASSUMED_COSTS, ASSUMED_PAYMENT_FEE, COMPARISON_STRUCTURES, creditsFor, effectiveCost, MIN_MARGIN, PLAN_STRUCTURES, simulate } from "../src/lib/credits";
+import { ASSUMED_COSTS, ASSUMED_PAYMENT_FEE, COMPARISON_STRUCTURES, creditsFor, effectiveCost, MIN_MARGIN, PLAN_STRUCTURES, PLAN_TIERS, simulate, TARGET_MARGIN, averageUseAtMargin } from "../src/lib/credits";
 import { allEngines, priceOf } from "../src/lib/provider/registry";
 
 const scenarios = [0.25, 0.5, 0.75, 1];
@@ -67,7 +67,25 @@ const lines: string[] = [
   `Casos extremos usados abajo: el más barato es ${cheapest.label} (${usdf(cheapest.usd)}) y el más caro ${priciest.label} (${usdf(priciest.usd)}).`,
   "",
 ];
-for (const s of ALL_STRUCTURES) {
+const pct = (n: number) => `${Math.round(n * 100)} %`;
+lines.push(
+  "## Del piso de 60 % al objetivo de 75–85 %",
+  "",
+  `El piso de ${pct(MIN_MARGIN)} es el peor caso: el cliente gasta todos sus créditos. El objetivo de ${pct(TARGET_MARGIN.low)}–${pct(TARGET_MARGIN.high)} depende de cuánto usen en promedio. Esta tabla dice qué uso promedio da ese objetivo en cada paso de la barra.`,
+  "",
+  `| Plan | Precio | Créditos | Modelos, Rodin Fast | Modelos, Rodin 2.5 | Margen al 100 % | Uso para ${pct(TARGET_MARGIN.high)} | Uso para ${pct(TARGET_MARGIN.low)} |`,
+  "|---|---:|---:|---:|---:|---:|---:|---:|",
+);
+const structurePlans = PLAN_STRUCTURES.find((s) => s.id === "plans")!;
+for (const t of PLAN_TIERS) {
+  for (const st of t.steps) {
+    const plan = { name: t.name, priceUsd: st.priceUsd, units: st.credits, recurring: true };
+    const worst = Math.min(...cases.map((c) => simulate(structurePlans, plan, c.usd, 1).marginPct));
+    lines.push(`| ${t.name} | ${usdf(st.priceUsd)} | ${st.credits} | ${Math.floor(st.credits / creditsFor(0.1))} | ${Math.floor(st.credits / creditsFor(0.4))} | ${worst} % | ${pct(averageUseAtMargin(st.priceUsd, st.credits, TARGET_MARGIN.high))} | ${pct(averageUseAtMargin(st.priceUsd, st.credits, TARGET_MARGIN.low))} |`);
+  }
+}
+lines.push("");
+for (const s of ALL_STRUCTURES.filter((x) => x.id !== "plans")) {
   lines.push(`## ${s.label}`, "", "Margen de contribución con el plan usado al 100 %, el peor caso.", "", "| Plan | Precio | Unidades | Modelos, motor barato | Margen | Modelos, motor caro | Margen |", "|---|---:|---:|---:|---:|---:|---:|");
   for (const p of s.plans) {
     const a = simulate(s, p, cheapest.usd, 1);
@@ -94,6 +112,8 @@ lines.push(
   "",
   "## Lectura",
   "",
+  "- **Objetivo:** 75–85 % de margen si los clientes usan, en promedio, entre un cuarto y un poco más de la mitad de sus créditos. Cuánto usarán de verdad solo se sabrá con clientes reales.",
+  "- **Sin acumulación:** el piso exige que los créditos del plan no pasen al mes siguiente. Si se acumularan, un cliente podría gastar más de lo que pagó ese mes.",
   `- **Regla del dueño:** ningún plan puede bajar de ${MIN_MARGIN * 100} % de margen de contribución, aunque se use completo y con cualquier motor. Este script y las pruebas fallan si un plan la incumple.`,
   "- **Qué incluye ese margen:** es el precio menos el costo del proveedor y la comisión de pago. Con lo que queda se pagan hosting, soporte, devoluciones e impuestos, así que no es la ganancia final.",
   "- **Intentos planos:** descartado. Un intento cuesta lo mismo con cualquier motor, así que un motor caro deja el plan con pérdida.",

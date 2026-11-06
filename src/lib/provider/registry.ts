@@ -1,4 +1,5 @@
 import "server-only";
+import { creditsFor } from "@/lib/credits";
 import { IMAGE_VIEWS, PROVIDER_CREDITS_PER_USD, providerCreditsEstimate, type EngineDto, type ImageView, type TextureResolution } from "@/lib/types";
 import { dataUri, falAdapter } from "./fal";
 import { meshyAdapter } from "./meshy";
@@ -334,3 +335,9 @@ export const priceOf = (engine: EngineDefinition, q: PriceQuery) => {
 };
 
 export type { TextureResolution };
+
+/** What the plan cards use to translate credits into models: a low-cost engine and a high-quality one, with textures and one photo. */
+export function planReference() {
+  const credits = (id: string) => creditsFor(priceOf(getEngine(id)!, { mode: "image", photoCount: 1, texture: "1k" }).usd);
+  return { economy: credits("fal-rodin-2.5-fast"), premium: credits("fal-rodin-2.5") };
+}

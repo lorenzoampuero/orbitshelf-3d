@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
 import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ASSUMED_PAYMENT_FEE, COMPARISON_STRUCTURES, CREDIT_USD, creditsFor, effectiveCost, maxCreditsForPrice, MIN_MARGIN, minPriceForCredits, PLAN_STRUCTURES, simulate } from "@/lib/credits";
+import { COMPARISON_STRUCTURES, creditsFor, effectiveCost, maxCreditsForPrice, MIN_MARGIN, PLAN_STRUCTURES, PLAN_TIERS, simulate, TARGET_MARGIN, averageUseAtMargin } from "@/lib/credits";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { allEngines, priceOf } from "@/lib/provider/registry";
 import { validateAndNormalizeImage } from "@/lib/image";
@@ -98,14 +98,47 @@ describe("the 60% margin floor", () => {
     }
   });
 
-  it("any amount of credits a customer chooses keeps it at the price shown, and one cent less would not", () => {
-    for (let credits = 100; credits <= 20_000; credits += 100) {
-      const price = minPriceForCredits(credits);
-      const margin = (p: number) => (p - credits * CREDIT_USD - p * ASSUMED_PAYMENT_FEE.pct - ASSUMED_PAYMENT_FEE.fixedUsd) / p;
-      expect(margin(price), `${credits} credits at US$${price}`).toBeGreaterThanOrEqual(MIN_MARGIN - 1e-9);
-      expect(margin(Math.round((price - 0.01) * 100) / 100), `${credits} credits`).toBeLessThan(MIN_MARGIN);
+  it("the fixed plan has no slider, and the 49, 99 and 199 plans do", () => {
+    expect(PLAN_TIERS.map((t) => [t.name, t.steps[0].priceUsd, t.steps.length > 1])).toEqual([
+      ["Starter", 19, false],
+      ["Creator", 49, true],
+      ["Commerce", 99, true],
+      ["Studio", 199, true],
+    ]);
+  });
+
+  it("moving a slider to the right always gives more credits for more money, and no step overtakes the next plan", () => {
+    let last = { priceUsd: 0, credits: 0 };
+    for (const tier of PLAN_TIERS) {
+      for (const step of tier.steps) {
+        expect(step.priceUsd, tier.name).toBeGreaterThan(last.priceUsd);
+        expect(step.credits, tier.name).toBeGreaterThan(last.credits);
+        last = step;
+      }
     }
-    expect(minPriceForCredits(1000)).toBe(58.58);
+  });
+
+  it("every step is as generous as the floor allows, so nothing is left below it or needlessly above it", () => {
+    for (const tier of PLAN_TIERS) {
+      for (const step of tier.steps) {
+        expect(step.credits).toBeLessThanOrEqual(maxCreditsForPrice(step.priceUsd));
+        expect(maxCreditsForPrice(step.priceUsd) - step.credits).toBeLessThan(50);
+      }
+    }
+  });
+
+  it("every step reaches the 75-85% target at a plausible average use", () => {
+    expect(TARGET_MARGIN).toEqual({ low: 0.75, high: 0.85 });
+    for (const tier of PLAN_TIERS) {
+      for (const step of tier.steps) {
+        const at85 = averageUseAtMargin(step.priceUsd, step.credits, TARGET_MARGIN.high);
+        const at75 = averageUseAtMargin(step.priceUsd, step.credits, TARGET_MARGIN.low);
+        expect(at85, `${tier.name} US$${step.priceUsd}`).toBeGreaterThan(0.2);
+        expect(at85).toBeLessThan(0.35);
+        expect(at75, `${tier.name} US$${step.priceUsd}`).toBeGreaterThan(0.5);
+        expect(at75).toBeLessThan(0.65);
+      }
+    }
   });
 
   it("works out the most credits a price can include", () => {
@@ -120,11 +153,9 @@ describe("the 60% margin floor", () => {
     expect(raw(flat, flat.plans[0], 0.675, 1)).toBeLessThan(MIN_MARGIN);
   });
 
-  it("the public pricing page shows exactly these plans, in both languages", () => {
-    const plans = PLAN_STRUCTURES.find((s) => s.id === "plans")!.plans;
+  it("every plan has its text in both languages", () => {
     for (const locale of ["en", "es"] as const) {
-      const shown = getDictionary(locale).pricing.plans;
-      expect(shown.map((p) => [p.name, Number(p.price), p.credits])).toEqual(plans.map((p) => [p.name, p.priceUsd, p.units]));
+      expect(getDictionary(locale).pricing.plans.map((p) => p.id)).toEqual(PLAN_TIERS.map((t) => t.id));
     }
   });
 });

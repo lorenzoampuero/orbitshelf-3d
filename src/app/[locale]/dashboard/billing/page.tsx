@@ -3,11 +3,11 @@ import { notFound } from "next/navigation";
 import { isLocale, localePath } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { currentUser } from "@/lib/api";
-import { creditsFor, PLAN_STRUCTURES } from "@/lib/credits";
-import { allEngines, priceOf } from "@/lib/provider/registry";
+import { creditsFor, PLAN_TIERS } from "@/lib/credits";
+import { allEngines, planReference, priceOf } from "@/lib/provider/registry";
 import { buildPageMetadata } from "@/lib/seo";
 import { store } from "@/lib/store";
-import { CreditPicker } from "./credit-picker";
+import { PlanCards } from "@/components/plan-cards";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -29,7 +29,7 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
   const c = t.dash.billing;
   const user = (await currentUser())!;
   const usage = await store.usage(user.orgId);
-  const structure = PLAN_STRUCTURES.find((s) => s.id === "plans")!;
+  const bases = PLAN_TIERS.map((tier) => ({ name: tier.name, units: tier.steps[0].credits }));
   const engines = allEngines().map((e) => {
     const mode = e.modes[0];
     const usd = priceOf(e, { mode, photoCount: mode === "text" ? 0 : 1, texture: "1k" }).usd;
@@ -53,7 +53,10 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
         </Link>
       </div>
 
-      <CreditPicker c={c} engines={engines} />
+      <section className="space-y-4" aria-labelledby="plans-heading">
+        <h2 id="plans-heading" className="font-display text-lg font-semibold">{c.plansTitle}</h2>
+        <PlanCards copy={t.pricing} locale={locale} reference={planReference()} />
+      </section>
 
       <section className="space-y-3" aria-labelledby="calc-heading">
         <h2 id="calc-heading" className="font-display text-lg font-semibold">{c.calcTitle}</h2>
@@ -64,7 +67,7 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
               <tr>
                 <th scope="col" className="py-2 pr-4 font-medium">{c.engine}</th>
                 <th scope="col" className="py-2 pr-4 font-medium">{c.perModel}</th>
-                {structure.plans.map((p) => (
+                {bases.map((p) => (
                   <th key={p.name} scope="col" className="py-2 pr-4 font-medium">{p.name} ({p.units})</th>
                 ))}
               </tr>
@@ -74,7 +77,7 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
                 <tr key={e.id}>
                   <th scope="row" className="py-2.5 pr-4 font-semibold text-fg">{e.label}</th>
                   <td className="py-2.5 pr-4 tabular-nums text-muted">{e.credits}</td>
-                  {structure.plans.map((p) => (
+                  {bases.map((p) => (
                     <td key={p.name} className="py-2.5 pr-4 tabular-nums text-muted">{Math.floor(p.units / e.credits)}</td>
                   ))}
                 </tr>

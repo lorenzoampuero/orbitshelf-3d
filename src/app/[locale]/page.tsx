@@ -7,6 +7,8 @@ import { buildPageMetadata } from "@/lib/seo";
 import { currentUser } from "@/lib/api";
 import { MarketingShell } from "@/components/marketing-shell";
 import { ModelViewerBox } from "@/components/model-viewer-box";
+import { PlanCards } from "@/components/plan-cards";
+import { planReference } from "@/lib/provider/registry";
 import { showcaseBeforeAfter, showcaseFor, showcaseHero, showcaseText } from "@/config/showcase";
 import type { Category } from "@/lib/types";
 
@@ -35,8 +37,6 @@ export default async function HomePage({ params }: Props) {
   const beforeAfter = showcaseBeforeAfter();
   const textEntry = showcaseText();
   const create = localePath(locale, "/dashboard/create");
-
-  const monthlyPlans = dict.pricing.plans;
 
   const faqJsonLd = {
     "@context": "https://schema.org",
@@ -277,32 +277,7 @@ export default async function HomePage({ params }: Props) {
             <h2 className="font-display text-3xl font-bold md:text-5xl">{h.pricingTitle}</h2>
             <p className="text-base leading-relaxed text-muted">{h.pricingIntro}</p>
           </div>
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-0">
-            {monthlyPlans.map((p, i) => (
-              <div key={p.id} className={`space-y-5 lg:px-7 lg:first:pl-0 lg:last:pr-0 ${i > 0 ? "lg:border-l lg:border-line" : ""}`}>
-                <div className="flex items-center gap-3">
-                  <h3 className="font-display text-xl font-bold">{p.name}</h3>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="font-display text-5xl font-bold leading-none">US${p.price}</span>
-                  <span className="text-sm text-muted">{dict.pricing.perMonth}</span>
-                </div>
-                <p className="text-sm font-semibold text-accent">
-                  {p.credits.toLocaleString(locale)} {dict.pricing.credits}
-                </p>
-                <ul className="space-y-2 text-sm text-muted">
-                  {p.features.map((f) => (
-                    <li key={f}>{f}</li>
-                  ))}
-                  {p.planned.map((pl) => (
-                    <li key={pl}>
-                      {pl} ({dict.pricing.plannedLabel})
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          <PlanCards copy={dict.pricing} locale={locale} reference={planReference()} />
           <div className="flex flex-wrap items-center justify-between gap-4">
             <p className="max-w-xl text-sm text-muted">{h.tryPackNote}</p>
             <Link href={localePath(locale, "/pricing")} className="btn-pill btn-outline">

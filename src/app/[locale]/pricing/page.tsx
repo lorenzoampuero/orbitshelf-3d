@@ -1,10 +1,11 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLocale, localePath } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { buildPageMetadata } from "@/lib/seo";
 import { currentUser } from "@/lib/api";
 import { MarketingShell } from "@/components/marketing-shell";
+import { PlanCards } from "@/components/plan-cards";
+import { planReference } from "@/lib/provider/registry";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -38,38 +39,7 @@ export default async function PricingPage({ params }: Props) {
 
           <p className="border-l-2 border-accent pl-4 text-sm leading-relaxed text-muted">{dict.pricing.banner}</p>
 
-          <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-0">
-            {dict.pricing.plans.map((p, i) => (
-              <div
-                key={p.id}
-                className={`flex flex-col justify-between gap-8 lg:px-7 lg:first:pl-0 lg:last:pr-0 ${i > 0 ? "lg:border-l lg:border-line" : ""}`}
-              >
-                <div className="space-y-5">
-                  <h2 className="font-display text-xl font-bold">{p.name}</h2>
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-display text-5xl font-bold leading-none">US${p.price}</span>
-                    <span className="text-sm text-muted">{p.period === "once" ? dict.pricing.perOnce : dict.pricing.perMonth}</span>
-                  </div>
-                  <div className="text-sm font-semibold text-accent">
-                    {p.credits.toLocaleString(locale)} {dict.pricing.credits}
-                  </div>
-                  <ul className="space-y-2 text-sm text-muted">
-                    {p.features.map((f) => (
-                      <li key={f}>{f}</li>
-                    ))}
-                    {p.planned.map((pl) => (
-                      <li key={pl}>
-                        {pl} ({dict.pricing.plannedLabel})
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <Link href={localePath(locale, "/dashboard/create")} className="btn-pill btn-outline self-start text-fg">
-                  {dict.pricing.cta}
-                </Link>
-              </div>
-            ))}
-          </div>
+          <PlanCards copy={dict.pricing} locale={locale} reference={planReference()} cta={{ href: localePath(locale, "/dashboard/create"), label: dict.pricing.cta }} />
 
           <div className="grid grid-cols-1 gap-4 border-t border-line pt-10 md:grid-cols-12 md:gap-10">
             <h2 className="font-display text-2xl font-bold md:col-span-4">{dict.pricing.rulesTitle}</h2>

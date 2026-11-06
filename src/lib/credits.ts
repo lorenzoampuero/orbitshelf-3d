@@ -15,12 +15,13 @@ export type CostAssumptions = {
 /** Placeholders from the specification's worked example. Replace with measured data: none of these has been measured. */
 export const ASSUMED_COSTS: CostAssumptions = { retryRate: 0.2, postUsd: 0.07, bufferUsd: 0.05 };
 
+/** A placeholder too: it must be replaced with the real payment provider's rates. */
+export const ASSUMED_PAYMENT_FEE = { pct: 0.05, fixedUsd: 0.5 };
+
 export const effectiveCost = (providerUsd: number, a: CostAssumptions = ASSUMED_COSTS) => providerUsd * (1 + a.retryRate) + a.postUsd + a.bufferUsd;
 
 /** Rounded before `ceil` so that floating point noise (0.6 / 0.02 = 30.000000000000004) never adds a credit. */
 export const creditsFor = (providerUsd: number, a: CostAssumptions = ASSUMED_COSTS) => Math.ceil(Math.round((effectiveCost(providerUsd, a) / CREDIT_USD) * 1e6) / 1e6);
-
-export type PlanStructure = { id: string; label: string; unit: "credits" | "attempts"; plans: { name: string; priceUsd: number; units: number; recurring: boolean }[] };
 
 /**
  * The owner's rule: a plan used to the last credit, on any engine, keeps at least this contribution margin.
@@ -28,18 +29,38 @@ export type PlanStructure = { id: string; label: string; unit: "credits" | "atte
  */
 export const MIN_MARGIN = 0.6;
 
-/** What is on offer, still not for sale. Credits are rounded down from maxCreditsForPrice, and the tests fail if a plan drops below the floor. */
+/** What the owner expects from normal use. Unlike the floor, it depends on how much customers really use, so it can only be confirmed with real data. */
+export const TARGET_MARGIN = { low: 0.75, high: 0.85 };
+
+/** The most credits a price can include and still keep the floor at full use. */
+export const maxCreditsForPrice = (priceUsd: number, fee = ASSUMED_PAYMENT_FEE, floor = MIN_MARGIN) => Math.max(0, Math.floor((priceUsd * (1 - floor - fee.pct) - fee.fixedUsd) / CREDIT_USD));
+
+/** The share of its credits a plan's customers can use, on average, for the plan to earn this margin. */
+export const averageUseAtMargin = (priceUsd: number, credits: number, margin: number, fee = ASSUMED_PAYMENT_FEE) => (priceUsd * (1 - margin - fee.pct) - fee.fixedUsd) / (credits * CREDIT_USD);
+
+export type PlanStep = { priceUsd: number; credits: number };
+export type PlanTier = { id: string; name: string; steps: PlanStep[] };
+
+/** Credits come straight from the floor, rounded down to a clean number, so a step cannot be set more generous than the rule allows. */
+const step = (priceUsd: number): PlanStep => ({ priceUsd, credits: Math.floor(maxCreditsForPrice(priceUsd) / 50) * 50 });
+
+/** Starter is a fixed plan. On the others a slider moves between these steps: more credits for a higher price. The first step is the plan's base price. */
+export const PLAN_TIERS: PlanTier[] = [
+  { id: "starter", name: "Starter", steps: [19].map(step) },
+  { id: "creator", name: "Creator", steps: [49, 59, 69, 79, 89].map(step) },
+  { id: "commerce", name: "Commerce", steps: [99, 119, 139, 159, 179].map(step) },
+  { id: "studio", name: "Studio", steps: [199, 249, 299, 399, 499].map(step) },
+];
+
+export type PlanStructure = { id: string; label: string; unit: "credits" | "attempts"; plans: { name: string; priceUsd: number; units: number; recurring: boolean }[] };
+
+/** What is on offer, still not for sale. The tests and the simulation fail if anything here drops below the floor. */
 export const PLAN_STRUCTURES: PlanStructure[] = [
   {
     id: "plans",
-    label: "Planes mensuales (mínimo 60 %)",
+    label: "Planes mensuales, cada paso de la barra (mínimo 60 %)",
     unit: "credits",
-    plans: [
-      { name: "Starter", priceUsd: 19, units: 300, recurring: true },
-      { name: "Creator", priceUsd: 49, units: 800, recurring: true },
-      { name: "Commerce", priceUsd: 99, units: 1700, recurring: true },
-      { name: "Studio", priceUsd: 199, units: 3400, recurring: true },
-    ],
+    plans: PLAN_TIERS.flatMap((t) => t.steps.map((s, i) => ({ name: i === 0 ? t.name : `${t.name} US$${s.priceUsd}`, priceUsd: s.priceUsd, units: s.credits, recurring: true }))),
   },
   {
     id: "packs",
@@ -78,15 +99,6 @@ export const COMPARISON_STRUCTURES: PlanStructure[] = [
     ],
   },
 ];
-
-/** A placeholder too: it must be replaced with the real payment provider's rates. */
-export const ASSUMED_PAYMENT_FEE = { pct: 0.05, fixedUsd: 0.5 };
-
-/** The most credits a price can include and still keep the floor at full use. */
-export const maxCreditsForPrice = (priceUsd: number, fee = ASSUMED_PAYMENT_FEE, floor = MIN_MARGIN) => Math.max(0, Math.floor((priceUsd * (1 - floor - fee.pct) - fee.fixedUsd) / CREDIT_USD));
-
-/** The least a chosen number of credits can cost and still keep the floor at full use, rounded up to the cent. */
-export const minPriceForCredits = (credits: number, fee = ASSUMED_PAYMENT_FEE, floor = MIN_MARGIN) => Math.ceil(((credits * CREDIT_USD + fee.fixedUsd) / (1 - floor - fee.pct)) * 100 - 1e-9) / 100;
 
 export type PlanResult = { plan: string; priceUsd: number; units: number; jobsAtFullUse: number; utilization: number; jobs: number; revenueUsd: number; variableCostUsd: number; paymentFeeUsd: number; contributionUsd: number; marginPct: number };
 
