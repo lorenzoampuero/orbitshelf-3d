@@ -22,20 +22,20 @@
 
 /*
  * Palette: near-black, off-white text, blood red.
- * Contrast (WCAG), measured on --bg: fg 18:1, muted 7.6:1, accent (vivid red, for text and small fills) 5.8:1 (4.7:1 on --surface-2).
- * --blood is a fill only (1.6:1 on black): it always carries white text (10:1).
+ * Contrast (WCAG), measured on --bg: fg 18:1, muted 7.6:1, accent (soft violet, for text and small fills) 5.8:1 (4.7:1 on --surface-2).
+ * --blood is a violet fill only: it always carries white text (10:1).
  */
 :root {
-  --bg: #0a0a0b;
-  --surface: #17171a;
-  --surface-2: #222226;
+  --bg: #0a0912;
+  --surface: #15132a;
+  --surface-2: #1f1c3a;
   --line: rgb(255 255 255 / 0.09);
   --fg: #f4f4f5;
   --muted: #a1a1aa;
-  --accent: #ff4547;
-  --accent-strong: #ff6769;
-  --blood: #8b0000;
-  --blood-hi: #b01012;
+  --accent: #b79cff;
+  --accent-strong: #cdbbff;
+  --blood: #5b3df5;
+  --blood-hi: #6a4cf7;
   --ink: #0a0a0b;
   --danger: #ff7a7a;
   --warn: #f5b942;
@@ -46,9 +46,9 @@
 }
 
 [data-theme="app"] {
-  --bg: #0a0a0b;
-  --surface: #17171a;
-  --surface-2: #222226;
+  --bg: #0a0912;
+  --surface: #15132a;
+  --surface-2: #1f1c3a;
   --muted: #a1a1aa;
 }
 
@@ -105,7 +105,7 @@
   position: absolute;
   border-radius: 999px;
   pointer-events: none;
-  background: radial-gradient(closest-side, rgb(139 0 0 / 0.55), rgb(139 0 0 / 0));
+  background: radial-gradient(closest-side, rgb(91 61 245 / 0.28), rgb(91 61 245 / 0));
 }
 
 /* ---------- Floating pill navbar ---------- */
@@ -201,7 +201,7 @@
   color: #fff;
 }
 .btn-solid:hover {
-  background: linear-gradient(135deg, #cc1417, #a00a0c);
+  background: linear-gradient(135deg, #7a5cff, #4a2fe0);
 }
 .btn-ink {
   background: var(--fg);
@@ -224,7 +224,7 @@
   letter-spacing: -0.035em;
 }
 .text-blood-grad {
-  background: linear-gradient(95deg, #ff5a5c 0%, #ef2b2d 45%, #b01012 100%);
+  background: linear-gradient(95deg, #cdbbff 0%, #a78bfa 45%, #7a5cff 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -232,8 +232,8 @@
 /* Wireframe look for the "same model, solid and mesh" pair: a pure CSS grid, not a render. */
 .mesh-lines {
   background-image:
-    linear-gradient(rgb(239 43 45 / 0.5) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(239 43 45 / 0.5) 1px, transparent 1px);
+    linear-gradient(rgb(167 139 250 / 0.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(167 139 250 / 0.5) 1px, transparent 1px);
   background-size: 22px 22px;
 }
 

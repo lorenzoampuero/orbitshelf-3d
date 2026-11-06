@@ -30,7 +30,7 @@ export default function GlobalNotFound() {
             <div
               aria-hidden="true"
               className="select-none text-[clamp(5rem,22vw,8rem)] font-bold leading-none text-transparent"
-              style={{ WebkitTextStroke: "1.5px rgb(239 43 45 / 0.5)" }}
+              style={{ WebkitTextStroke: "1.5px rgb(167 139 250 / 0.5)" }}
             >
               404
             </div>

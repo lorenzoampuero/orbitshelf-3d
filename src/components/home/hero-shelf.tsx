@@ -50,7 +50,7 @@ export function HeroShelf({
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-[44%] -translate-y-1/2 select-none text-center text-[clamp(10rem,24vw,19rem)] font-bold leading-none text-transparent"
-        style={{ WebkitTextStroke: "1.5px rgb(239 43 45 / 0.38)" }}
+        style={{ WebkitTextStroke: "1.5px rgb(167 139 250 / 0.38)" }}
       >
         {ghostWord}
       </div>

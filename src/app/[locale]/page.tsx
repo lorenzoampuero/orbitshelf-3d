@@ -191,7 +191,7 @@ export default async function HomePage({ params }: Props) {
               <div className="flex items-center gap-4 sm:gap-6">
                 <span
                   aria-hidden="true"
-                  className="mesh-lines flex h-24 w-28 shrink-0 items-center justify-center rounded-2xl border border-line bg-[#1b0b0c] sm:h-28 sm:w-36"
+                  className="mesh-lines flex h-24 w-28 shrink-0 items-center justify-center rounded-2xl border border-line bg-[#151230] sm:h-28 sm:w-36"
                 >
                   <ImageIcon className="h-8 w-8 text-accent" />
                 </span>
@@ -416,7 +416,7 @@ export default async function HomePage({ params }: Props) {
                     <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-sm font-semibold tabular-nums" aria-hidden="true">
                       {i + 1}
                     </span>
-                    <span aria-hidden="true" className="mesh-lines flex h-16 w-24 items-center justify-center rounded-xl bg-[#1b0b0c]">
+                    <span aria-hidden="true" className="mesh-lines flex h-16 w-24 items-center justify-center rounded-xl bg-[#151230]">
                       <Icon className="h-7 w-7 text-accent" />
                     </span>
                   </div>
@@ -477,7 +477,7 @@ export default async function HomePage({ params }: Props) {
 
           <Card lift className="flex flex-col justify-between gap-8 md:col-span-3">
             <div className="space-y-5">
-              <span aria-hidden="true" className="mesh-lines flex h-16 w-24 items-center justify-center rounded-xl bg-[#1b0b0c]">
+              <span aria-hidden="true" className="mesh-lines flex h-16 w-24 items-center justify-center rounded-xl bg-[#151230]">
                 <Gamepad2 className="h-7 w-7 text-accent" />
               </span>
               <CardBody tag={h.who.games.tag} title={h.who.games.title} text={h.who.games.text} />
@@ -488,7 +488,7 @@ export default async function HomePage({ params }: Props) {
 
           <Card lift tone="outline" className="flex flex-col justify-between gap-8 md:col-span-3">
             <div className="space-y-5">
-              <span aria-hidden="true" className="mesh-lines flex h-16 w-24 items-center justify-center rounded-xl bg-[#1b0b0c]">
+              <span aria-hidden="true" className="mesh-lines flex h-16 w-24 items-center justify-center rounded-xl bg-[#151230]">
                 <PenTool className="h-7 w-7 text-accent" />
               </span>
               <CardBody tag={h.who.design.tag} title={h.who.design.title} text={h.who.design.text} />
@@ -510,7 +510,7 @@ export default async function HomePage({ params }: Props) {
             </figure>
             <figure className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-bg px-4 py-6">
               <span aria-hidden="true" className="relative block h-40 w-28 bg-accent sm:h-52 sm:w-36" style={{ clipPath: VASE }}>
-                <span className="mesh-lines absolute inset-[2px] block bg-[#1b0b0c]" style={{ clipPath: VASE }} />
+                <span className="mesh-lines absolute inset-[2px] block bg-[#151230]" style={{ clipPath: VASE }} />
               </span>
               <figcaption className="text-sm font-medium text-fg">{h.twinMesh}</figcaption>
             </figure>

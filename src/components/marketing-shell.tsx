@@ -159,7 +159,7 @@ export function MarketingShell({
                 className="group flex h-full flex-col gap-3 rounded-2xl p-2 transition-colors hover:bg-white/[0.06]"
               >
                 {/* A drawn tile stands in for a screenshot: no real screenshots exist yet. */}
-                <span className="mesh-lines relative flex h-24 items-center justify-center overflow-hidden rounded-xl bg-[#1b0b0c]">
+                <span className="mesh-lines relative flex h-24 items-center justify-center overflow-hidden rounded-xl bg-[#151230]">
                   <Icon className="h-8 w-8 text-accent" aria-hidden="true" />
                 </span>
                 <span className="px-1 pb-1">
@@ -192,11 +192,6 @@ export function MarketingShell({
         {dict.common.skipToContent}
       </a>
 
-      {/* Background light: two blood-red pools. They sit behind everything and never take clicks. */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-[1100px] overflow-hidden">
-        <div className="glow -left-40 -top-32 h-[620px] w-[620px]" />
-        <div className="glow -right-48 top-24 h-[520px] w-[520px] opacity-70" />
-      </div>
 
       {/* Floating pill: small, fixed, centred. Dropdown panels open under it. */}
       <header ref={headerRef} className="fixed inset-x-0 top-3 z-40 px-3">

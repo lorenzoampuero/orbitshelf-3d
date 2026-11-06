@@ -22,7 +22,7 @@ export function ModelSilhouette({ kind, mesh = false, className = "h-16 w-16" }:
           <stop offset="1" stopColor="#5a0000" />
         </linearGradient>
         <pattern id={`${id}m`} width="8" height="8" patternUnits="userSpaceOnUse">
-          <path d="M8 0H0V8" fill="none" stroke="#ff4547" strokeOpacity="0.75" strokeWidth="0.9" />
+          <path d="M8 0H0V8" fill="none" stroke="#b79cff" strokeOpacity="0.75" strokeWidth="0.9" />
         </pattern>
       </defs>
       {SHAPES[kind].map((d) => (
@@ -30,7 +30,7 @@ export function ModelSilhouette({ kind, mesh = false, className = "h-16 w-16" }:
           key={d}
           d={d}
           fill={mesh ? `url(#${id}m)` : `url(#${id}g)`}
-          stroke={mesh ? "#ff4547" : "none"}
+          stroke={mesh ? "#b79cff" : "none"}
           strokeWidth={mesh ? 1.6 : 0}
           strokeLinejoin="round"
         />

@@ -166,7 +166,7 @@ export default async function IntegrationsPage({ params }: Props) {
             role="img"
             aria-label={c.hero.diagramLabel}
             data-testid="integrations-diagram"
-            className="mesh-lines mx-auto flex max-w-3xl flex-col items-center gap-6 rounded-[24px] border border-line bg-[#1b0b0c] px-5 py-8 md:flex-row md:justify-center md:gap-8"
+            className="mesh-lines mx-auto flex max-w-3xl flex-col items-center gap-6 rounded-[24px] border border-line bg-[#151230] px-5 py-8 md:flex-row md:justify-center md:gap-8"
           >
             <Tile tone="blood" label={d.model}>
               <Box className="h-6 w-6" />

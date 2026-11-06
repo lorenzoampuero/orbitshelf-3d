@@ -70,7 +70,7 @@ export default async function HowItWorksPage({ params }: Props) {
                   <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blood text-sm font-semibold tabular-nums text-white">
                     {i + 1}
                   </span>
-                  <span aria-hidden="true" className="mesh-lines flex h-14 w-20 items-center justify-center rounded-xl bg-[#1b0b0c]">
+                  <span aria-hidden="true" className="mesh-lines flex h-14 w-20 items-center justify-center rounded-xl bg-[#151230]">
                     <Icon className="h-6 w-6 text-accent" />
                   </span>
                 </div>

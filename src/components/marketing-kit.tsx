@@ -204,9 +204,9 @@ export function ClosingBanner({ titleA, titleB, cta, href, note }: { titleA: str
       <div
         className="reveal relative flex w-full flex-col items-center gap-6 overflow-hidden rounded-[var(--radius-card)] px-6 py-20 text-center md:py-28"
         style={{
-          backgroundColor: "#1a0506",
+          backgroundColor: "#0f0c24",
           backgroundImage: [
-            "radial-gradient(ellipse 70% 90% at 50% 120%, #8b0000 0%, rgb(139 0 0 / 0) 70%)",
+            "radial-gradient(ellipse 70% 90% at 50% 120%, #4a2fe0 0%, rgb(74 47 224 / 0) 70%)",
             "radial-gradient(1.5px 1.5px at 12% 24%, #fff, transparent)",
             "radial-gradient(1px 1px at 27% 68%, #fff, transparent)",
             "radial-gradient(1.5px 1.5px at 41% 15%, #fff, transparent)",
@@ -223,7 +223,7 @@ export function ClosingBanner({ titleA, titleB, cta, href, note }: { titleA: str
         <h2 className="text-[clamp(2rem,5vw,3.75rem)] font-semibold leading-[1.05]">
           {titleA}
           <br />
-          <span className="bg-gradient-to-r from-white to-[#ffb3b3] bg-clip-text text-transparent">{titleB}</span>
+          <span className="bg-gradient-to-r from-white to-[#d9ccff] bg-clip-text text-transparent">{titleB}</span>
         </h2>
         <Link href={href} className="btn-pill btn-ink py-3.5">
           {cta}
