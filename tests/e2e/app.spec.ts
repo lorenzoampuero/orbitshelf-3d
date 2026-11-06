@@ -81,7 +81,7 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await expect(page.locator("h1")).toContainText("Una foto muestra un ángulo");
 
     await page.goto("/es/pricing");
-    await expect(page.locator("h1")).toContainText("Planes por intentos, sin promesas de ilimitado");
+    await expect(page.locator("h1")).toContainText("Planes por créditos, sin promesas de ilimitado");
 
     await page.goto("/es/compare/ai-3d-vs-manual");
     await expect(page.locator("h1")).toContainText("Imagen a 3D con IA vs modelado 3D manual");
@@ -899,6 +899,22 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     }).toPass({ timeout: 15_000 });
     await expect(page.getByTestId("studio-prompt")).toContainText("low-poly red fox");
     await expect(page.getByTestId("studio-source-photo")).toHaveCount(0);
+  });
+
+  test("7y. Billing: choosing credits shows the lowest price that keeps the margin, and nothing can be bought", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/login");
+    await page.fill("#login-email", "credits@merchant.test");
+    await page.getByTestId("login-submit").click();
+    await page.waitForURL("**/dashboard");
+    await page.goto("/dashboard/billing");
+    await page.getByTestId("credit-range").fill("1000");
+    await expect(page.getByTestId("credit-amount")).toHaveText("1,000");
+    await expect(page.getByTestId("credit-price")).toHaveText("US$58.58");
+    await expect(page.getByTestId("billing-calculator")).toContainText("Starter (300)");
+    await expect(page.getByRole("button", { name: /buy|checkout|pay/i })).toHaveCount(0);
+    const a11y = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
+    expect(a11y.violations).toEqual([]);
   });
 
   test("7z. Webhooks: an address gets a secret once, a test arrives signed, and a disabled address gets nothing", async ({ page }) => {

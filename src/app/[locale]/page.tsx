@@ -36,12 +36,7 @@ export default async function HomePage({ params }: Props) {
   const textEntry = showcaseText();
   const create = localePath(locale, "/dashboard/create");
 
-  // Monthly plans on the home page; the one-off Try Pack is mentioned under them.
-  const monthlyPlans = dict.pricing.plans.filter((p) => p.period === "month");
-  const perAttempt = (price: string, attempts: number) => {
-    const v = (Number(price) / attempts).toFixed(2);
-    return h.perAttempt.replace("{price}", locale === "es" ? v.replace(".", ",") : v);
-  };
+  const monthlyPlans = dict.pricing.plans;
 
   const faqJsonLd = {
     "@context": "https://schema.org",
@@ -282,19 +277,18 @@ export default async function HomePage({ params }: Props) {
             <h2 className="font-display text-3xl font-bold md:text-5xl">{h.pricingTitle}</h2>
             <p className="text-base leading-relaxed text-muted">{h.pricingIntro}</p>
           </div>
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-0">
+          <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-0">
             {monthlyPlans.map((p, i) => (
-              <div key={p.id} className={`space-y-5 md:px-8 md:first:pl-0 md:last:pr-0 ${i > 0 ? "md:border-l md:border-line" : ""}`}>
+              <div key={p.id} className={`space-y-5 lg:px-7 lg:first:pl-0 lg:last:pr-0 ${i > 0 ? "lg:border-l lg:border-line" : ""}`}>
                 <div className="flex items-center gap-3">
                   <h3 className="font-display text-xl font-bold">{p.name}</h3>
-                  {i === 1 && <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-bold text-ink">{h.popular}</span>}
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="font-display text-6xl font-bold leading-none">US${p.price}</span>
+                  <span className="font-display text-5xl font-bold leading-none">US${p.price}</span>
                   <span className="text-sm text-muted">{dict.pricing.perMonth}</span>
                 </div>
                 <p className="text-sm font-semibold text-accent">
-                  {p.attempts} {dict.pricing.attempts} · {perAttempt(p.price, p.attempts)}
+                  {p.credits.toLocaleString(locale)} {dict.pricing.credits}
                 </p>
                 <ul className="space-y-2 text-sm text-muted">
                   {p.features.map((f) => (

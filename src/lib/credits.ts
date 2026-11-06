@@ -22,11 +22,42 @@ export const creditsFor = (providerUsd: number, a: CostAssumptions = ASSUMED_COS
 
 export type PlanStructure = { id: string; label: string; unit: "credits" | "attempts"; plans: { name: string; priceUsd: number; units: number; recurring: boolean }[] };
 
-/** Ideas to compare, not offers. Nothing is sold until a real test and an explicit decision. */
+/**
+ * The owner's rule: a plan used to the last credit, on any engine, keeps at least this contribution margin.
+ * Contribution means price minus provider cost and payment fee. Fixed costs, support, refunds and taxes come out of what is left.
+ */
+export const MIN_MARGIN = 0.6;
+
+/** What is on offer, still not for sale. Credits are rounded down from maxCreditsForPrice, and the tests fail if a plan drops below the floor. */
 export const PLAN_STRUCTURES: PlanStructure[] = [
   {
+    id: "plans",
+    label: "Planes mensuales (mínimo 60 %)",
+    unit: "credits",
+    plans: [
+      { name: "Starter", priceUsd: 19, units: 300, recurring: true },
+      { name: "Creator", priceUsd: 49, units: 800, recurring: true },
+      { name: "Commerce", priceUsd: 99, units: 1700, recurring: true },
+      { name: "Studio", priceUsd: 199, units: 3400, recurring: true },
+    ],
+  },
+  {
+    id: "packs",
+    label: "Recargas sin suscripción (mínimo 60 %)",
+    unit: "credits",
+    plans: [
+      { name: "Recarga S", priceUsd: 15, units: 200, recurring: false },
+      { name: "Recarga M", priceUsd: 40, units: 600, recurring: false },
+      { name: "Recarga L", priceUsd: 100, units: 1600, recurring: false },
+    ],
+  },
+];
+
+/** Kept only to show why they are not on offer. Flat attempts break the floor; the report's plans keep it but give far fewer models. */
+export const COMPARISON_STRUCTURES: PlanStructure[] = [
+  {
     id: "spec",
-    label: "Spec hypothesis (credits)",
+    label: "Hipótesis del informe",
     unit: "credits",
     plans: [
       { name: "Starter", priceUsd: 19, units: 150, recurring: true },
@@ -37,7 +68,7 @@ export const PLAN_STRUCTURES: PlanStructure[] = [
   },
   {
     id: "attempts",
-    label: "Current proposal (flat attempts)",
+    label: "Intentos planos (descartado: no cumple el mínimo)",
     unit: "attempts",
     plans: [
       { name: "Starter", priceUsd: 19, units: 25, recurring: true },
@@ -46,20 +77,16 @@ export const PLAN_STRUCTURES: PlanStructure[] = [
       { name: "Trial pack", priceUsd: 9, units: 8, recurring: false },
     ],
   },
-  {
-    id: "packs",
-    label: "Prepaid packs only (credits, no subscription)",
-    unit: "credits",
-    plans: [
-      { name: "Pack S", priceUsd: 15, units: 250, recurring: false },
-      { name: "Pack M", priceUsd: 40, units: 750, recurring: false },
-      { name: "Pack L", priceUsd: 100, units: 2000, recurring: false },
-    ],
-  },
 ];
 
 /** A placeholder too: it must be replaced with the real payment provider's rates. */
 export const ASSUMED_PAYMENT_FEE = { pct: 0.05, fixedUsd: 0.5 };
+
+/** The most credits a price can include and still keep the floor at full use. */
+export const maxCreditsForPrice = (priceUsd: number, fee = ASSUMED_PAYMENT_FEE, floor = MIN_MARGIN) => Math.max(0, Math.floor((priceUsd * (1 - floor - fee.pct) - fee.fixedUsd) / CREDIT_USD));
+
+/** The least a chosen number of credits can cost and still keep the floor at full use, rounded up to the cent. */
+export const minPriceForCredits = (credits: number, fee = ASSUMED_PAYMENT_FEE, floor = MIN_MARGIN) => Math.ceil(((credits * CREDIT_USD + fee.fixedUsd) / (1 - floor - fee.pct)) * 100 - 1e-9) / 100;
 
 export type PlanResult = { plan: string; priceUsd: number; units: number; jobsAtFullUse: number; utilization: number; jobs: number; revenueUsd: number; variableCostUsd: number; paymentFeeUsd: number; contributionUsd: number; marginPct: number };
 

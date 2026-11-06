@@ -51,7 +51,7 @@ export default async function PricingPage({ params }: Props) {
                     <span className="text-sm text-muted">{p.period === "once" ? dict.pricing.perOnce : dict.pricing.perMonth}</span>
                   </div>
                   <div className="text-sm font-semibold text-accent">
-                    {p.attempts} {dict.pricing.attempts}
+                    {p.credits.toLocaleString(locale)} {dict.pricing.credits}
                   </div>
                   <ul className="space-y-2 text-sm text-muted">
                     {p.features.map((f) => (

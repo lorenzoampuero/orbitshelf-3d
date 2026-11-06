@@ -3,7 +3,9 @@ import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
 import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
-import { creditsFor, effectiveCost, PLAN_STRUCTURES, simulate } from "@/lib/credits";
+import { ASSUMED_PAYMENT_FEE, COMPARISON_STRUCTURES, CREDIT_USD, creditsFor, effectiveCost, maxCreditsForPrice, MIN_MARGIN, minPriceForCredits, PLAN_STRUCTURES, simulate } from "@/lib/credits";
+import { getDictionary } from "@/i18n/get-dictionary";
+import { allEngines, priceOf } from "@/lib/provider/registry";
 import { validateAndNormalizeImage } from "@/lib/image";
 import { createProviderModel, refreshJob } from "@/lib/jobs";
 import { createQuote } from "@/lib/quotes";
@@ -24,8 +26,8 @@ describe("credit formula", () => {
 });
 
 describe("plan simulation", () => {
-  const credits = PLAN_STRUCTURES.find((s) => s.id === "spec")!;
-  const attempts = PLAN_STRUCTURES.find((s) => s.id === "attempts")!;
+  const credits = COMPARISON_STRUCTURES.find((s) => s.id === "spec")!;
+  const attempts = COMPARISON_STRUCTURES.find((s) => s.id === "attempts")!;
 
   it("computes the specification's example: Creator with 500 credits gives 16 models of US$0.40", () => {
     const creator = credits.plans.find((p) => p.name === "Creator")!;
@@ -49,6 +51,81 @@ describe("plan simulation", () => {
     expect(flatCheap - flatDear).toBeGreaterThan(30);
     const c = credits.plans[1];
     expect(Math.abs(simulate(credits, c, 0.27, 1).marginPct - simulate(credits, c, 0.675, 1).marginPct)).toBeLessThan(3);
+  });
+});
+
+describe("the 60% margin floor", () => {
+  const raw = (s: Parameters<typeof simulate>[0], p: Parameters<typeof simulate>[1], usd: number, use: number) => {
+    const r = simulate(s, p, usd, use);
+    return r.contributionUsd / p.priceUsd;
+  };
+  /** Every price any engine can reach, not just its default options. */
+  const everyPrice = () => {
+    const prices = new Set<number>();
+    for (const e of allEngines()) {
+      for (const mode of e.modes) {
+        for (const texture of ["none", "512", "1k", "2k"] as const) {
+          for (const photoCount of mode === "text" ? [0] : mode === "image" ? [1] : [2, 3, 4]) {
+            prices.add(priceOf(e, { mode, photoCount, texture }).usd);
+          }
+        }
+      }
+    }
+    return [...prices];
+  };
+
+  it("is 60%", () => {
+    expect(MIN_MARGIN).toBe(0.6);
+  });
+
+  it("every plan on offer keeps it, with every engine and option, at any level of use", () => {
+    for (const s of PLAN_STRUCTURES) {
+      expect(s.unit).toBe("credits");
+      for (const p of s.plans) {
+        expect(p.units, p.name).toBeLessThanOrEqual(maxCreditsForPrice(p.priceUsd));
+        for (const usd of everyPrice()) {
+          for (const use of [0.25, 0.5, 0.75, 1]) expect(raw(s, p, usd, use), `${p.name} at US$${usd}, ${use * 100}% used`).toBeGreaterThanOrEqual(MIN_MARGIN);
+        }
+      }
+    }
+  });
+
+  it("a future engine at any price keeps it too, because it costs more credits", () => {
+    for (const s of PLAN_STRUCTURES) {
+      for (const p of s.plans) {
+        for (const usd of [0.001, 0.05, 0.9, 1.35, 2.5, 7, 19.99]) expect(raw(s, p, usd, 1), `${p.name} at US$${usd}`).toBeGreaterThanOrEqual(MIN_MARGIN);
+      }
+    }
+  });
+
+  it("any amount of credits a customer chooses keeps it at the price shown, and one cent less would not", () => {
+    for (let credits = 100; credits <= 20_000; credits += 100) {
+      const price = minPriceForCredits(credits);
+      const margin = (p: number) => (p - credits * CREDIT_USD - p * ASSUMED_PAYMENT_FEE.pct - ASSUMED_PAYMENT_FEE.fixedUsd) / p;
+      expect(margin(price), `${credits} credits at US$${price}`).toBeGreaterThanOrEqual(MIN_MARGIN - 1e-9);
+      expect(margin(Math.round((price - 0.01) * 100) / 100), `${credits} credits`).toBeLessThan(MIN_MARGIN);
+    }
+    expect(minPriceForCredits(1000)).toBe(58.58);
+  });
+
+  it("works out the most credits a price can include", () => {
+    expect(maxCreditsForPrice(19)).toBe(307);
+    expect(maxCreditsForPrice(199)).toBe(3457);
+    expect(maxCreditsForPrice(1)).toBe(0);
+  });
+
+  it("flat attempts are not on offer: they break the floor", () => {
+    const flat = COMPARISON_STRUCTURES.find((s) => s.id === "attempts")!;
+    expect(PLAN_STRUCTURES.some((s) => s.unit === "attempts")).toBe(false);
+    expect(raw(flat, flat.plans[0], 0.675, 1)).toBeLessThan(MIN_MARGIN);
+  });
+
+  it("the public pricing page shows exactly these plans, in both languages", () => {
+    const plans = PLAN_STRUCTURES.find((s) => s.id === "plans")!.plans;
+    for (const locale of ["en", "es"] as const) {
+      const shown = getDictionary(locale).pricing.plans;
+      expect(shown.map((p) => [p.name, Number(p.price), p.credits])).toEqual(plans.map((p) => [p.name, p.priceUsd, p.units]));
+    }
   });
 });
 

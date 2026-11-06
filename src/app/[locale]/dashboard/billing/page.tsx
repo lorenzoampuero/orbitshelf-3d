@@ -7,6 +7,7 @@ import { creditsFor, PLAN_STRUCTURES } from "@/lib/credits";
 import { allEngines, priceOf } from "@/lib/provider/registry";
 import { buildPageMetadata } from "@/lib/seo";
 import { store } from "@/lib/store";
+import { CreditPicker } from "./credit-picker";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -28,7 +29,7 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
   const c = t.dash.billing;
   const user = (await currentUser())!;
   const usage = await store.usage(user.orgId);
-  const structure = PLAN_STRUCTURES.find((s) => s.id === "spec")!;
+  const structure = PLAN_STRUCTURES.find((s) => s.id === "plans")!;
   const engines = allEngines().map((e) => {
     const mode = e.modes[0];
     const usd = priceOf(e, { mode, photoCount: mode === "text" ? 0 : 1, texture: "1k" }).usd;
@@ -51,6 +52,8 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
           {c.seePricing}
         </Link>
       </div>
+
+      <CreditPicker c={c} engines={engines} />
 
       <section className="space-y-3" aria-labelledby="calc-heading">
         <h2 id="calc-heading" className="font-display text-lg font-semibold">{c.calcTitle}</h2>

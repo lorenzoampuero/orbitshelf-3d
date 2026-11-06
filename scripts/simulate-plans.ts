@@ -5,7 +5,7 @@
  */
 import { writeFileSync } from "node:fs";
 import path from "node:path";
-import { ASSUMED_COSTS, ASSUMED_PAYMENT_FEE, creditsFor, effectiveCost, PLAN_STRUCTURES, simulate } from "../src/lib/credits";
+import { ASSUMED_COSTS, ASSUMED_PAYMENT_FEE, COMPARISON_STRUCTURES, creditsFor, effectiveCost, MIN_MARGIN, PLAN_STRUCTURES, simulate } from "../src/lib/credits";
 import { allEngines, priceOf } from "../src/lib/provider/registry";
 
 const scenarios = [0.25, 0.5, 0.75, 1];
@@ -17,8 +17,20 @@ const cases = allEngines().map((e) => {
 const cheapest = cases.reduce((a, b) => (a.usd <= b.usd ? a : b));
 const priciest = cases.reduce((a, b) => (a.usd >= b.usd ? a : b));
 
-const csv: string[] = ["estructura,plan,precio_usd,unidades,motor,costo_publicado_usd,costo_efectivo_supuesto_usd,uso_pct,trabajos,costo_variable_usd,comision_supuesta_usd,contribucion_usd,margen_pct,evidencia"];
+const ALL_STRUCTURES = [...PLAN_STRUCTURES, ...COMPARISON_STRUCTURES];
+
+// The floor is the owner's rule, so a plan below it stops the script instead of landing in a document.
 for (const s of PLAN_STRUCTURES) {
+  for (const p of s.plans) {
+    for (const c of cases) {
+      const r = simulate(s, p, c.usd, 1);
+      if (r.contributionUsd / p.priceUsd < MIN_MARGIN) throw new Error(`${p.name} with ${c.label} falls to ${r.marginPct} %, under the ${MIN_MARGIN * 100} % floor.`);
+    }
+  }
+}
+
+const csv: string[] = ["estructura,plan,precio_usd,unidades,motor,costo_publicado_usd,costo_efectivo_supuesto_usd,uso_pct,trabajos,costo_variable_usd,comision_supuesta_usd,contribucion_usd,margen_pct,evidencia"];
+for (const s of ALL_STRUCTURES) {
   for (const p of s.plans) {
     for (const c of [cheapest, priciest]) {
       for (const u of scenarios) {
@@ -55,7 +67,7 @@ const lines: string[] = [
   `Casos extremos usados abajo: el más barato es ${cheapest.label} (${usdf(cheapest.usd)}) y el más caro ${priciest.label} (${usdf(priciest.usd)}).`,
   "",
 ];
-for (const s of PLAN_STRUCTURES) {
+for (const s of ALL_STRUCTURES) {
   lines.push(`## ${s.label}`, "", "Margen de contribución con el plan usado al 100 %, el peor caso.", "", "| Plan | Precio | Unidades | Modelos, motor barato | Margen | Modelos, motor caro | Margen |", "|---|---:|---:|---:|---:|---:|---:|");
   for (const p of s.plans) {
     const a = simulate(s, p, cheapest.usd, 1);
@@ -65,12 +77,14 @@ for (const s of PLAN_STRUCTURES) {
   lines.push("");
 }
 lines.push(
-  "## Si los proveedores suben 50 %",
+  "## Si el costo real sube 50 % y no se actualizan los créditos",
   "",
-  "| Estructura | Plan | Margen hoy, motor caro | Margen con +50 %, si no se ajusta nada |",
+  "El mínimo se mantiene solo si los créditos por modelo se recalculan cuando cambia un costo. Esta tabla muestra lo que pasa si nadie lo hace.",
+  "",
+  "| Estructura | Plan | Margen hoy, motor caro | Margen con +50 %, sin ajustar |",
   "|---|---|---:|---:|",
 );
-for (const s of PLAN_STRUCTURES) {
+for (const s of ALL_STRUCTURES) {
   const p = s.plans[0];
   const today = simulate(s, p, priciest.usd, 1);
   const worse = { ...today, ...simulate({ ...s, unit: "attempts" }, { ...p, units: today.jobs }, priciest.usd * 1.5, 1) };
@@ -80,11 +94,11 @@ lines.push(
   "",
   "## Lectura",
   "",
-  "- **Intentos planos:** un intento cuesta lo mismo con cualquier motor, así que un motor caro se come el margen. Con más de un motor habilitado esta estructura es riesgosa. Por eso el libro ya admite créditos.",
-  "- **Créditos del informe:** el margen es alto en todos los casos, pero entrega pocos modelos por el precio. Conviene comparar con lo que ofrecen los competidores antes de decidir.",
-  "- **Paquetes sin suscripción:** no hay ingreso recurrente, pero tampoco hay que entregar créditos que no se usan. Puede servir para empezar a cobrar.",
-  "",
-  "La decisión es del dueño, con datos de la Fase 10.",
+  `- **Regla del dueño:** ningún plan puede bajar de ${MIN_MARGIN * 100} % de margen de contribución, aunque se use completo y con cualquier motor. Este script y las pruebas fallan si un plan la incumple.`,
+  "- **Qué incluye ese margen:** es el precio menos el costo del proveedor y la comisión de pago. Con lo que queda se pagan hosting, soporte, devoluciones e impuestos, así que no es la ganancia final.",
+  "- **Intentos planos:** descartado. Un intento cuesta lo mismo con cualquier motor, así que un motor caro deja el plan con pérdida.",
+  "- **Créditos del informe:** cumple el mínimo, pero entrega menos modelos de los necesarios para llegar a 60 %.",
+  "- **Hasta medir costos reales** (Fase 10), estos márgenes son una estimación. Con facturas hay que actualizar los supuestos y repetir este cálculo.",
 );
 writeFileSync(path.join(process.cwd(), "docs", "SIMULACION_PLANES.md"), lines.join("\n") + "\n");
 console.log("Written docs/SIMULACION_PLANES.md and docs/PLANES_MARGEN_SIMULADO.csv");
