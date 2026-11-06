@@ -9,49 +9,47 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
+  --color-blood: var(--blood);
   --color-ink: var(--ink);
   --color-danger: var(--danger);
   --color-warn: var(--warn);
   --color-ok: var(--ok);
   --font-sans: var(--font-body);
   --font-display: var(--font-heading);
-  --radius-card: 12px;
+  --radius-card: 24px;
   --radius-ctl: 12px;
 }
 
 /*
- * Palette: neutral black, warm off-white text, one orange accent.
- * Contrast (WCAG): accent on bg 6.3:1, muted on bg 7.5:1, ink (near-black) on the hero gradient 4.9:1 or better.
- * No decorative shadows, glows, glass or gradient text.
+ * Palette: near-black, off-white text, blood red.
+ * Contrast (WCAG), measured on --bg: fg 18:1, muted 7.6:1, accent (vivid red, for text and small fills) 5.8:1 (4.7:1 on --surface-2).
+ * --blood is a fill only (1.6:1 on black): it always carries white text (10:1).
  */
 :root {
-  --bg: #0b0b0c;
-  --surface: #161617;
-  --surface-2: #1e1e20;
-  --line: #2a2a2c;
-  --fg: #f5f2ec;
-  --muted: #a3a09a;
-  --accent: #ff5a1f;
-  --accent-strong: #e64a12;
-  --ink: #0b0b0c;
+  --bg: #0a0a0b;
+  --surface: #17171a;
+  --surface-2: #222226;
+  --line: rgb(255 255 255 / 0.09);
+  --fg: #f4f4f5;
+  --muted: #a1a1aa;
+  --accent: #ff4547;
+  --accent-strong: #ff6769;
+  --blood: #8b0000;
+  --blood-hi: #b01012;
+  --ink: #0a0a0b;
   --danger: #ff7a7a;
   --warn: #f5b942;
   --ok: #6fcf97;
-  /* Flat hero gradient: no halos or blur. Dark text only (see contrast note above). */
-  --hero-from: #e5400c;
-  --hero-via: #f2701a;
-  --hero-to: #f6b567;
-  --font-body: "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Poppins", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-heading: var(--font-body);
   color-scheme: dark;
 }
 
 [data-theme="app"] {
-  --bg: #0b0b0c;
-  --surface: #161617;
-  --surface-2: #1e1e20;
-  --line: #2a2a2c;
-  --muted: #a3a09a;
+  --bg: #0a0a0b;
+  --surface: #17171a;
+  --surface-2: #222226;
+  --muted: #a1a1aa;
 }
 
 html {
@@ -70,7 +68,7 @@ h2,
 h3,
 .font-display {
   font-family: var(--font-heading);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.025em;
 }
 
 :focus-visible {
@@ -81,58 +79,182 @@ h3,
 
 .container-page {
   width: 100%;
-  max-width: 1240px;
+  max-width: 1120px;
   margin-inline: auto;
-  padding-inline: 24px;
+  padding-inline: 20px;
 }
 
-/* Hero: one flat orange field. Corner labels, a giant ghost word and the real model sit on top of it. */
-.hero-field {
-  background: linear-gradient(160deg, var(--hero-from) 0%, var(--hero-via) 52%, var(--hero-to) 100%);
-  color: var(--ink);
-}
-.hero-ghost {
-  font-weight: 800;
-  line-height: 0.8;
-  letter-spacing: -0.06em;
-  /* Tone-on-tone with the field: a layout element, not a decoration with its own colour. */
-  color: color-mix(in srgb, var(--ink) 14%, transparent);
-  user-select: none;
+/* ---------- Marketing: background light ---------- */
+/* Soft red pools behind the page. Radial gradients, not blur filters: cheap to paint and no layout cost. */
+.glow {
+  position: absolute;
+  border-radius: 999px;
   pointer-events: none;
+  background: radial-gradient(closest-side, rgb(139 0 0 / 0.55), rgb(139 0 0 / 0));
 }
 
-/* Outline pill button (secondary actions) and solid pill (primary). */
+/* ---------- Floating pill navbar ---------- */
+.pill-nav {
+  background: rgb(18 19 23 / 0.72);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 0.45);
+}
+.mega-panel {
+  background: rgb(18 19 23 / 0.88);
+  backdrop-filter: blur(34px) saturate(140%);
+  -webkit-backdrop-filter: blur(34px) saturate(140%);
+  border: 1px solid var(--line);
+  box-shadow: 0 24px 64px rgb(0 0 0 / 0.55);
+}
+@media (prefers-reduced-transparency: reduce) {
+  .pill-nav,
+  .mega-panel {
+    background: #14141a;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  position: relative;
+}
+.card-lift {
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+  border-color: rgb(255 255 255 / 0.18);
+}
+/* Label pill that sits inside a card, with a square arrow button at its end. */
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  padding: 0.3rem 0.3rem 0.3rem 0.9rem;
+  background: rgb(255 255 255 / 0.07);
+  border: 1px solid var(--line);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+.tag-pill > .tag-arrow {
+  display: inline-flex;
+  height: 1.75rem;
+  width: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--blood);
+  color: #fff;
+}
+
+/* ---------- Buttons ---------- */
 .btn-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   border-radius: 999px;
-  padding: 0.7rem 1.4rem;
+  padding: 0.7rem 1.6rem;
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.2;
-  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
+}
+.btn-pill:active {
+  transform: scale(0.98);
 }
 .btn-solid {
-  background: var(--accent);
-  color: var(--ink);
+  background: linear-gradient(135deg, var(--blood-hi), var(--blood));
+  color: #fff;
 }
 .btn-solid:hover {
-  background: var(--accent-strong);
+  background: linear-gradient(135deg, #cc1417, #a00a0c);
 }
 .btn-ink {
-  background: var(--ink);
-  color: var(--fg);
+  background: var(--fg);
+  color: var(--ink);
 }
 .btn-ink:hover {
-  background: #26262a;
+  background: #fff;
 }
 .btn-outline {
-  border: 1px solid currentColor;
+  border: 1px solid rgb(255 255 255 / 0.28);
 }
 .btn-outline:hover {
-  background: color-mix(in srgb, currentColor 10%, transparent);
+  background: rgb(255 255 255 / 0.08);
+}
+
+/* ---------- Hero ---------- */
+.hero-title {
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+.text-blood-grad {
+  background: linear-gradient(95deg, #ff5a5c 0%, #ef2b2d 45%, #b01012 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* Wireframe look for the "same model, solid and mesh" pair: a pure CSS grid, not a render. */
+.mesh-lines {
+  background-image:
+    linear-gradient(rgb(239 43 45 / 0.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(239 43 45 / 0.5) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* ---------- Motion ---------- */
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.float-slow {
+  animation: float-y 5.8s ease-in-out infinite;
+}
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* Scroll reveal only where the browser can tie it to scroll position; elsewhere the content simply shows. */
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: rise-in linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 38%;
+  }
+}
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.menu-in {
+  animation: menu-in 0.18s ease-out both;
 }
 
 model-viewer {
@@ -157,6 +279,10 @@ model-viewer:focus-visible {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  .float-slow,
+  .reveal {
+    animation: none;
   }
 }
 

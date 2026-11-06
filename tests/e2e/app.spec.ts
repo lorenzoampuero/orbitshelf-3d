@@ -78,7 +78,7 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await page.setViewportSize({ width: 1280, height: 840 });
     await page.goto("/es");
     await expect(page.locator("html")).toHaveAttribute("lang", "es");
-    await expect(page.locator("h1")).toContainText("Una foto muestra un ángulo");
+    await expect(page.locator("h1")).toContainText("De una foto a un modelo 3D listo para usar");
 
     await page.goto("/es/pricing");
     await expect(page.locator("h1")).toContainText("Planes por créditos, sin promesas de ilimitado");
