@@ -77,5 +77,5 @@ Cada cliente deja unos US$37 al mes después de créditos, comisión y costos po
 
 - No sabemos cuántas visitas llegan, cuántas se registran ni cuántas pagan. Todo parte de un número inventado de clientes nuevos. Lo primero que hay que medir es esa conversión.
 - El uso de créditos (35-50 %) es una suposición. Si los clientes usan todo, el margen baja hacia el 70 % de dimensionado; si usan poco, sube.
-- Una pasada de prueba de motores cuesta unos US$62 y no está incluida. Tampoco los reembolsos, los impuestos ni el trabajo propio.
+- La prueba de motores no está incluida: 8 productos en los 9 motores cuestan unos US$24 a precios publicados (menos si pruebas solo 3 o 4 motores), más compras mínimas como los US$12 de Sloyd. Tampoco los reembolsos, los impuestos ni el trabajo propio.
 - Los costos reales de los motores y la comisión del cobro no se han confirmado con facturas.
