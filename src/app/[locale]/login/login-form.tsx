@@ -54,7 +54,7 @@ export function LoginForm({
         return;
       }
       const target =
-        nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")
+        nextPath && /^\/(?![/\\])/.test(nextPath)
           ? nextPath
           : localePath(locale, "/dashboard");
       router.push(target);

@@ -30,13 +30,13 @@ export const navCopy: Record<Locale, NavCopy> = {
     productItems: [
       { href: "/features/text-to-3d", icon: "text", title: "Texto a 3D", text: "Describe un objeto y obtén un GLB con textura" },
       { href: "/features/image-to-3d", icon: "image", title: "Imagen a 3D", text: "De una foto de tu producto a un modelo que se gira" },
-      { href: "/features/multi-image-to-3d", icon: "images", title: "Varias imágenes a 3D", text: "De 2 a 4 vistas para que la espalda no se adivine" },
+      { href: "/features/multi-image-to-3d", icon: "images", title: "Varias imágenes a 3D", text: "De 1 a 4 vistas, para adivinar menos de la espalda" },
       { href: "/how-it-works", icon: "review", title: "Revisar y exportar", text: "Malla, versiones y descarga en GLB, OBJ o STL" },
     ],
     solutionItems: [
       { href: "/solutions/stores", icon: "store", title: "Tiendas", text: "Tu producto en 3D sin contratar a un modelador" },
       { href: "/solutions/games", icon: "game", title: "Juegos", text: "Del concepto al asset, con la geometría a la vista" },
-      { href: "/solutions/design", icon: "design", title: "Diseño 3D", text: "Parte de un boceto o un GLB y sigue en tu programa" },
+      { href: "/solutions/design", icon: "design", title: "Diseño 3D", text: "Parte de una descripción o un GLB y sigue en tu programa" },
     ],
   },
   en: {
@@ -49,13 +49,13 @@ export const navCopy: Record<Locale, NavCopy> = {
     productItems: [
       { href: "/features/text-to-3d", icon: "text", title: "Text to 3D", text: "Describe an object and get a textured GLB" },
       { href: "/features/image-to-3d", icon: "image", title: "Image to 3D", text: "From one product photo to a model you can spin" },
-      { href: "/features/multi-image-to-3d", icon: "images", title: "Multi-image to 3D", text: "2 to 4 views so the back is not guessed" },
+      { href: "/features/multi-image-to-3d", icon: "images", title: "Multi-image to 3D", text: "1 to 4 views, so less of the back is guessed" },
       { href: "/how-it-works", icon: "review", title: "Review and export", text: "Mesh, versions and download as GLB, OBJ or STL" },
     ],
     solutionItems: [
       { href: "/solutions/stores", icon: "store", title: "Stores", text: "Your product in 3D without hiring a modeler" },
       { href: "/solutions/games", icon: "game", title: "Games", text: "From concept to asset, with the geometry in plain sight" },
-      { href: "/solutions/design", icon: "design", title: "3D design", text: "Start from a sketch or a GLB and carry on in your software" },
+      { href: "/solutions/design", icon: "design", title: "3D design", text: "Start from a description or a GLB and carry on in your software" },
     ],
   },
 };

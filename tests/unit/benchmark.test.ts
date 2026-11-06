@@ -59,9 +59,9 @@ describe("plan", () => {
     expect(plan.items.map((i) => [i.engine.id, i.mode, i.usd])).toEqual([
       ["fal-rodin-2.5-fast", "multi-image", 0.1],
       ["fal-trellis-1", "image", 0.02],
-      ["fal-hunyuan-3.1-pro", "multi-image", 0.675],
+      ["fal-hunyuan-3.1-pro", "multi-image", 0.825],
     ]);
-    expect(plan.totalUsd).toBe(0.795);
+    expect(plan.totalUsd).toBe(0.945);
   });
 
   it("lists what an engine cannot do instead of hiding it", () => {

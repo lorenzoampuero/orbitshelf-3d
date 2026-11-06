@@ -52,6 +52,7 @@ export default defineConfig({
         INTEGRATIONS_KEY: "test-integrations-key-32-characters-long",
         WEBHOOK_ALLOW_INSECURE: "true",
         SHOPIFY_TEST_BASE: "http://127.0.0.1:3999/shopify",
+        BILLING_UNIT: "attempts",
         LOCAL_PAID_ATTEMPT_CAP: "5",
         MAX_ACTIVE_JOBS_PER_ORG: "3",
         DATA_DIR: ".data-e2e",

@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { ArrowUpRight } from "lucide-react";
 import { isLocale, localePath } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { buildPageMetadata } from "@/lib/seo";
@@ -75,22 +74,6 @@ export default async function ComparePage({ params }: Props) {
               <Checklist items={c.whenManual} />
             </div>
           </Card>
-
-          <article className="card reveal flex flex-col justify-between gap-6 p-7 md:col-span-6 md:flex-row md:items-end md:p-8">
-            <div className="max-w-2xl space-y-3">
-              <h2 className="text-lg font-semibold leading-tight">{c.sourceTitle}</h2>
-              <p className="text-sm leading-relaxed text-muted">{c.sourceText}</p>
-            </div>
-            <a
-              href="https://www.sloyd.ai/api/pricing"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex shrink-0 items-center gap-1.5 self-start text-sm font-semibold text-fg underline underline-offset-4 hover:text-accent md:self-auto"
-            >
-              {c.sourceLink}
-              <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden="true" />
-            </a>
-          </article>
         </div>
       </Section>
 

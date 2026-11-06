@@ -77,6 +77,8 @@ const ENGINES: EngineDefinition[] = [
       const lines: PriceLine[] = [{ code: "generation", usd: 0.375 }];
       if (q.texture !== "none") lines.push({ code: "texture", usd: 0.15 });
       if (q.photoCount >= 2) lines.push({ code: "multi_view", usd: 0.15 });
+      // The adapter always sends face_count, which the vendor lists as a paid add-on: priced in until an invoice says otherwise.
+      lines.push({ code: "detail", usd: 0.15 });
       return lines;
     },
     fal: {
@@ -336,8 +338,13 @@ export const priceOf = (engine: EngineDefinition, q: PriceQuery) => {
 
 export type { TextureResolution };
 
-/** What the plan cards use to translate credits into models: a low-cost engine and a high-quality one, with textures and one photo. */
+/**
+ * What the plan cards use to translate credits into models: the cheapest and the dearest path among the engines that are
+ * switched on (lifecycle), with textures and one photo. Disabled engines never widen the range the public page promises.
+ */
 export function planReference() {
-  const credits = (id: string) => creditsFor(priceOf(getEngine(id)!, { mode: "image", photoCount: 1, texture: "1k" }).usd);
-  return { economy: credits("fal-rodin-2.5-fast"), premium: credits("fal-rodin-2.5") };
+  const live = ENGINES.filter((e) => engineEnabled(e));
+  const pool = live.length ? live : ENGINES;
+  const credits = pool.map((e) => creditsFor(priceOf(e, { mode: "image", photoCount: 1, texture: "1k" }).usd));
+  return { economy: Math.min(...credits), premium: Math.max(...credits) };
 }

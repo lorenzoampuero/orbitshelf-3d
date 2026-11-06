@@ -42,9 +42,12 @@ function PlanCard({ tier, plan, copy, locale, reference, cta, variant }: { tier:
   const count = (n: number) => n.toLocaleString(locale === "es" ? "es-CL" : "en-US");
   const credits = `${count(step.credits)} ${copy.credits}`;
   const multi = tier.steps.length > 1;
-  const models = extra.modelsLine
-    .replace("{low}", count(Math.floor(step.credits / reference.premium)))
-    .replace("{high}", count(Math.floor(step.credits / reference.economy)));
+  const low = Math.floor(step.credits / reference.premium);
+  const high = Math.floor(step.credits / reference.economy);
+  // With one engine switched on the range collapses to a single number: say "about N", not "between N and N".
+  const models = (low === high ? extra.modelsLine.replace("entre {low} y {high}", "unos {low}").replace("about {low} to {high}", "about {low}") : extra.modelsLine)
+    .replace("{low}", count(low))
+    .replace("{high}", count(high));
 
   return (
     <div className={`card flex flex-col p-2 ${LAYOUT[variant].card}`} data-testid={`plan-${tier.id}`}>

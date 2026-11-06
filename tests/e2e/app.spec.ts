@@ -1026,6 +1026,8 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
       "/solutions", "/solutions/stores", "/solutions/games", "/solutions/design", "/integrations",
       "/es", "/es/examples", "/es/pricing", "/es/features", "/es/solutions/stores", "/es/integrations",
     ];
+    // Scroll-reveal fades cards in; axe would read a half-faded card's colour. Reduced motion shows the final state.
+    await page.emulateMedia({ reducedMotion: "reduce" });
     for (const width of [1280, 375]) {
       await page.setViewportSize({ width, height: 840 });
       for (const p of paths) {

@@ -58,7 +58,7 @@ export function MarketingShell({
   const createHref = localePath(locale, "/dashboard/create");
 
   const resourceLinks = [
-    { href: "/examples", title: dict.nav.examples, text: locale === "es" ? "Cómo se ve el flujo, de la foto al modelo" : "How the flow looks, from photo to model" },
+    { href: "/examples", title: dict.nav.examples, text: locale === "es" ? "Muestras interactivas de demostración, no resultados de IA" : "Interactive demo samples, not AI results" },
     { href: "/resources", title: dict.nav.guides, text: dict.nav.guidesDesc },
     { href: "/resources/faq", title: dict.nav.faq, text: dict.nav.faqDesc },
     { href: "/resources/glb-export-and-shopify", title: dict.nav.docs, text: dict.nav.docsDesc },
@@ -290,12 +290,16 @@ export function MarketingShell({
             <FooterColumn
               title={dict.footer.product}
               links={[
+                { href: localePath(locale, "/features"), label: nav.allFeatures },
                 ...nav.productItems.map((i) => ({ href: localePath(locale, i.href), label: i.title })),
                 { href: localePath(locale, "/integrations"), label: nav.integrations },
                 { href: localePath(locale, "/pricing"), label: dict.nav.pricing },
               ]}
             />
-            <FooterColumn title={nav.footerSolutions} links={nav.solutionItems.map((i) => ({ href: localePath(locale, i.href), label: i.title }))} />
+            <FooterColumn
+              title={nav.footerSolutions}
+              links={[{ href: localePath(locale, "/solutions"), label: nav.allSolutions }, ...nav.solutionItems.map((i) => ({ href: localePath(locale, i.href), label: i.title }))]}
+            />
             <FooterColumn
               title={dict.footer.resources}
               links={[

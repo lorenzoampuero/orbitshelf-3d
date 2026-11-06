@@ -12,7 +12,7 @@ export type IntegrationId = "embed" | "shopify" | "blender" | "api" | "mcp" | "w
 export const INTEGRATION_ORDER: { id: IntegrationId; status: IntegrationStatus }[] = [
   { id: "embed", status: "available" },
   { id: "shopify", status: "soon" },
-  { id: "blender", status: "testing" },
+  { id: "blender", status: "soon" },
   { id: "api", status: "testing" },
   { id: "mcp", status: "testing" },
   { id: "woocommerce", status: "planned" },

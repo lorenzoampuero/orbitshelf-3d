@@ -74,9 +74,10 @@ describe("engine registry", () => {
 
   it("prices match what was read at each provider's page", () => {
     const usd = (id: string, q: Parameters<typeof priceOf>[1]) => priceOf(getEngine(id)!, q).usd;
-    expect(usd("fal-hunyuan-3.1-pro", { mode: "image", photoCount: 1, texture: "none" })).toBe(0.375);
-    expect(usd("fal-hunyuan-3.1-pro", { mode: "image", photoCount: 1, texture: "1k" })).toBe(0.525);
-    expect(usd("fal-hunyuan-3.1-pro", { mode: "multi-image", photoCount: 3, texture: "1k" })).toBe(0.675);
+    // Hunyuan Pro: +0.15 for face_count, which the adapter always sends (vendor add-on, priced in until an invoice says otherwise).
+    expect(usd("fal-hunyuan-3.1-pro", { mode: "image", photoCount: 1, texture: "none" })).toBe(0.525);
+    expect(usd("fal-hunyuan-3.1-pro", { mode: "image", photoCount: 1, texture: "1k" })).toBe(0.675);
+    expect(usd("fal-hunyuan-3.1-pro", { mode: "multi-image", photoCount: 3, texture: "1k" })).toBe(0.825);
     expect(usd("fal-rodin-2.5", { mode: "multi-image", photoCount: 4, texture: "1k" })).toBe(0.4);
     expect(usd("fal-tripo-h3.1", { mode: "image", photoCount: 1, texture: "none" })).toBe(0.2);
     expect(usd("fal-tripo-h3.1", { mode: "image", photoCount: 1, texture: "1k" })).toBe(0.3);
