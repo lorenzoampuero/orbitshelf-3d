@@ -1,217 +1,217 @@
 estructura,plan,precio_usd,unidades,motor,costo_publicado_usd,costo_efectivo_supuesto_usd,uso_pct,trabajos,costo_variable_usd,comision_supuesta_usd,contribucion_usd,margen_pct,evidencia
-plans,Starter,19,250,fal-trellis-1,0.02,0.144,25,7,1.01,1.45,16.54,87.1,precio publicado + supuestos, sin factura
-plans,Starter,19,250,fal-trellis-1,0.02,0.144,50,15,2.16,1.45,15.39,81,precio publicado + supuestos, sin factura
-plans,Starter,19,250,fal-trellis-1,0.02,0.144,75,23,3.31,1.45,14.24,74.9,precio publicado + supuestos, sin factura
-plans,Starter,19,250,fal-trellis-1,0.02,0.144,100,31,4.46,1.45,13.09,68.9,precio publicado + supuestos, sin factura
-plans,Starter,19,250,fal-hunyuan-3.1-pro,0.825,1.110,25,1,1.11,1.45,16.44,86.5,precio publicado + supuestos, sin factura
-plans,Starter,19,250,fal-hunyuan-3.1-pro,0.825,1.110,50,2,2.22,1.45,15.33,80.7,precio publicado + supuestos, sin factura
-plans,Starter,19,250,fal-hunyuan-3.1-pro,0.825,1.110,75,3,3.33,1.45,14.22,74.8,precio publicado + supuestos, sin factura
-plans,Starter,19,250,fal-hunyuan-3.1-pro,0.825,1.110,100,4,4.44,1.45,13.11,69,precio publicado + supuestos, sin factura
-plans,Creator,49,700,fal-trellis-1,0.02,0.144,25,21,3.02,2.95,43.03,87.8,precio publicado + supuestos, sin factura
-plans,Creator,49,700,fal-trellis-1,0.02,0.144,50,43,6.19,2.95,39.86,81.3,precio publicado + supuestos, sin factura
-plans,Creator,49,700,fal-trellis-1,0.02,0.144,75,65,9.36,2.95,36.69,74.9,precio publicado + supuestos, sin factura
-plans,Creator,49,700,fal-trellis-1,0.02,0.144,100,87,12.53,2.95,33.52,68.4,precio publicado + supuestos, sin factura
-plans,Creator,49,700,fal-hunyuan-3.1-pro,0.825,1.110,25,3,3.33,2.95,42.72,87.2,precio publicado + supuestos, sin factura
-plans,Creator,49,700,fal-hunyuan-3.1-pro,0.825,1.110,50,6,6.66,2.95,39.39,80.4,precio publicado + supuestos, sin factura
-plans,Creator,49,700,fal-hunyuan-3.1-pro,0.825,1.110,75,9,9.99,2.95,36.06,73.6,precio publicado + supuestos, sin factura
-plans,Creator,49,700,fal-hunyuan-3.1-pro,0.825,1.110,100,12,13.32,2.95,32.73,66.8,precio publicado + supuestos, sin factura
-plans,Creator US$59,59,850,fal-trellis-1,0.02,0.144,25,26,3.74,3.45,51.81,87.8,precio publicado + supuestos, sin factura
-plans,Creator US$59,59,850,fal-trellis-1,0.02,0.144,50,53,7.63,3.45,47.92,81.2,precio publicado + supuestos, sin factura
-plans,Creator US$59,59,850,fal-trellis-1,0.02,0.144,75,79,11.38,3.45,44.17,74.9,precio publicado + supuestos, sin factura
-plans,Creator US$59,59,850,fal-trellis-1,0.02,0.144,100,106,15.26,3.45,40.29,68.3,precio publicado + supuestos, sin factura
-plans,Creator US$59,59,850,fal-hunyuan-3.1-pro,0.825,1.110,25,3,3.33,3.45,52.22,88.5,precio publicado + supuestos, sin factura
-plans,Creator US$59,59,850,fal-hunyuan-3.1-pro,0.825,1.110,50,7,7.77,3.45,47.78,81,precio publicado + supuestos, sin factura
-plans,Creator US$59,59,850,fal-hunyuan-3.1-pro,0.825,1.110,75,11,12.21,3.45,43.34,73.5,precio publicado + supuestos, sin factura
-plans,Creator US$59,59,850,fal-hunyuan-3.1-pro,0.825,1.110,100,15,16.65,3.45,38.9,65.9,precio publicado + supuestos, sin factura
-plans,Creator US$69,69,1000,fal-trellis-1,0.02,0.144,25,31,4.46,3.95,60.59,87.8,precio publicado + supuestos, sin factura
-plans,Creator US$69,69,1000,fal-trellis-1,0.02,0.144,50,62,8.93,3.95,56.12,81.3,precio publicado + supuestos, sin factura
-plans,Creator US$69,69,1000,fal-trellis-1,0.02,0.144,75,93,13.39,3.95,51.66,74.9,precio publicado + supuestos, sin factura
-plans,Creator US$69,69,1000,fal-trellis-1,0.02,0.144,100,125,18,3.95,47.05,68.2,precio publicado + supuestos, sin factura
-plans,Creator US$69,69,1000,fal-hunyuan-3.1-pro,0.825,1.110,25,4,4.44,3.95,60.61,87.8,precio publicado + supuestos, sin factura
-plans,Creator US$69,69,1000,fal-hunyuan-3.1-pro,0.825,1.110,50,8,8.88,3.95,56.17,81.4,precio publicado + supuestos, sin factura
-plans,Creator US$69,69,1000,fal-hunyuan-3.1-pro,0.825,1.110,75,12,13.32,3.95,51.73,75,precio publicado + supuestos, sin factura
-plans,Creator US$69,69,1000,fal-hunyuan-3.1-pro,0.825,1.110,100,17,18.87,3.95,46.18,66.9,precio publicado + supuestos, sin factura
-plans,Creator US$79,79,1150,fal-trellis-1,0.02,0.144,25,35,5.04,4.45,69.51,88,precio publicado + supuestos, sin factura
-plans,Creator US$79,79,1150,fal-trellis-1,0.02,0.144,50,71,10.22,4.45,64.33,81.4,precio publicado + supuestos, sin factura
-plans,Creator US$79,79,1150,fal-trellis-1,0.02,0.144,75,107,15.41,4.45,59.14,74.9,precio publicado + supuestos, sin factura
-plans,Creator US$79,79,1150,fal-trellis-1,0.02,0.144,100,143,20.59,4.45,53.96,68.3,precio publicado + supuestos, sin factura
-plans,Creator US$79,79,1150,fal-hunyuan-3.1-pro,0.825,1.110,25,5,5.55,4.45,69,87.3,precio publicado + supuestos, sin factura
-plans,Creator US$79,79,1150,fal-hunyuan-3.1-pro,0.825,1.110,50,10,11.1,4.45,63.45,80.3,precio publicado + supuestos, sin factura
-plans,Creator US$79,79,1150,fal-hunyuan-3.1-pro,0.825,1.110,75,15,16.65,4.45,57.9,73.3,precio publicado + supuestos, sin factura
-plans,Creator US$79,79,1150,fal-hunyuan-3.1-pro,0.825,1.110,100,20,22.2,4.45,52.35,66.3,precio publicado + supuestos, sin factura
-plans,Creator US$89,89,1350,fal-trellis-1,0.02,0.144,25,42,6.05,4.95,78,87.6,precio publicado + supuestos, sin factura
-plans,Creator US$89,89,1350,fal-trellis-1,0.02,0.144,50,84,12.1,4.95,71.95,80.8,precio publicado + supuestos, sin factura
-plans,Creator US$89,89,1350,fal-trellis-1,0.02,0.144,75,126,18.14,4.95,65.91,74.1,precio publicado + supuestos, sin factura
-plans,Creator US$89,89,1350,fal-trellis-1,0.02,0.144,100,168,24.19,4.95,59.86,67.3,precio publicado + supuestos, sin factura
-plans,Creator US$89,89,1350,fal-hunyuan-3.1-pro,0.825,1.110,25,6,6.66,4.95,77.39,87,precio publicado + supuestos, sin factura
-plans,Creator US$89,89,1350,fal-hunyuan-3.1-pro,0.825,1.110,50,12,13.32,4.95,70.73,79.5,precio publicado + supuestos, sin factura
-plans,Creator US$89,89,1350,fal-hunyuan-3.1-pro,0.825,1.110,75,18,19.98,4.95,64.07,72,precio publicado + supuestos, sin factura
-plans,Creator US$89,89,1350,fal-hunyuan-3.1-pro,0.825,1.110,100,24,26.64,4.95,57.41,64.5,precio publicado + supuestos, sin factura
-plans,Commerce,99,1500,fal-trellis-1,0.02,0.144,25,46,6.62,5.45,86.93,87.8,precio publicado + supuestos, sin factura
-plans,Commerce,99,1500,fal-trellis-1,0.02,0.144,50,93,13.39,5.45,80.16,81,precio publicado + supuestos, sin factura
-plans,Commerce,99,1500,fal-trellis-1,0.02,0.144,75,140,20.16,5.45,73.39,74.1,precio publicado + supuestos, sin factura
-plans,Commerce,99,1500,fal-trellis-1,0.02,0.144,100,187,26.93,5.45,66.62,67.3,precio publicado + supuestos, sin factura
-plans,Commerce,99,1500,fal-hunyuan-3.1-pro,0.825,1.110,25,6,6.66,5.45,86.89,87.8,precio publicado + supuestos, sin factura
-plans,Commerce,99,1500,fal-hunyuan-3.1-pro,0.825,1.110,50,13,14.43,5.45,79.12,79.9,precio publicado + supuestos, sin factura
-plans,Commerce,99,1500,fal-hunyuan-3.1-pro,0.825,1.110,75,19,21.09,5.45,72.46,73.2,precio publicado + supuestos, sin factura
-plans,Commerce,99,1500,fal-hunyuan-3.1-pro,0.825,1.110,100,26,28.86,5.45,64.69,65.3,precio publicado + supuestos, sin factura
-plans,Commerce US$119,119,1800,fal-trellis-1,0.02,0.144,25,56,8.06,6.45,104.49,87.8,precio publicado + supuestos, sin factura
-plans,Commerce US$119,119,1800,fal-trellis-1,0.02,0.144,50,112,16.13,6.45,96.42,81,precio publicado + supuestos, sin factura
-plans,Commerce US$119,119,1800,fal-trellis-1,0.02,0.144,75,168,24.19,6.45,88.36,74.3,precio publicado + supuestos, sin factura
-plans,Commerce US$119,119,1800,fal-trellis-1,0.02,0.144,100,225,32.4,6.45,80.15,67.4,precio publicado + supuestos, sin factura
-plans,Commerce US$119,119,1800,fal-hunyuan-3.1-pro,0.825,1.110,25,8,8.88,6.45,103.67,87.1,precio publicado + supuestos, sin factura
-plans,Commerce US$119,119,1800,fal-hunyuan-3.1-pro,0.825,1.110,50,16,17.76,6.45,94.79,79.7,precio publicado + supuestos, sin factura
-plans,Commerce US$119,119,1800,fal-hunyuan-3.1-pro,0.825,1.110,75,24,26.64,6.45,85.91,72.2,precio publicado + supuestos, sin factura
-plans,Commerce US$119,119,1800,fal-hunyuan-3.1-pro,0.825,1.110,100,32,35.52,6.45,77.03,64.7,precio publicado + supuestos, sin factura
-plans,Commerce US$139,139,2100,fal-trellis-1,0.02,0.144,25,65,9.36,7.45,122.19,87.9,precio publicado + supuestos, sin factura
-plans,Commerce US$139,139,2100,fal-trellis-1,0.02,0.144,50,131,18.86,7.45,112.69,81.1,precio publicado + supuestos, sin factura
-plans,Commerce US$139,139,2100,fal-trellis-1,0.02,0.144,75,196,28.22,7.45,103.33,74.3,precio publicado + supuestos, sin factura
-plans,Commerce US$139,139,2100,fal-trellis-1,0.02,0.144,100,262,37.73,7.45,93.82,67.5,precio publicado + supuestos, sin factura
-plans,Commerce US$139,139,2100,fal-hunyuan-3.1-pro,0.825,1.110,25,9,9.99,7.45,121.56,87.5,precio publicado + supuestos, sin factura
-plans,Commerce US$139,139,2100,fal-hunyuan-3.1-pro,0.825,1.110,50,18,19.98,7.45,111.57,80.3,precio publicado + supuestos, sin factura
-plans,Commerce US$139,139,2100,fal-hunyuan-3.1-pro,0.825,1.110,75,27,29.97,7.45,101.58,73.1,precio publicado + supuestos, sin factura
-plans,Commerce US$139,139,2100,fal-hunyuan-3.1-pro,0.825,1.110,100,37,41.07,7.45,90.48,65.1,precio publicado + supuestos, sin factura
-plans,Commerce US$159,159,2400,fal-trellis-1,0.02,0.144,25,75,10.8,8.45,139.75,87.9,precio publicado + supuestos, sin factura
-plans,Commerce US$159,159,2400,fal-trellis-1,0.02,0.144,50,150,21.6,8.45,128.95,81.1,precio publicado + supuestos, sin factura
-plans,Commerce US$159,159,2400,fal-trellis-1,0.02,0.144,75,225,32.4,8.45,118.15,74.3,precio publicado + supuestos, sin factura
-plans,Commerce US$159,159,2400,fal-trellis-1,0.02,0.144,100,300,43.2,8.45,107.35,67.5,precio publicado + supuestos, sin factura
-plans,Commerce US$159,159,2400,fal-hunyuan-3.1-pro,0.825,1.110,25,10,11.1,8.45,139.45,87.7,precio publicado + supuestos, sin factura
-plans,Commerce US$159,159,2400,fal-hunyuan-3.1-pro,0.825,1.110,50,21,23.31,8.45,127.24,80,precio publicado + supuestos, sin factura
-plans,Commerce US$159,159,2400,fal-hunyuan-3.1-pro,0.825,1.110,75,31,34.41,8.45,116.14,73,precio publicado + supuestos, sin factura
-plans,Commerce US$159,159,2400,fal-hunyuan-3.1-pro,0.825,1.110,100,42,46.62,8.45,103.93,65.4,precio publicado + supuestos, sin factura
-plans,Commerce US$179,179,2700,fal-trellis-1,0.02,0.144,25,84,12.1,9.45,157.45,88,precio publicado + supuestos, sin factura
-plans,Commerce US$179,179,2700,fal-trellis-1,0.02,0.144,50,168,24.19,9.45,145.36,81.2,precio publicado + supuestos, sin factura
-plans,Commerce US$179,179,2700,fal-trellis-1,0.02,0.144,75,252,36.29,9.45,133.26,74.4,precio publicado + supuestos, sin factura
-plans,Commerce US$179,179,2700,fal-trellis-1,0.02,0.144,100,337,48.53,9.45,121.02,67.6,precio publicado + supuestos, sin factura
-plans,Commerce US$179,179,2700,fal-hunyuan-3.1-pro,0.825,1.110,25,12,13.32,9.45,156.23,87.3,precio publicado + supuestos, sin factura
-plans,Commerce US$179,179,2700,fal-hunyuan-3.1-pro,0.825,1.110,50,24,26.64,9.45,142.91,79.8,precio publicado + supuestos, sin factura
-plans,Commerce US$179,179,2700,fal-hunyuan-3.1-pro,0.825,1.110,75,36,39.96,9.45,129.59,72.4,precio publicado + supuestos, sin factura
-plans,Commerce US$179,179,2700,fal-hunyuan-3.1-pro,0.825,1.110,100,48,53.28,9.45,116.27,65,precio publicado + supuestos, sin factura
-plans,Studio,199,3050,fal-trellis-1,0.02,0.144,25,95,13.68,10.45,174.87,87.9,precio publicado + supuestos, sin factura
-plans,Studio,199,3050,fal-trellis-1,0.02,0.144,50,190,27.36,10.45,161.19,81,precio publicado + supuestos, sin factura
-plans,Studio,199,3050,fal-trellis-1,0.02,0.144,75,285,41.04,10.45,147.51,74.1,precio publicado + supuestos, sin factura
-plans,Studio,199,3050,fal-trellis-1,0.02,0.144,100,381,54.86,10.45,133.69,67.2,precio publicado + supuestos, sin factura
-plans,Studio,199,3050,fal-hunyuan-3.1-pro,0.825,1.110,25,13,14.43,10.45,174.12,87.5,precio publicado + supuestos, sin factura
-plans,Studio,199,3050,fal-hunyuan-3.1-pro,0.825,1.110,50,27,29.97,10.45,158.58,79.7,precio publicado + supuestos, sin factura
-plans,Studio,199,3050,fal-hunyuan-3.1-pro,0.825,1.110,75,40,44.4,10.45,144.15,72.4,precio publicado + supuestos, sin factura
-plans,Studio,199,3050,fal-hunyuan-3.1-pro,0.825,1.110,100,54,59.94,10.45,128.61,64.6,precio publicado + supuestos, sin factura
-plans,Studio US$249,249,3800,fal-trellis-1,0.02,0.144,25,118,16.99,12.95,219.06,88,precio publicado + supuestos, sin factura
-plans,Studio US$249,249,3800,fal-trellis-1,0.02,0.144,50,237,34.13,12.95,201.92,81.1,precio publicado + supuestos, sin factura
-plans,Studio US$249,249,3800,fal-trellis-1,0.02,0.144,75,356,51.26,12.95,184.79,74.2,precio publicado + supuestos, sin factura
-plans,Studio US$249,249,3800,fal-trellis-1,0.02,0.144,100,475,68.4,12.95,167.65,67.3,precio publicado + supuestos, sin factura
-plans,Studio US$249,249,3800,fal-hunyuan-3.1-pro,0.825,1.110,25,16,17.76,12.95,218.29,87.7,precio publicado + supuestos, sin factura
-plans,Studio US$249,249,3800,fal-hunyuan-3.1-pro,0.825,1.110,50,33,36.63,12.95,199.42,80.1,precio publicado + supuestos, sin factura
-plans,Studio US$249,249,3800,fal-hunyuan-3.1-pro,0.825,1.110,75,50,55.5,12.95,180.55,72.5,precio publicado + supuestos, sin factura
-plans,Studio US$249,249,3800,fal-hunyuan-3.1-pro,0.825,1.110,100,67,74.37,12.95,161.68,64.9,precio publicado + supuestos, sin factura
-plans,Studio US$299,299,4600,fal-trellis-1,0.02,0.144,25,143,20.59,15.45,262.96,87.9,precio publicado + supuestos, sin factura
-plans,Studio US$299,299,4600,fal-trellis-1,0.02,0.144,50,287,41.33,15.45,242.22,81,precio publicado + supuestos, sin factura
-plans,Studio US$299,299,4600,fal-trellis-1,0.02,0.144,75,431,62.06,15.45,221.49,74.1,precio publicado + supuestos, sin factura
-plans,Studio US$299,299,4600,fal-trellis-1,0.02,0.144,100,575,82.8,15.45,200.75,67.1,precio publicado + supuestos, sin factura
-plans,Studio US$299,299,4600,fal-hunyuan-3.1-pro,0.825,1.110,25,20,22.2,15.45,261.35,87.4,precio publicado + supuestos, sin factura
-plans,Studio US$299,299,4600,fal-hunyuan-3.1-pro,0.825,1.110,50,41,45.51,15.45,238.04,79.6,precio publicado + supuestos, sin factura
-plans,Studio US$299,299,4600,fal-hunyuan-3.1-pro,0.825,1.110,75,61,67.71,15.45,215.84,72.2,precio publicado + supuestos, sin factura
-plans,Studio US$299,299,4600,fal-hunyuan-3.1-pro,0.825,1.110,100,82,91.02,15.45,192.53,64.4,precio publicado + supuestos, sin factura
-plans,Studio US$399,399,6150,fal-trellis-1,0.02,0.144,25,192,27.65,20.45,350.9,87.9,precio publicado + supuestos, sin factura
-plans,Studio US$399,399,6150,fal-trellis-1,0.02,0.144,50,384,55.3,20.45,323.25,81,precio publicado + supuestos, sin factura
-plans,Studio US$399,399,6150,fal-trellis-1,0.02,0.144,75,576,82.94,20.45,295.61,74.1,precio publicado + supuestos, sin factura
-plans,Studio US$399,399,6150,fal-trellis-1,0.02,0.144,100,768,110.59,20.45,267.96,67.2,precio publicado + supuestos, sin factura
-plans,Studio US$399,399,6150,fal-hunyuan-3.1-pro,0.825,1.110,25,27,29.97,20.45,348.58,87.4,precio publicado + supuestos, sin factura
-plans,Studio US$399,399,6150,fal-hunyuan-3.1-pro,0.825,1.110,50,54,59.94,20.45,318.61,79.9,precio publicado + supuestos, sin factura
-plans,Studio US$399,399,6150,fal-hunyuan-3.1-pro,0.825,1.110,75,81,89.91,20.45,288.64,72.3,precio publicado + supuestos, sin factura
-plans,Studio US$399,399,6150,fal-hunyuan-3.1-pro,0.825,1.110,100,109,120.99,20.45,257.56,64.6,precio publicado + supuestos, sin factura
-plans,Studio US$499,499,7700,fal-trellis-1,0.02,0.144,25,240,34.56,25.45,438.99,88,precio publicado + supuestos, sin factura
-plans,Studio US$499,499,7700,fal-trellis-1,0.02,0.144,50,481,69.26,25.45,404.29,81,precio publicado + supuestos, sin factura
-plans,Studio US$499,499,7700,fal-trellis-1,0.02,0.144,75,721,103.82,25.45,369.73,74.1,precio publicado + supuestos, sin factura
-plans,Studio US$499,499,7700,fal-trellis-1,0.02,0.144,100,962,138.53,25.45,335.02,67.1,precio publicado + supuestos, sin factura
-plans,Studio US$499,499,7700,fal-hunyuan-3.1-pro,0.825,1.110,25,34,37.74,25.45,435.81,87.3,precio publicado + supuestos, sin factura
-plans,Studio US$499,499,7700,fal-hunyuan-3.1-pro,0.825,1.110,50,68,75.48,25.45,398.07,79.8,precio publicado + supuestos, sin factura
-plans,Studio US$499,499,7700,fal-hunyuan-3.1-pro,0.825,1.110,75,102,113.22,25.45,360.33,72.2,precio publicado + supuestos, sin factura
-plans,Studio US$499,499,7700,fal-hunyuan-3.1-pro,0.825,1.110,100,137,152.07,25.45,321.48,64.4,precio publicado + supuestos, sin factura
-packs,Recarga S,15,200,fal-trellis-1,0.02,0.144,25,6,0.86,1.25,12.89,85.9,precio publicado + supuestos, sin factura
-packs,Recarga S,15,200,fal-trellis-1,0.02,0.144,50,12,1.73,1.25,12.02,80.1,precio publicado + supuestos, sin factura
-packs,Recarga S,15,200,fal-trellis-1,0.02,0.144,75,18,2.59,1.25,11.16,74.4,precio publicado + supuestos, sin factura
-packs,Recarga S,15,200,fal-trellis-1,0.02,0.144,100,25,3.6,1.25,10.15,67.7,precio publicado + supuestos, sin factura
-packs,Recarga S,15,200,fal-hunyuan-3.1-pro,0.825,1.110,25,0,0,1.25,13.75,91.7,precio publicado + supuestos, sin factura
-packs,Recarga S,15,200,fal-hunyuan-3.1-pro,0.825,1.110,50,1,1.11,1.25,12.64,84.3,precio publicado + supuestos, sin factura
-packs,Recarga S,15,200,fal-hunyuan-3.1-pro,0.825,1.110,75,2,2.22,1.25,11.53,76.9,precio publicado + supuestos, sin factura
-packs,Recarga S,15,200,fal-hunyuan-3.1-pro,0.825,1.110,100,3,3.33,1.25,10.42,69.5,precio publicado + supuestos, sin factura
-packs,Recarga M,40,550,fal-trellis-1,0.02,0.144,25,17,2.45,2.5,35.05,87.6,precio publicado + supuestos, sin factura
-packs,Recarga M,40,550,fal-trellis-1,0.02,0.144,50,34,4.9,2.5,32.6,81.5,precio publicado + supuestos, sin factura
-packs,Recarga M,40,550,fal-trellis-1,0.02,0.144,75,51,7.34,2.5,30.16,75.4,precio publicado + supuestos, sin factura
-packs,Recarga M,40,550,fal-trellis-1,0.02,0.144,100,68,9.79,2.5,27.71,69.3,precio publicado + supuestos, sin factura
-packs,Recarga M,40,550,fal-hunyuan-3.1-pro,0.825,1.110,25,2,2.22,2.5,35.28,88.2,precio publicado + supuestos, sin factura
-packs,Recarga M,40,550,fal-hunyuan-3.1-pro,0.825,1.110,50,4,4.44,2.5,33.06,82.7,precio publicado + supuestos, sin factura
-packs,Recarga M,40,550,fal-hunyuan-3.1-pro,0.825,1.110,75,6,6.66,2.5,30.84,77.1,precio publicado + supuestos, sin factura
-packs,Recarga M,40,550,fal-hunyuan-3.1-pro,0.825,1.110,100,9,9.99,2.5,27.51,68.8,precio publicado + supuestos, sin factura
-packs,Recarga L,100,1500,fal-trellis-1,0.02,0.144,25,46,6.62,5.5,87.88,87.9,precio publicado + supuestos, sin factura
-packs,Recarga L,100,1500,fal-trellis-1,0.02,0.144,50,93,13.39,5.5,81.11,81.1,precio publicado + supuestos, sin factura
-packs,Recarga L,100,1500,fal-trellis-1,0.02,0.144,75,140,20.16,5.5,74.34,74.3,precio publicado + supuestos, sin factura
-packs,Recarga L,100,1500,fal-trellis-1,0.02,0.144,100,187,26.93,5.5,67.57,67.6,precio publicado + supuestos, sin factura
-packs,Recarga L,100,1500,fal-hunyuan-3.1-pro,0.825,1.110,25,6,6.66,5.5,87.84,87.8,precio publicado + supuestos, sin factura
-packs,Recarga L,100,1500,fal-hunyuan-3.1-pro,0.825,1.110,50,13,14.43,5.5,80.07,80.1,precio publicado + supuestos, sin factura
-packs,Recarga L,100,1500,fal-hunyuan-3.1-pro,0.825,1.110,75,19,21.09,5.5,73.41,73.4,precio publicado + supuestos, sin factura
-packs,Recarga L,100,1500,fal-hunyuan-3.1-pro,0.825,1.110,100,26,28.86,5.5,65.64,65.6,precio publicado + supuestos, sin factura
-spec,Starter,19,150,fal-trellis-1,0.02,0.144,25,4,0.58,1.45,16.97,89.3,precio publicado + supuestos, sin factura
-spec,Starter,19,150,fal-trellis-1,0.02,0.144,50,9,1.3,1.45,16.25,85.5,precio publicado + supuestos, sin factura
-spec,Starter,19,150,fal-trellis-1,0.02,0.144,75,13,1.87,1.45,15.68,82.5,precio publicado + supuestos, sin factura
-spec,Starter,19,150,fal-trellis-1,0.02,0.144,100,18,2.59,1.45,14.96,78.7,precio publicado + supuestos, sin factura
-spec,Starter,19,150,fal-hunyuan-3.1-pro,0.825,1.110,25,0,0,1.45,17.55,92.4,precio publicado + supuestos, sin factura
-spec,Starter,19,150,fal-hunyuan-3.1-pro,0.825,1.110,50,1,1.11,1.45,16.44,86.5,precio publicado + supuestos, sin factura
-spec,Starter,19,150,fal-hunyuan-3.1-pro,0.825,1.110,75,1,1.11,1.45,16.44,86.5,precio publicado + supuestos, sin factura
-spec,Starter,19,150,fal-hunyuan-3.1-pro,0.825,1.110,100,2,2.22,1.45,15.33,80.7,precio publicado + supuestos, sin factura
-spec,Creator,49,500,fal-trellis-1,0.02,0.144,25,15,2.16,2.95,43.89,89.6,precio publicado + supuestos, sin factura
-spec,Creator,49,500,fal-trellis-1,0.02,0.144,50,31,4.46,2.95,41.59,84.9,precio publicado + supuestos, sin factura
-spec,Creator,49,500,fal-trellis-1,0.02,0.144,75,46,6.62,2.95,39.43,80.5,precio publicado + supuestos, sin factura
-spec,Creator,49,500,fal-trellis-1,0.02,0.144,100,62,8.93,2.95,37.12,75.8,precio publicado + supuestos, sin factura
-spec,Creator,49,500,fal-hunyuan-3.1-pro,0.825,1.110,25,2,2.22,2.95,43.83,89.4,precio publicado + supuestos, sin factura
-spec,Creator,49,500,fal-hunyuan-3.1-pro,0.825,1.110,50,4,4.44,2.95,41.61,84.9,precio publicado + supuestos, sin factura
-spec,Creator,49,500,fal-hunyuan-3.1-pro,0.825,1.110,75,6,6.66,2.95,39.39,80.4,precio publicado + supuestos, sin factura
-spec,Creator,49,500,fal-hunyuan-3.1-pro,0.825,1.110,100,8,8.88,2.95,37.17,75.9,precio publicado + supuestos, sin factura
-spec,Commerce,99,1100,fal-trellis-1,0.02,0.144,25,34,4.9,5.45,88.65,89.5,precio publicado + supuestos, sin factura
-spec,Commerce,99,1100,fal-trellis-1,0.02,0.144,50,68,9.79,5.45,83.76,84.6,precio publicado + supuestos, sin factura
-spec,Commerce,99,1100,fal-trellis-1,0.02,0.144,75,102,14.69,5.45,78.86,79.7,precio publicado + supuestos, sin factura
-spec,Commerce,99,1100,fal-trellis-1,0.02,0.144,100,137,19.73,5.45,73.82,74.6,precio publicado + supuestos, sin factura
-spec,Commerce,99,1100,fal-hunyuan-3.1-pro,0.825,1.110,25,4,4.44,5.45,89.11,90,precio publicado + supuestos, sin factura
-spec,Commerce,99,1100,fal-hunyuan-3.1-pro,0.825,1.110,50,9,9.99,5.45,83.56,84.4,precio publicado + supuestos, sin factura
-spec,Commerce,99,1100,fal-hunyuan-3.1-pro,0.825,1.110,75,14,15.54,5.45,78.01,78.8,precio publicado + supuestos, sin factura
-spec,Commerce,99,1100,fal-hunyuan-3.1-pro,0.825,1.110,100,19,21.09,5.45,72.46,73.2,precio publicado + supuestos, sin factura
-spec,Studio,199,2400,fal-trellis-1,0.02,0.144,25,75,10.8,10.45,177.75,89.3,precio publicado + supuestos, sin factura
-spec,Studio,199,2400,fal-trellis-1,0.02,0.144,50,150,21.6,10.45,166.95,83.9,precio publicado + supuestos, sin factura
-spec,Studio,199,2400,fal-trellis-1,0.02,0.144,75,225,32.4,10.45,156.15,78.5,precio publicado + supuestos, sin factura
-spec,Studio,199,2400,fal-trellis-1,0.02,0.144,100,300,43.2,10.45,145.35,73,precio publicado + supuestos, sin factura
-spec,Studio,199,2400,fal-hunyuan-3.1-pro,0.825,1.110,25,10,11.1,10.45,177.45,89.2,precio publicado + supuestos, sin factura
-spec,Studio,199,2400,fal-hunyuan-3.1-pro,0.825,1.110,50,21,23.31,10.45,165.24,83,precio publicado + supuestos, sin factura
-spec,Studio,199,2400,fal-hunyuan-3.1-pro,0.825,1.110,75,31,34.41,10.45,154.14,77.5,precio publicado + supuestos, sin factura
-spec,Studio,199,2400,fal-hunyuan-3.1-pro,0.825,1.110,100,42,46.62,10.45,141.93,71.3,precio publicado + supuestos, sin factura
-attempts,Starter,19,25,fal-trellis-1,0.02,0.144,25,6,0.86,1.45,16.69,87.8,precio publicado + supuestos, sin factura
-attempts,Starter,19,25,fal-trellis-1,0.02,0.144,50,12,1.73,1.45,15.82,83.3,precio publicado + supuestos, sin factura
-attempts,Starter,19,25,fal-trellis-1,0.02,0.144,75,18,2.59,1.45,14.96,78.7,precio publicado + supuestos, sin factura
-attempts,Starter,19,25,fal-trellis-1,0.02,0.144,100,25,3.6,1.45,13.95,73.4,precio publicado + supuestos, sin factura
-attempts,Starter,19,25,fal-hunyuan-3.1-pro,0.825,1.110,25,6,6.66,1.45,10.89,57.3,precio publicado + supuestos, sin factura
-attempts,Starter,19,25,fal-hunyuan-3.1-pro,0.825,1.110,50,12,13.32,1.45,4.23,22.3,precio publicado + supuestos, sin factura
-attempts,Starter,19,25,fal-hunyuan-3.1-pro,0.825,1.110,75,18,19.98,1.45,-2.43,-12.8,precio publicado + supuestos, sin factura
-attempts,Starter,19,25,fal-hunyuan-3.1-pro,0.825,1.110,100,25,27.75,1.45,-10.2,-53.7,precio publicado + supuestos, sin factura
-attempts,Growth,49,70,fal-trellis-1,0.02,0.144,25,17,2.45,2.95,43.6,89,precio publicado + supuestos, sin factura
-attempts,Growth,49,70,fal-trellis-1,0.02,0.144,50,35,5.04,2.95,41.01,83.7,precio publicado + supuestos, sin factura
-attempts,Growth,49,70,fal-trellis-1,0.02,0.144,75,52,7.49,2.95,38.56,78.7,precio publicado + supuestos, sin factura
-attempts,Growth,49,70,fal-trellis-1,0.02,0.144,100,70,10.08,2.95,35.97,73.4,precio publicado + supuestos, sin factura
-attempts,Growth,49,70,fal-hunyuan-3.1-pro,0.825,1.110,25,17,18.87,2.95,27.18,55.5,precio publicado + supuestos, sin factura
-attempts,Growth,49,70,fal-hunyuan-3.1-pro,0.825,1.110,50,35,38.85,2.95,7.2,14.7,precio publicado + supuestos, sin factura
-attempts,Growth,49,70,fal-hunyuan-3.1-pro,0.825,1.110,75,52,57.72,2.95,-11.67,-23.8,precio publicado + supuestos, sin factura
-attempts,Growth,49,70,fal-hunyuan-3.1-pro,0.825,1.110,100,70,77.7,2.95,-31.65,-64.6,precio publicado + supuestos, sin factura
-attempts,Studio,99,160,fal-trellis-1,0.02,0.144,25,40,5.76,5.45,87.79,88.7,precio publicado + supuestos, sin factura
-attempts,Studio,99,160,fal-trellis-1,0.02,0.144,50,80,11.52,5.45,82.03,82.9,precio publicado + supuestos, sin factura
-attempts,Studio,99,160,fal-trellis-1,0.02,0.144,75,120,17.28,5.45,76.27,77,precio publicado + supuestos, sin factura
-attempts,Studio,99,160,fal-trellis-1,0.02,0.144,100,160,23.04,5.45,70.51,71.2,precio publicado + supuestos, sin factura
-attempts,Studio,99,160,fal-hunyuan-3.1-pro,0.825,1.110,25,40,44.4,5.45,49.15,49.6,precio publicado + supuestos, sin factura
-attempts,Studio,99,160,fal-hunyuan-3.1-pro,0.825,1.110,50,80,88.8,5.45,4.75,4.8,precio publicado + supuestos, sin factura
-attempts,Studio,99,160,fal-hunyuan-3.1-pro,0.825,1.110,75,120,133.2,5.45,-39.65,-40.1,precio publicado + supuestos, sin factura
-attempts,Studio,99,160,fal-hunyuan-3.1-pro,0.825,1.110,100,160,177.6,5.45,-84.05,-84.9,precio publicado + supuestos, sin factura
-attempts,Trial pack,9,8,fal-trellis-1,0.02,0.144,25,2,0.29,0.95,7.76,86.2,precio publicado + supuestos, sin factura
-attempts,Trial pack,9,8,fal-trellis-1,0.02,0.144,50,4,0.58,0.95,7.47,83,precio publicado + supuestos, sin factura
-attempts,Trial pack,9,8,fal-trellis-1,0.02,0.144,75,6,0.86,0.95,7.19,79.9,precio publicado + supuestos, sin factura
-attempts,Trial pack,9,8,fal-trellis-1,0.02,0.144,100,8,1.15,0.95,6.9,76.7,precio publicado + supuestos, sin factura
-attempts,Trial pack,9,8,fal-hunyuan-3.1-pro,0.825,1.110,25,2,2.22,0.95,5.83,64.8,precio publicado + supuestos, sin factura
-attempts,Trial pack,9,8,fal-hunyuan-3.1-pro,0.825,1.110,50,4,4.44,0.95,3.61,40.1,precio publicado + supuestos, sin factura
-attempts,Trial pack,9,8,fal-hunyuan-3.1-pro,0.825,1.110,75,6,6.66,0.95,1.39,15.4,precio publicado + supuestos, sin factura
-attempts,Trial pack,9,8,fal-hunyuan-3.1-pro,0.825,1.110,100,8,8.88,0.95,-0.83,-9.2,precio publicado + supuestos, sin factura
+plans,Starter,19,200,fal-trellis-1,0.02,0.144,25,6,0.86,1.54,16.6,87.4,precio publicado + supuestos, sin factura
+plans,Starter,19,200,fal-trellis-1,0.02,0.144,50,12,1.73,1.54,15.73,82.8,precio publicado + supuestos, sin factura
+plans,Starter,19,200,fal-trellis-1,0.02,0.144,75,18,2.59,1.54,14.87,78.3,precio publicado + supuestos, sin factura
+plans,Starter,19,200,fal-trellis-1,0.02,0.144,100,25,3.6,1.54,13.86,72.9,precio publicado + supuestos, sin factura
+plans,Starter,19,200,fal-hunyuan-3.1-pro,0.825,1.110,25,0,0,1.54,17.46,91.9,precio publicado + supuestos, sin factura
+plans,Starter,19,200,fal-hunyuan-3.1-pro,0.825,1.110,50,1,1.11,1.54,16.35,86.1,precio publicado + supuestos, sin factura
+plans,Starter,19,200,fal-hunyuan-3.1-pro,0.825,1.110,75,2,2.22,1.54,15.24,80.2,precio publicado + supuestos, sin factura
+plans,Starter,19,200,fal-hunyuan-3.1-pro,0.825,1.110,100,3,3.33,1.54,14.13,74.4,precio publicado + supuestos, sin factura
+plans,Creator,49,550,fal-trellis-1,0.02,0.144,25,17,2.45,3.49,43.06,87.9,precio publicado + supuestos, sin factura
+plans,Creator,49,550,fal-trellis-1,0.02,0.144,50,34,4.9,3.49,40.61,82.9,precio publicado + supuestos, sin factura
+plans,Creator,49,550,fal-trellis-1,0.02,0.144,75,51,7.34,3.49,38.17,77.9,precio publicado + supuestos, sin factura
+plans,Creator,49,550,fal-trellis-1,0.02,0.144,100,68,9.79,3.49,35.72,72.9,precio publicado + supuestos, sin factura
+plans,Creator,49,550,fal-hunyuan-3.1-pro,0.825,1.110,25,2,2.22,3.49,43.29,88.3,precio publicado + supuestos, sin factura
+plans,Creator,49,550,fal-hunyuan-3.1-pro,0.825,1.110,50,4,4.44,3.49,41.07,83.8,precio publicado + supuestos, sin factura
+plans,Creator,49,550,fal-hunyuan-3.1-pro,0.825,1.110,75,6,6.66,3.49,38.85,79.3,precio publicado + supuestos, sin factura
+plans,Creator,49,550,fal-hunyuan-3.1-pro,0.825,1.110,100,9,9.99,3.49,35.52,72.5,precio publicado + supuestos, sin factura
+plans,Creator US$59,59,650,fal-trellis-1,0.02,0.144,25,20,2.88,4.14,51.98,88.1,precio publicado + supuestos, sin factura
+plans,Creator US$59,59,650,fal-trellis-1,0.02,0.144,50,40,5.76,4.14,49.1,83.2,precio publicado + supuestos, sin factura
+plans,Creator US$59,59,650,fal-trellis-1,0.02,0.144,75,60,8.64,4.14,46.22,78.3,precio publicado + supuestos, sin factura
+plans,Creator US$59,59,650,fal-trellis-1,0.02,0.144,100,81,11.66,4.14,43.2,73.2,precio publicado + supuestos, sin factura
+plans,Creator US$59,59,650,fal-hunyuan-3.1-pro,0.825,1.110,25,2,2.22,4.14,52.64,89.2,precio publicado + supuestos, sin factura
+plans,Creator US$59,59,650,fal-hunyuan-3.1-pro,0.825,1.110,50,5,5.55,4.14,49.31,83.6,precio publicado + supuestos, sin factura
+plans,Creator US$59,59,650,fal-hunyuan-3.1-pro,0.825,1.110,75,8,8.88,4.14,45.98,77.9,precio publicado + supuestos, sin factura
+plans,Creator US$59,59,650,fal-hunyuan-3.1-pro,0.825,1.110,100,11,12.21,4.14,42.65,72.3,precio publicado + supuestos, sin factura
+plans,Creator US$69,69,750,fal-trellis-1,0.02,0.144,25,23,3.31,4.79,60.9,88.3,precio publicado + supuestos, sin factura
+plans,Creator US$69,69,750,fal-trellis-1,0.02,0.144,50,46,6.62,4.79,57.59,83.5,precio publicado + supuestos, sin factura
+plans,Creator US$69,69,750,fal-trellis-1,0.02,0.144,75,69,9.94,4.79,54.27,78.7,precio publicado + supuestos, sin factura
+plans,Creator US$69,69,750,fal-trellis-1,0.02,0.144,100,93,13.39,4.79,50.82,73.7,precio publicado + supuestos, sin factura
+plans,Creator US$69,69,750,fal-hunyuan-3.1-pro,0.825,1.110,25,3,3.33,4.79,60.88,88.2,precio publicado + supuestos, sin factura
+plans,Creator US$69,69,750,fal-hunyuan-3.1-pro,0.825,1.110,50,6,6.66,4.79,57.55,83.4,precio publicado + supuestos, sin factura
+plans,Creator US$69,69,750,fal-hunyuan-3.1-pro,0.825,1.110,75,9,9.99,4.79,54.22,78.6,precio publicado + supuestos, sin factura
+plans,Creator US$69,69,750,fal-hunyuan-3.1-pro,0.825,1.110,100,13,14.43,4.79,49.78,72.1,precio publicado + supuestos, sin factura
+plans,Creator US$79,79,900,fal-trellis-1,0.02,0.144,25,28,4.03,5.44,69.53,88,precio publicado + supuestos, sin factura
+plans,Creator US$79,79,900,fal-trellis-1,0.02,0.144,50,56,8.06,5.44,65.5,82.9,precio publicado + supuestos, sin factura
+plans,Creator US$79,79,900,fal-trellis-1,0.02,0.144,75,84,12.1,5.44,61.46,77.8,precio publicado + supuestos, sin factura
+plans,Creator US$79,79,900,fal-trellis-1,0.02,0.144,100,112,16.13,5.44,57.43,72.7,precio publicado + supuestos, sin factura
+plans,Creator US$79,79,900,fal-hunyuan-3.1-pro,0.825,1.110,25,4,4.44,5.44,69.12,87.5,precio publicado + supuestos, sin factura
+plans,Creator US$79,79,900,fal-hunyuan-3.1-pro,0.825,1.110,50,8,8.88,5.44,64.68,81.9,precio publicado + supuestos, sin factura
+plans,Creator US$79,79,900,fal-hunyuan-3.1-pro,0.825,1.110,75,12,13.32,5.44,60.24,76.3,precio publicado + supuestos, sin factura
+plans,Creator US$79,79,900,fal-hunyuan-3.1-pro,0.825,1.110,100,16,17.76,5.44,55.8,70.6,precio publicado + supuestos, sin factura
+plans,Creator US$89,89,1000,fal-trellis-1,0.02,0.144,25,31,4.46,6.09,78.45,88.1,precio publicado + supuestos, sin factura
+plans,Creator US$89,89,1000,fal-trellis-1,0.02,0.144,50,62,8.93,6.09,73.98,83.1,precio publicado + supuestos, sin factura
+plans,Creator US$89,89,1000,fal-trellis-1,0.02,0.144,75,93,13.39,6.09,69.52,78.1,precio publicado + supuestos, sin factura
+plans,Creator US$89,89,1000,fal-trellis-1,0.02,0.144,100,125,18,6.09,64.91,72.9,precio publicado + supuestos, sin factura
+plans,Creator US$89,89,1000,fal-hunyuan-3.1-pro,0.825,1.110,25,4,4.44,6.09,78.47,88.2,precio publicado + supuestos, sin factura
+plans,Creator US$89,89,1000,fal-hunyuan-3.1-pro,0.825,1.110,50,8,8.88,6.09,74.03,83.2,precio publicado + supuestos, sin factura
+plans,Creator US$89,89,1000,fal-hunyuan-3.1-pro,0.825,1.110,75,12,13.32,6.09,69.59,78.2,precio publicado + supuestos, sin factura
+plans,Creator US$89,89,1000,fal-hunyuan-3.1-pro,0.825,1.110,100,17,18.87,6.09,64.04,72,precio publicado + supuestos, sin factura
+plans,Commerce,99,1100,fal-trellis-1,0.02,0.144,25,34,4.9,6.74,87.36,88.2,precio publicado + supuestos, sin factura
+plans,Commerce,99,1100,fal-trellis-1,0.02,0.144,50,68,9.79,6.74,82.47,83.3,precio publicado + supuestos, sin factura
+plans,Commerce,99,1100,fal-trellis-1,0.02,0.144,75,102,14.69,6.74,77.57,78.4,precio publicado + supuestos, sin factura
+plans,Commerce,99,1100,fal-trellis-1,0.02,0.144,100,137,19.73,6.74,72.53,73.3,precio publicado + supuestos, sin factura
+plans,Commerce,99,1100,fal-hunyuan-3.1-pro,0.825,1.110,25,4,4.44,6.74,87.82,88.7,precio publicado + supuestos, sin factura
+plans,Commerce,99,1100,fal-hunyuan-3.1-pro,0.825,1.110,50,9,9.99,6.74,82.27,83.1,precio publicado + supuestos, sin factura
+plans,Commerce,99,1100,fal-hunyuan-3.1-pro,0.825,1.110,75,14,15.54,6.74,76.72,77.5,precio publicado + supuestos, sin factura
+plans,Commerce,99,1100,fal-hunyuan-3.1-pro,0.825,1.110,100,19,21.09,6.74,71.17,71.9,precio publicado + supuestos, sin factura
+plans,Commerce US$119,119,1350,fal-trellis-1,0.02,0.144,25,42,6.05,8.04,104.91,88.2,precio publicado + supuestos, sin factura
+plans,Commerce US$119,119,1350,fal-trellis-1,0.02,0.144,50,84,12.1,8.04,98.86,83.1,precio publicado + supuestos, sin factura
+plans,Commerce US$119,119,1350,fal-trellis-1,0.02,0.144,75,126,18.14,8.04,92.82,78,precio publicado + supuestos, sin factura
+plans,Commerce US$119,119,1350,fal-trellis-1,0.02,0.144,100,168,24.19,8.04,86.77,72.9,precio publicado + supuestos, sin factura
+plans,Commerce US$119,119,1350,fal-hunyuan-3.1-pro,0.825,1.110,25,6,6.66,8.04,104.3,87.6,precio publicado + supuestos, sin factura
+plans,Commerce US$119,119,1350,fal-hunyuan-3.1-pro,0.825,1.110,50,12,13.32,8.04,97.64,82.1,precio publicado + supuestos, sin factura
+plans,Commerce US$119,119,1350,fal-hunyuan-3.1-pro,0.825,1.110,75,18,19.98,8.04,90.98,76.5,precio publicado + supuestos, sin factura
+plans,Commerce US$119,119,1350,fal-hunyuan-3.1-pro,0.825,1.110,100,24,26.64,8.04,84.32,70.9,precio publicado + supuestos, sin factura
+plans,Commerce US$139,139,1600,fal-trellis-1,0.02,0.144,25,50,7.2,9.34,122.46,88.1,precio publicado + supuestos, sin factura
+plans,Commerce US$139,139,1600,fal-trellis-1,0.02,0.144,50,100,14.4,9.34,115.26,82.9,precio publicado + supuestos, sin factura
+plans,Commerce US$139,139,1600,fal-trellis-1,0.02,0.144,75,150,21.6,9.34,108.06,77.7,precio publicado + supuestos, sin factura
+plans,Commerce US$139,139,1600,fal-trellis-1,0.02,0.144,100,200,28.8,9.34,100.86,72.6,precio publicado + supuestos, sin factura
+plans,Commerce US$139,139,1600,fal-hunyuan-3.1-pro,0.825,1.110,25,7,7.77,9.34,121.89,87.7,precio publicado + supuestos, sin factura
+plans,Commerce US$139,139,1600,fal-hunyuan-3.1-pro,0.825,1.110,50,14,15.54,9.34,114.12,82.1,precio publicado + supuestos, sin factura
+plans,Commerce US$139,139,1600,fal-hunyuan-3.1-pro,0.825,1.110,75,21,23.31,9.34,106.35,76.5,precio publicado + supuestos, sin factura
+plans,Commerce US$139,139,1600,fal-hunyuan-3.1-pro,0.825,1.110,100,28,31.08,9.34,98.58,70.9,precio publicado + supuestos, sin factura
+plans,Commerce US$159,159,1850,fal-trellis-1,0.02,0.144,25,57,8.21,10.64,140.15,88.1,precio publicado + supuestos, sin factura
+plans,Commerce US$159,159,1850,fal-trellis-1,0.02,0.144,50,115,16.56,10.64,131.8,82.9,precio publicado + supuestos, sin factura
+plans,Commerce US$159,159,1850,fal-trellis-1,0.02,0.144,75,173,24.91,10.64,123.45,77.6,precio publicado + supuestos, sin factura
+plans,Commerce US$159,159,1850,fal-trellis-1,0.02,0.144,100,231,33.26,10.64,115.1,72.4,precio publicado + supuestos, sin factura
+plans,Commerce US$159,159,1850,fal-hunyuan-3.1-pro,0.825,1.110,25,8,8.88,10.64,139.48,87.7,precio publicado + supuestos, sin factura
+plans,Commerce US$159,159,1850,fal-hunyuan-3.1-pro,0.825,1.110,50,16,17.76,10.64,130.6,82.1,precio publicado + supuestos, sin factura
+plans,Commerce US$159,159,1850,fal-hunyuan-3.1-pro,0.825,1.110,75,24,26.64,10.64,121.72,76.6,precio publicado + supuestos, sin factura
+plans,Commerce US$159,159,1850,fal-hunyuan-3.1-pro,0.825,1.110,100,33,36.63,10.64,111.73,70.3,precio publicado + supuestos, sin factura
+plans,Commerce US$179,179,2050,fal-trellis-1,0.02,0.144,25,64,9.22,11.94,157.84,88.2,precio publicado + supuestos, sin factura
+plans,Commerce US$179,179,2050,fal-trellis-1,0.02,0.144,50,128,18.43,11.94,148.63,83,precio publicado + supuestos, sin factura
+plans,Commerce US$179,179,2050,fal-trellis-1,0.02,0.144,75,192,27.65,11.94,139.41,77.9,precio publicado + supuestos, sin factura
+plans,Commerce US$179,179,2050,fal-trellis-1,0.02,0.144,100,256,36.86,11.94,130.2,72.7,precio publicado + supuestos, sin factura
+plans,Commerce US$179,179,2050,fal-hunyuan-3.1-pro,0.825,1.110,25,9,9.99,11.94,157.07,87.7,precio publicado + supuestos, sin factura
+plans,Commerce US$179,179,2050,fal-hunyuan-3.1-pro,0.825,1.110,50,18,19.98,11.94,147.08,82.2,precio publicado + supuestos, sin factura
+plans,Commerce US$179,179,2050,fal-hunyuan-3.1-pro,0.825,1.110,75,27,29.97,11.94,137.09,76.6,precio publicado + supuestos, sin factura
+plans,Commerce US$179,179,2050,fal-hunyuan-3.1-pro,0.825,1.110,100,36,39.96,11.94,127.1,71,precio publicado + supuestos, sin factura
+plans,Studio,199,2300,fal-trellis-1,0.02,0.144,25,71,10.22,13.24,175.54,88.2,precio publicado + supuestos, sin factura
+plans,Studio,199,2300,fal-trellis-1,0.02,0.144,50,143,20.59,13.24,165.17,83,precio publicado + supuestos, sin factura
+plans,Studio,199,2300,fal-trellis-1,0.02,0.144,75,215,30.96,13.24,154.8,77.8,precio publicado + supuestos, sin factura
+plans,Studio,199,2300,fal-trellis-1,0.02,0.144,100,287,41.33,13.24,144.43,72.6,precio publicado + supuestos, sin factura
+plans,Studio,199,2300,fal-hunyuan-3.1-pro,0.825,1.110,25,10,11.1,13.24,174.66,87.8,precio publicado + supuestos, sin factura
+plans,Studio,199,2300,fal-hunyuan-3.1-pro,0.825,1.110,50,20,22.2,13.24,163.56,82.2,precio publicado + supuestos, sin factura
+plans,Studio,199,2300,fal-hunyuan-3.1-pro,0.825,1.110,75,30,33.3,13.24,152.46,76.6,precio publicado + supuestos, sin factura
+plans,Studio,199,2300,fal-hunyuan-3.1-pro,0.825,1.110,100,41,45.51,13.24,140.25,70.5,precio publicado + supuestos, sin factura
+plans,Studio US$249,249,2900,fal-trellis-1,0.02,0.144,25,90,12.96,16.49,219.55,88.2,precio publicado + supuestos, sin factura
+plans,Studio US$249,249,2900,fal-trellis-1,0.02,0.144,50,181,26.06,16.49,206.45,82.9,precio publicado + supuestos, sin factura
+plans,Studio US$249,249,2900,fal-trellis-1,0.02,0.144,75,271,39.02,16.49,193.49,77.7,precio publicado + supuestos, sin factura
+plans,Studio US$249,249,2900,fal-trellis-1,0.02,0.144,100,362,52.13,16.49,180.38,72.4,precio publicado + supuestos, sin factura
+plans,Studio US$249,249,2900,fal-hunyuan-3.1-pro,0.825,1.110,25,12,13.32,16.49,219.19,88,precio publicado + supuestos, sin factura
+plans,Studio US$249,249,2900,fal-hunyuan-3.1-pro,0.825,1.110,50,25,27.75,16.49,204.76,82.2,precio publicado + supuestos, sin factura
+plans,Studio US$249,249,2900,fal-hunyuan-3.1-pro,0.825,1.110,75,38,42.18,16.49,190.33,76.4,precio publicado + supuestos, sin factura
+plans,Studio US$249,249,2900,fal-hunyuan-3.1-pro,0.825,1.110,100,51,56.61,16.49,175.9,70.6,precio publicado + supuestos, sin factura
+plans,Studio US$299,299,3450,fal-trellis-1,0.02,0.144,25,107,15.41,19.74,263.85,88.2,precio publicado + supuestos, sin factura
+plans,Studio US$299,299,3450,fal-trellis-1,0.02,0.144,50,215,30.96,19.74,248.3,83,precio publicado + supuestos, sin factura
+plans,Studio US$299,299,3450,fal-trellis-1,0.02,0.144,75,323,46.51,19.74,232.75,77.8,precio publicado + supuestos, sin factura
+plans,Studio US$299,299,3450,fal-trellis-1,0.02,0.144,100,431,62.06,19.74,217.2,72.6,precio publicado + supuestos, sin factura
+plans,Studio US$299,299,3450,fal-hunyuan-3.1-pro,0.825,1.110,25,15,16.65,19.74,262.61,87.8,precio publicado + supuestos, sin factura
+plans,Studio US$299,299,3450,fal-hunyuan-3.1-pro,0.825,1.110,50,30,33.3,19.74,245.96,82.3,precio publicado + supuestos, sin factura
+plans,Studio US$299,299,3450,fal-hunyuan-3.1-pro,0.825,1.110,75,45,49.95,19.74,229.31,76.7,precio publicado + supuestos, sin factura
+plans,Studio US$299,299,3450,fal-hunyuan-3.1-pro,0.825,1.110,100,61,67.71,19.74,211.55,70.8,precio publicado + supuestos, sin factura
+plans,Studio US$399,399,4650,fal-trellis-1,0.02,0.144,25,145,20.88,26.24,351.88,88.2,precio publicado + supuestos, sin factura
+plans,Studio US$399,399,4650,fal-trellis-1,0.02,0.144,50,290,41.76,26.24,331,83,precio publicado + supuestos, sin factura
+plans,Studio US$399,399,4650,fal-trellis-1,0.02,0.144,75,435,62.64,26.24,310.12,77.7,precio publicado + supuestos, sin factura
+plans,Studio US$399,399,4650,fal-trellis-1,0.02,0.144,100,581,83.66,26.24,289.1,72.5,precio publicado + supuestos, sin factura
+plans,Studio US$399,399,4650,fal-hunyuan-3.1-pro,0.825,1.110,25,20,22.2,26.24,350.56,87.9,precio publicado + supuestos, sin factura
+plans,Studio US$399,399,4650,fal-hunyuan-3.1-pro,0.825,1.110,50,41,45.51,26.24,327.25,82,precio publicado + supuestos, sin factura
+plans,Studio US$399,399,4650,fal-hunyuan-3.1-pro,0.825,1.110,75,62,68.82,26.24,303.94,76.2,precio publicado + supuestos, sin factura
+plans,Studio US$399,399,4650,fal-hunyuan-3.1-pro,0.825,1.110,100,83,92.13,26.24,280.63,70.3,precio publicado + supuestos, sin factura
+plans,Studio US$499,499,5800,fal-trellis-1,0.02,0.144,25,181,26.06,32.74,440.2,88.2,precio publicado + supuestos, sin factura
+plans,Studio US$499,499,5800,fal-trellis-1,0.02,0.144,50,362,52.13,32.74,414.13,83,precio publicado + supuestos, sin factura
+plans,Studio US$499,499,5800,fal-trellis-1,0.02,0.144,75,543,78.19,32.74,388.07,77.8,precio publicado + supuestos, sin factura
+plans,Studio US$499,499,5800,fal-trellis-1,0.02,0.144,100,725,104.4,32.74,361.86,72.5,precio publicado + supuestos, sin factura
+plans,Studio US$499,499,5800,fal-hunyuan-3.1-pro,0.825,1.110,25,25,27.75,32.74,438.51,87.9,precio publicado + supuestos, sin factura
+plans,Studio US$499,499,5800,fal-hunyuan-3.1-pro,0.825,1.110,50,51,56.61,32.74,409.65,82.1,precio publicado + supuestos, sin factura
+plans,Studio US$499,499,5800,fal-hunyuan-3.1-pro,0.825,1.110,75,77,85.47,32.74,380.79,76.3,precio publicado + supuestos, sin factura
+plans,Studio US$499,499,5800,fal-hunyuan-3.1-pro,0.825,1.110,100,103,114.33,32.74,351.93,70.5,precio publicado + supuestos, sin factura
+packs,Recarga S,15,150,fal-trellis-1,0.02,0.144,25,4,0.58,1.28,13.14,87.6,precio publicado + supuestos, sin factura
+packs,Recarga S,15,150,fal-trellis-1,0.02,0.144,50,9,1.3,1.28,12.42,82.8,precio publicado + supuestos, sin factura
+packs,Recarga S,15,150,fal-trellis-1,0.02,0.144,75,13,1.87,1.28,11.85,79,precio publicado + supuestos, sin factura
+packs,Recarga S,15,150,fal-trellis-1,0.02,0.144,100,18,2.59,1.28,11.13,74.2,precio publicado + supuestos, sin factura
+packs,Recarga S,15,150,fal-hunyuan-3.1-pro,0.825,1.110,25,0,0,1.28,13.72,91.5,precio publicado + supuestos, sin factura
+packs,Recarga S,15,150,fal-hunyuan-3.1-pro,0.825,1.110,50,1,1.11,1.28,12.61,84.1,precio publicado + supuestos, sin factura
+packs,Recarga S,15,150,fal-hunyuan-3.1-pro,0.825,1.110,75,1,1.11,1.28,12.61,84.1,precio publicado + supuestos, sin factura
+packs,Recarga S,15,150,fal-hunyuan-3.1-pro,0.825,1.110,100,2,2.22,1.28,11.5,76.7,precio publicado + supuestos, sin factura
+packs,Recarga M,40,450,fal-trellis-1,0.02,0.144,25,14,2.02,2.9,35.08,87.7,precio publicado + supuestos, sin factura
+packs,Recarga M,40,450,fal-trellis-1,0.02,0.144,50,28,4.03,2.9,33.07,82.7,precio publicado + supuestos, sin factura
+packs,Recarga M,40,450,fal-trellis-1,0.02,0.144,75,42,6.05,2.9,31.05,77.6,precio publicado + supuestos, sin factura
+packs,Recarga M,40,450,fal-trellis-1,0.02,0.144,100,56,8.06,2.9,29.04,72.6,precio publicado + supuestos, sin factura
+packs,Recarga M,40,450,fal-hunyuan-3.1-pro,0.825,1.110,25,2,2.22,2.9,34.88,87.2,precio publicado + supuestos, sin factura
+packs,Recarga M,40,450,fal-hunyuan-3.1-pro,0.825,1.110,50,4,4.44,2.9,32.66,81.6,precio publicado + supuestos, sin factura
+packs,Recarga M,40,450,fal-hunyuan-3.1-pro,0.825,1.110,75,6,6.66,2.9,30.44,76.1,precio publicado + supuestos, sin factura
+packs,Recarga M,40,450,fal-hunyuan-3.1-pro,0.825,1.110,100,8,8.88,2.9,28.22,70.6,precio publicado + supuestos, sin factura
+packs,Recarga L,100,1150,fal-trellis-1,0.02,0.144,25,35,5.04,6.8,88.16,88.2,precio publicado + supuestos, sin factura
+packs,Recarga L,100,1150,fal-trellis-1,0.02,0.144,50,71,10.22,6.8,82.98,83,precio publicado + supuestos, sin factura
+packs,Recarga L,100,1150,fal-trellis-1,0.02,0.144,75,107,15.41,6.8,77.79,77.8,precio publicado + supuestos, sin factura
+packs,Recarga L,100,1150,fal-trellis-1,0.02,0.144,100,143,20.59,6.8,72.61,72.6,precio publicado + supuestos, sin factura
+packs,Recarga L,100,1150,fal-hunyuan-3.1-pro,0.825,1.110,25,5,5.55,6.8,87.65,87.7,precio publicado + supuestos, sin factura
+packs,Recarga L,100,1150,fal-hunyuan-3.1-pro,0.825,1.110,50,10,11.1,6.8,82.1,82.1,precio publicado + supuestos, sin factura
+packs,Recarga L,100,1150,fal-hunyuan-3.1-pro,0.825,1.110,75,15,16.65,6.8,76.55,76.6,precio publicado + supuestos, sin factura
+packs,Recarga L,100,1150,fal-hunyuan-3.1-pro,0.825,1.110,100,20,22.2,6.8,71,71,precio publicado + supuestos, sin factura
+spec,Starter,19,150,fal-trellis-1,0.02,0.144,25,4,0.58,1.54,16.88,88.8,precio publicado + supuestos, sin factura
+spec,Starter,19,150,fal-trellis-1,0.02,0.144,50,9,1.3,1.54,16.16,85.1,precio publicado + supuestos, sin factura
+spec,Starter,19,150,fal-trellis-1,0.02,0.144,75,13,1.87,1.54,15.59,82.1,precio publicado + supuestos, sin factura
+spec,Starter,19,150,fal-trellis-1,0.02,0.144,100,18,2.59,1.54,14.87,78.3,precio publicado + supuestos, sin factura
+spec,Starter,19,150,fal-hunyuan-3.1-pro,0.825,1.110,25,0,0,1.54,17.46,91.9,precio publicado + supuestos, sin factura
+spec,Starter,19,150,fal-hunyuan-3.1-pro,0.825,1.110,50,1,1.11,1.54,16.35,86.1,precio publicado + supuestos, sin factura
+spec,Starter,19,150,fal-hunyuan-3.1-pro,0.825,1.110,75,1,1.11,1.54,16.35,86.1,precio publicado + supuestos, sin factura
+spec,Starter,19,150,fal-hunyuan-3.1-pro,0.825,1.110,100,2,2.22,1.54,15.24,80.2,precio publicado + supuestos, sin factura
+spec,Creator,49,500,fal-trellis-1,0.02,0.144,25,15,2.16,3.49,43.35,88.5,precio publicado + supuestos, sin factura
+spec,Creator,49,500,fal-trellis-1,0.02,0.144,50,31,4.46,3.49,41.05,83.8,precio publicado + supuestos, sin factura
+spec,Creator,49,500,fal-trellis-1,0.02,0.144,75,46,6.62,3.49,38.89,79.4,precio publicado + supuestos, sin factura
+spec,Creator,49,500,fal-trellis-1,0.02,0.144,100,62,8.93,3.49,36.58,74.7,precio publicado + supuestos, sin factura
+spec,Creator,49,500,fal-hunyuan-3.1-pro,0.825,1.110,25,2,2.22,3.49,43.29,88.3,precio publicado + supuestos, sin factura
+spec,Creator,49,500,fal-hunyuan-3.1-pro,0.825,1.110,50,4,4.44,3.49,41.07,83.8,precio publicado + supuestos, sin factura
+spec,Creator,49,500,fal-hunyuan-3.1-pro,0.825,1.110,75,6,6.66,3.49,38.85,79.3,precio publicado + supuestos, sin factura
+spec,Creator,49,500,fal-hunyuan-3.1-pro,0.825,1.110,100,8,8.88,3.49,36.63,74.8,precio publicado + supuestos, sin factura
+spec,Commerce,99,1100,fal-trellis-1,0.02,0.144,25,34,4.9,6.74,87.36,88.2,precio publicado + supuestos, sin factura
+spec,Commerce,99,1100,fal-trellis-1,0.02,0.144,50,68,9.79,6.74,82.47,83.3,precio publicado + supuestos, sin factura
+spec,Commerce,99,1100,fal-trellis-1,0.02,0.144,75,102,14.69,6.74,77.57,78.4,precio publicado + supuestos, sin factura
+spec,Commerce,99,1100,fal-trellis-1,0.02,0.144,100,137,19.73,6.74,72.53,73.3,precio publicado + supuestos, sin factura
+spec,Commerce,99,1100,fal-hunyuan-3.1-pro,0.825,1.110,25,4,4.44,6.74,87.82,88.7,precio publicado + supuestos, sin factura
+spec,Commerce,99,1100,fal-hunyuan-3.1-pro,0.825,1.110,50,9,9.99,6.74,82.27,83.1,precio publicado + supuestos, sin factura
+spec,Commerce,99,1100,fal-hunyuan-3.1-pro,0.825,1.110,75,14,15.54,6.74,76.72,77.5,precio publicado + supuestos, sin factura
+spec,Commerce,99,1100,fal-hunyuan-3.1-pro,0.825,1.110,100,19,21.09,6.74,71.17,71.9,precio publicado + supuestos, sin factura
+spec,Studio,199,2400,fal-trellis-1,0.02,0.144,25,75,10.8,13.24,174.96,87.9,precio publicado + supuestos, sin factura
+spec,Studio,199,2400,fal-trellis-1,0.02,0.144,50,150,21.6,13.24,164.16,82.5,precio publicado + supuestos, sin factura
+spec,Studio,199,2400,fal-trellis-1,0.02,0.144,75,225,32.4,13.24,153.36,77.1,precio publicado + supuestos, sin factura
+spec,Studio,199,2400,fal-trellis-1,0.02,0.144,100,300,43.2,13.24,142.56,71.6,precio publicado + supuestos, sin factura
+spec,Studio,199,2400,fal-hunyuan-3.1-pro,0.825,1.110,25,10,11.1,13.24,174.66,87.8,precio publicado + supuestos, sin factura
+spec,Studio,199,2400,fal-hunyuan-3.1-pro,0.825,1.110,50,21,23.31,13.24,162.45,81.6,precio publicado + supuestos, sin factura
+spec,Studio,199,2400,fal-hunyuan-3.1-pro,0.825,1.110,75,31,34.41,13.24,151.35,76.1,precio publicado + supuestos, sin factura
+spec,Studio,199,2400,fal-hunyuan-3.1-pro,0.825,1.110,100,42,46.62,13.24,139.14,69.9,precio publicado + supuestos, sin factura
+attempts,Starter,19,25,fal-trellis-1,0.02,0.144,25,6,0.86,1.54,16.6,87.4,precio publicado + supuestos, sin factura
+attempts,Starter,19,25,fal-trellis-1,0.02,0.144,50,12,1.73,1.54,15.73,82.8,precio publicado + supuestos, sin factura
+attempts,Starter,19,25,fal-trellis-1,0.02,0.144,75,18,2.59,1.54,14.87,78.3,precio publicado + supuestos, sin factura
+attempts,Starter,19,25,fal-trellis-1,0.02,0.144,100,25,3.6,1.54,13.86,72.9,precio publicado + supuestos, sin factura
+attempts,Starter,19,25,fal-hunyuan-3.1-pro,0.825,1.110,25,6,6.66,1.54,10.8,56.8,precio publicado + supuestos, sin factura
+attempts,Starter,19,25,fal-hunyuan-3.1-pro,0.825,1.110,50,12,13.32,1.54,4.14,21.8,precio publicado + supuestos, sin factura
+attempts,Starter,19,25,fal-hunyuan-3.1-pro,0.825,1.110,75,18,19.98,1.54,-2.52,-13.3,precio publicado + supuestos, sin factura
+attempts,Starter,19,25,fal-hunyuan-3.1-pro,0.825,1.110,100,25,27.75,1.54,-10.29,-54.2,precio publicado + supuestos, sin factura
+attempts,Growth,49,70,fal-trellis-1,0.02,0.144,25,17,2.45,3.49,43.06,87.9,precio publicado + supuestos, sin factura
+attempts,Growth,49,70,fal-trellis-1,0.02,0.144,50,35,5.04,3.49,40.47,82.6,precio publicado + supuestos, sin factura
+attempts,Growth,49,70,fal-trellis-1,0.02,0.144,75,52,7.49,3.49,38.02,77.6,precio publicado + supuestos, sin factura
+attempts,Growth,49,70,fal-trellis-1,0.02,0.144,100,70,10.08,3.49,35.43,72.3,precio publicado + supuestos, sin factura
+attempts,Growth,49,70,fal-hunyuan-3.1-pro,0.825,1.110,25,17,18.87,3.49,26.64,54.4,precio publicado + supuestos, sin factura
+attempts,Growth,49,70,fal-hunyuan-3.1-pro,0.825,1.110,50,35,38.85,3.49,6.66,13.6,precio publicado + supuestos, sin factura
+attempts,Growth,49,70,fal-hunyuan-3.1-pro,0.825,1.110,75,52,57.72,3.49,-12.21,-24.9,precio publicado + supuestos, sin factura
+attempts,Growth,49,70,fal-hunyuan-3.1-pro,0.825,1.110,100,70,77.7,3.49,-32.19,-65.7,precio publicado + supuestos, sin factura
+attempts,Studio,99,160,fal-trellis-1,0.02,0.144,25,40,5.76,6.74,86.5,87.4,precio publicado + supuestos, sin factura
+attempts,Studio,99,160,fal-trellis-1,0.02,0.144,50,80,11.52,6.74,80.74,81.6,precio publicado + supuestos, sin factura
+attempts,Studio,99,160,fal-trellis-1,0.02,0.144,75,120,17.28,6.74,74.98,75.7,precio publicado + supuestos, sin factura
+attempts,Studio,99,160,fal-trellis-1,0.02,0.144,100,160,23.04,6.74,69.22,69.9,precio publicado + supuestos, sin factura
+attempts,Studio,99,160,fal-hunyuan-3.1-pro,0.825,1.110,25,40,44.4,6.74,47.86,48.3,precio publicado + supuestos, sin factura
+attempts,Studio,99,160,fal-hunyuan-3.1-pro,0.825,1.110,50,80,88.8,6.74,3.46,3.5,precio publicado + supuestos, sin factura
+attempts,Studio,99,160,fal-hunyuan-3.1-pro,0.825,1.110,75,120,133.2,6.74,-40.94,-41.4,precio publicado + supuestos, sin factura
+attempts,Studio,99,160,fal-hunyuan-3.1-pro,0.825,1.110,100,160,177.6,6.74,-85.34,-86.2,precio publicado + supuestos, sin factura
+attempts,Trial pack,9,8,fal-trellis-1,0.02,0.144,25,2,0.29,0.89,7.82,86.9,precio publicado + supuestos, sin factura
+attempts,Trial pack,9,8,fal-trellis-1,0.02,0.144,50,4,0.58,0.89,7.53,83.7,precio publicado + supuestos, sin factura
+attempts,Trial pack,9,8,fal-trellis-1,0.02,0.144,75,6,0.86,0.89,7.25,80.6,precio publicado + supuestos, sin factura
+attempts,Trial pack,9,8,fal-trellis-1,0.02,0.144,100,8,1.15,0.89,6.96,77.3,precio publicado + supuestos, sin factura
+attempts,Trial pack,9,8,fal-hunyuan-3.1-pro,0.825,1.110,25,2,2.22,0.89,5.89,65.4,precio publicado + supuestos, sin factura
+attempts,Trial pack,9,8,fal-hunyuan-3.1-pro,0.825,1.110,50,4,4.44,0.89,3.67,40.8,precio publicado + supuestos, sin factura
+attempts,Trial pack,9,8,fal-hunyuan-3.1-pro,0.825,1.110,75,6,6.66,0.89,1.45,16.1,precio publicado + supuestos, sin factura
+attempts,Trial pack,9,8,fal-hunyuan-3.1-pro,0.825,1.110,100,8,8.88,0.89,-0.77,-8.6,precio publicado + supuestos, sin factura

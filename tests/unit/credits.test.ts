@@ -34,8 +34,8 @@ describe("plan simulation", () => {
     const r = simulate(credits, creator, 0.4, 1);
     expect(r.jobs).toBe(16);
     expect(r.variableCostUsd).toBeCloseTo(9.6, 2);
-    expect(r.paymentFeeUsd).toBeCloseTo(2.95, 2);
-    expect(r.contributionUsd).toBeCloseTo(36.45, 2);
+    expect(r.paymentFeeUsd).toBeCloseTo(3.49, 2);
+    expect(r.contributionUsd).toBeCloseTo(35.91, 2);
   });
 
   it("scales with use, and an unused plan is nearly all margin", () => {
@@ -152,16 +152,16 @@ describe("the 60% margin floor", () => {
         const at85 = averageUseAtMargin(step.priceUsd, step.credits, TARGET_MARGIN.high);
         const at75 = averageUseAtMargin(step.priceUsd, step.credits, TARGET_MARGIN.low);
         expect(at85, `${tier.name} US$${step.priceUsd}`).toBeGreaterThan(0.2);
-        expect(at85).toBeLessThan(0.35);
+        expect(at85).toBeLessThan(0.4);
         expect(at75, `${tier.name} US$${step.priceUsd}`).toBeGreaterThan(0.5);
-        expect(at75).toBeLessThan(0.7);
+        expect(at75).toBeLessThan(0.9);
       }
     }
   });
 
   it("works out the most credits a price can include", () => {
-    expect(maxCreditsForPrice(19)).toBe(269);
-    expect(maxCreditsForPrice(199)).toBe(3059);
+    expect(maxCreditsForPrice(19)).toBe(208);
+    expect(maxCreditsForPrice(199)).toBe(2323);
     expect(maxCreditsForPrice(1)).toBe(0);
   });
 

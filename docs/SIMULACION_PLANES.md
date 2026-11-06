@@ -9,7 +9,7 @@ Generado con `scripts/simulate-plans.ts`. El detalle está en `PLANES_MARGEN_SIM
 - Reintentos facturados: 20 % del precio del proveedor.
 - Conversión, almacenamiento y entrega: US$0.07 por trabajo.
 - Margen de seguridad: US$0.05 por trabajo.
-- Comisión de pago: 5 % + US$0.50 por cobro.
+- Comisión de pago: 6.5 % + US$0.30 por cobro.
 - Fuera del cálculo: costos fijos, soporte, devoluciones, impuestos y adquisición de clientes.
 
 ## Costo por motor
@@ -34,22 +34,22 @@ El piso de 60 % es el peor caso: el cliente gasta todos sus créditos. El objeti
 
 | Plan | Precio | Créditos | Modelos, Rodin Fast | Modelos, Rodin 2.5 | Margen al 100 % | Uso para 85 % | Uso para 75 % |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Starter | US$19.00 | 250 | 20 | 8 | 67.1 % | 28 % | 66 % |
-| Creator | US$49.00 | 700 | 58 | 23 | 65.6 % | 31 % | 66 % |
-| Creator | US$59.00 | 850 | 70 | 28 | 65.7 % | 32 % | 66 % |
-| Creator | US$69.00 | 1000 | 83 | 33 | 65.4 % | 32 % | 67 % |
-| Creator | US$79.00 | 1150 | 95 | 38 | 65.5 % | 32 % | 67 % |
-| Creator | US$89.00 | 1350 | 112 | 45 | 64.1 % | 31 % | 64 % |
-| Commerce | US$99.00 | 1500 | 125 | 50 | 64.2 % | 31 % | 64 % |
-| Commerce | US$119.00 | 1800 | 150 | 60 | 64.3 % | 32 % | 65 % |
-| Commerce | US$139.00 | 2100 | 175 | 70 | 64.4 % | 32 % | 65 % |
-| Commerce | US$159.00 | 2400 | 200 | 80 | 64.5 % | 32 % | 65 % |
-| Commerce | US$179.00 | 2700 | 225 | 90 | 64.6 % | 32 % | 65 % |
-| Studio | US$199.00 | 3050 | 254 | 101 | 64.1 % | 32 % | 64 % |
-| Studio | US$249.00 | 3800 | 316 | 126 | 64.3 % | 32 % | 65 % |
-| Studio | US$299.00 | 4600 | 383 | 153 | 64.1 % | 32 % | 64 % |
-| Studio | US$399.00 | 6150 | 512 | 205 | 64 % | 32 % | 64 % |
-| Studio | US$499.00 | 7700 | 641 | 256 | 64.1 % | 32 % | 64 % |
+| Starter | US$19.00 | 200 | 16 | 6 | 71.7 % | 33 % | 80 % |
+| Creator | US$49.00 | 550 | 45 | 18 | 70.6 % | 35 % | 80 % |
+| Creator | US$59.00 | 650 | 54 | 21 | 71 % | 36 % | 82 % |
+| Creator | US$69.00 | 750 | 62 | 25 | 71.3 % | 37 % | 83 % |
+| Creator | US$79.00 | 900 | 75 | 30 | 70.3 % | 36 % | 80 % |
+| Creator | US$89.00 | 1000 | 83 | 33 | 70.8 % | 36 % | 81 % |
+| Commerce | US$99.00 | 1100 | 91 | 36 | 71.1 % | 37 % | 82 % |
+| Commerce | US$119.00 | 1350 | 112 | 45 | 70.6 % | 36 % | 80 % |
+| Commerce | US$139.00 | 1600 | 133 | 53 | 70.3 % | 36 % | 79 % |
+| Commerce | US$159.00 | 1850 | 154 | 61 | 70.1 % | 36 % | 79 % |
+| Commerce | US$179.00 | 2050 | 170 | 68 | 70.5 % | 36 % | 80 % |
+| Studio | US$199.00 | 2300 | 191 | 76 | 70.3 % | 36 % | 79 % |
+| Studio | US$249.00 | 2900 | 241 | 96 | 70.1 % | 36 % | 79 % |
+| Studio | US$299.00 | 3450 | 287 | 115 | 70.3 % | 36 % | 80 % |
+| Studio | US$399.00 | 4650 | 387 | 155 | 70.1 % | 36 % | 79 % |
+| Studio | US$499.00 | 5800 | 483 | 193 | 70.2 % | 36 % | 79 % |
 
 ## Recargas sin suscripción (mínimo 60 %)
 
@@ -57,9 +57,9 @@ Margen de contribución con el plan usado al 100 %, el peor caso.
 
 | Plan | Precio | Unidades | Modelos, motor barato | Margen | Modelos, motor caro | Margen |
 |---|---:|---:|---:|---:|---:|---:|
-| Recarga S (único) | US$15.00 | 200 | 25 | 67.7 % | 3 | 69.5 % |
-| Recarga M (único) | US$40.00 | 550 | 68 | 69.3 % | 9 | 68.8 % |
-| Recarga L (único) | US$100.00 | 1500 | 187 | 67.6 % | 26 | 65.6 % |
+| Recarga S (único) | US$15.00 | 150 | 18 | 74.2 % | 2 | 76.7 % |
+| Recarga M (único) | US$40.00 | 450 | 56 | 72.6 % | 8 | 70.6 % |
+| Recarga L (único) | US$100.00 | 1150 | 143 | 72.6 % | 20 | 71 % |
 
 ## Hipótesis del informe
 
@@ -67,10 +67,10 @@ Margen de contribución con el plan usado al 100 %, el peor caso.
 
 | Plan | Precio | Unidades | Modelos, motor barato | Margen | Modelos, motor caro | Margen |
 |---|---:|---:|---:|---:|---:|---:|
-| Starter | US$19.00 | 150 | 18 | 78.7 % | 2 | 80.7 % |
-| Creator | US$49.00 | 500 | 62 | 75.8 % | 8 | 75.9 % |
-| Commerce | US$99.00 | 1100 | 137 | 74.6 % | 19 | 73.2 % |
-| Studio | US$199.00 | 2400 | 300 | 73 % | 42 | 71.3 % |
+| Starter | US$19.00 | 150 | 18 | 78.3 % | 2 | 80.2 % |
+| Creator | US$49.00 | 500 | 62 | 74.7 % | 8 | 74.8 % |
+| Commerce | US$99.00 | 1100 | 137 | 73.3 % | 19 | 71.9 % |
+| Studio | US$199.00 | 2400 | 300 | 71.6 % | 42 | 69.9 % |
 
 ## Intentos planos (descartado: no cumple el mínimo)
 
@@ -78,10 +78,10 @@ Margen de contribución con el plan usado al 100 %, el peor caso.
 
 | Plan | Precio | Unidades | Modelos, motor barato | Margen | Modelos, motor caro | Margen |
 |---|---:|---:|---:|---:|---:|---:|
-| Starter | US$19.00 | 25 | 25 | 73.4 % | 25 | -53.7 % |
-| Growth | US$49.00 | 70 | 70 | 73.4 % | 70 | -64.6 % |
-| Studio | US$99.00 | 160 | 160 | 71.2 % | 160 | -84.9 % |
-| Trial pack (único) | US$9.00 | 8 | 8 | 76.7 % | 8 | -9.2 % |
+| Starter | US$19.00 | 25 | 25 | 72.9 % | 25 | -54.2 % |
+| Growth | US$49.00 | 70 | 70 | 72.3 % | 70 | -65.7 % |
+| Studio | US$99.00 | 160 | 160 | 69.9 % | 160 | -86.2 % |
+| Trial pack (único) | US$9.00 | 8 | 8 | 77.3 % | 8 | -8.6 % |
 
 ## Si el costo real sube 50 % y no se actualizan los créditos
 
@@ -89,10 +89,10 @@ El mínimo se mantiene solo si los créditos por modelo se recalculan cuando cam
 
 | Estructura | Plan | Margen hoy, motor caro | Margen con +50 %, sin ajustar |
 |---|---|---:|---:|
-| Planes mensuales, cada paso de la barra (mínimo 60 %) | Starter | 69 % | 58.6 % |
-| Recargas sin suscripción (mínimo 60 %) | Recarga S | 69.5 % | 59.6 % |
-| Hipótesis del informe | Starter | 80.7 % | 75.5 % |
-| Intentos planos (descartado: no cumple el mínimo) | Starter | -53.7 % | -118.8 % |
+| Planes mensuales, cada paso de la barra (mínimo 60 %) | Starter | 74.4 % | 66.6 % |
+| Recargas sin suscripción (mínimo 60 %) | Recarga S | 76.7 % | 70.1 % |
+| Hipótesis del informe | Starter | 80.2 % | 75 % |
+| Intentos planos (descartado: no cumple el mínimo) | Starter | -54.2 % | -119.3 % |
 
 ## Lectura
 

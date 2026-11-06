@@ -14,7 +14,8 @@
     "seed:check": "tsx scripts/check-demo-assets.ts",
     "showcase:check": "tsx scripts/check-showcase.ts",
     "benchmark": "tsx --conditions=react-server scripts/benchmark.ts",
-    "report:engines": "tsx --conditions=react-server scripts/engine-report.ts"
+    "report:engines": "tsx --conditions=react-server scripts/engine-report.ts",
+    "render-kit": "node scripts/render-kit.mjs"
   },
   "dependencies": {
     "@fontsource-variable/instrument-sans": "^5.3.0",

@@ -15,8 +15,8 @@ export type CostAssumptions = {
 /** Placeholders from the specification's worked example. Replace with measured data: none of these has been measured. */
 export const ASSUMED_COSTS: CostAssumptions = { retryRate: 0.2, postUsd: 0.07, bufferUsd: 0.05 };
 
-/** A placeholder too: it must be replaced with the real payment provider's rates. */
-export const ASSUMED_PAYMENT_FEE = { pct: 0.05, fixedUsd: 0.5 };
+/** Conservative: an international card is about 6.1 % + US$0.30 at the usual providers, rounded up. Replace with the real provider's contract rates. */
+export const ASSUMED_PAYMENT_FEE = { pct: 0.065, fixedUsd: 0.3 };
 
 export const effectiveCost = (providerUsd: number, a: CostAssumptions = ASSUMED_COSTS) => providerUsd * (1 + a.retryRate) + a.postUsd + a.bufferUsd;
 
@@ -31,9 +31,9 @@ export const MIN_MARGIN = 0.6;
 
 /**
  * Plans are sized for this margin, not for the floor, so the floor keeps real headroom. The floor is the owner's promise; this is the safety margin on top.
- * 0.62 is not enough: with every credit used and a 10 % rise in real cost, the biggest steps drop to about 58.7 %. 0.64 keeps every step at or above 60 % under that stress (tests/unit/credits.test.ts).
+ * 0.62 is not enough: with every credit used and a 10 % rise in real cost, the biggest steps drop to about 58.7 %. 0.70 keeps every step at or above 60 % under that stress with room to spare, and gives a real margin at full use of about 70 % (tests/unit/credits.test.ts).
  */
-export const SIZING_MARGIN = 0.64;
+export const SIZING_MARGIN = 0.7;
 
 /** Real cost rise the floor must survive at full use. The tests apply it; it is not charged to anyone. */
 export const COST_STRESS = 1.1;
@@ -76,9 +76,9 @@ export const PLAN_STRUCTURES: PlanStructure[] = [
     label: "Recargas sin suscripción (mínimo 60 %)",
     unit: "credits",
     plans: [
-      { name: "Recarga S", priceUsd: 15, units: 200, recurring: false },
-      { name: "Recarga M", priceUsd: 40, units: 550, recurring: false },
-      { name: "Recarga L", priceUsd: 100, units: 1500, recurring: false },
+      { name: "Recarga S", priceUsd: 15, units: 150, recurring: false },
+      { name: "Recarga M", priceUsd: 40, units: 450, recurring: false },
+      { name: "Recarga L", priceUsd: 100, units: 1150, recurring: false },
     ],
   },
 ];

@@ -15,7 +15,7 @@ export const INTEGRATION_ORDER: { id: IntegrationId; status: IntegrationStatus }
   { id: "blender", status: "soon" },
   { id: "api", status: "testing" },
   { id: "mcp", status: "testing" },
-  { id: "woocommerce", status: "planned" },
+  { id: "woocommerce", status: "testing" },
 ];
 
 export const INTEGRATION_STATUS: Record<IntegrationId, IntegrationStatus> = Object.fromEntries(
@@ -183,9 +183,10 @@ const es: IntegrationsCopy = {
     },
     woocommerce: {
       name: "WooCommerce",
-      title: "Después de Shopify",
-      text: "Está en el plan, pero sin construir. Lo haremos cuando haya tiendas que lo pidan.",
-      steps: ["Mientras tanto, el visor embebible es un iframe: pégalo donde tu sitio acepte HTML."],
+      title: "El visor en tu ficha de producto",
+      text: "Un plugin de WordPress con el shortcode [orbitshelf_viewer] que muestra el visor aprobado en tu ficha. Solo incrusta el enlace del visor: no guarda tokens ni publica nada.",
+      steps: ["Instala integrations/woocommerce/orbitshelf-viewer.php y, en Ajustes, escribe el dominio permitido.", "Pega [orbitshelf_viewer url=\"…\"] en la descripción del producto."],
+      note: "Nunca se ha instalado en una tienda real.",
     },
   },
   embedExtra: {
@@ -221,10 +222,10 @@ const es: IntegrationsCopy = {
     ],
   },
   after: {
-    title: "Después de validar demanda",
-    sub: "No están construidas. Las haremos si hay equipos que las necesiten.",
+    title: "Unity y Unreal",
+    sub: "Unity tiene un importador sin probar. Unreal depende de la demanda.",
     items: [
-      { name: "Unity", text: "Un complemento propio solo si hay demanda. Hoy puedes exportar GLB y llevarlo a tu motor." },
+      { name: "Unity", text: "Hay un importador para el editor (integrations/unity), sin probar en un proyecto real. Descarga tus GLB a Assets y necesita glTFast para abrirlos." },
       { name: "Unreal", text: "Igual que Unity: depende de la demanda. La exportación a GLB ya existe." },
     ],
   },
@@ -251,8 +252,8 @@ const es: IntegrationsCopy = {
       a: "El iframe deja de mostrar el modelo. El enlace solo funciona mientras el modelo esté aprobado y no revocado.",
     },
     {
-      q: "¿Cuándo llegan WooCommerce, Unity y Unreal?",
-      a: "No hay fecha. Están planeadas y las construiremos según la demanda. Si las necesitas, dínoslo.",
+      q: "¿En qué estado están WooCommerce, Unity y Unreal?",
+      a: "WooCommerce (plugin del visor) y Unity (importador del editor) existen como archivos, pero no se han probado en una tienda ni en un proyecto reales. Unreal depende de la demanda.",
     },
   ],
   closing: {
@@ -339,9 +340,10 @@ const en: IntegrationsCopy = {
     },
     woocommerce: {
       name: "WooCommerce",
-      title: "After Shopify",
-      text: "It is in the plan but not built. We will build it when stores ask for it.",
-      steps: ["Meanwhile, the embeddable viewer is an iframe: paste it wherever your site accepts HTML."],
+      title: "The viewer on your product page",
+      text: "A WordPress plugin with an [orbitshelf_viewer] shortcode that shows the approved viewer on your product page. It only embeds the viewer link: it stores no tokens and publishes nothing.",
+      steps: ["Install integrations/woocommerce/orbitshelf-viewer.php and, in Settings, enter the allowed host.", "Paste [orbitshelf_viewer url=\"…\"] into the product description."],
+      note: "It has never been installed on a real store.",
     },
   },
   embedExtra: {
@@ -377,10 +379,10 @@ const en: IntegrationsCopy = {
     ],
   },
   after: {
-    title: "After we validate demand",
-    sub: "They are not built. We will do them if teams need them.",
+    title: "Unity and Unreal",
+    sub: "Unity has an untested importer. Unreal depends on demand.",
     items: [
-      { name: "Unity", text: "A dedicated plugin only if there is demand. Today you can export GLB and take it to your engine." },
+      { name: "Unity", text: "There is an editor importer (integrations/unity), untested in a real project. It downloads your GLB into Assets and needs glTFast to open them." },
       { name: "Unreal", text: "Same as Unity: it depends on demand. GLB export already exists." },
     ],
   },
@@ -407,8 +409,8 @@ const en: IntegrationsCopy = {
       a: "The iframe stops showing the model. The link only works while the model is approved and not revoked.",
     },
     {
-      q: "When do WooCommerce, Unity and Unreal arrive?",
-      a: "There is no date. They are planned and we will build them based on demand. If you need one, tell us.",
+      q: "What is the state of WooCommerce, Unity and Unreal?",
+      a: "WooCommerce (viewer plugin) and Unity (editor importer) exist as files, but have not been tried on a real store or in a real project. Unreal depends on demand.",
     },
   ],
   closing: {

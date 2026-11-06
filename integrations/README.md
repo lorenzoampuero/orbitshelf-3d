@@ -8,6 +8,8 @@ Las tres usan la API `/api/v1`, así que comparten permisos, límites y saldo. E
 | Iniciar generaciones por API | Apagado (`API_GENERATION_ENABLED`). No se debe encender hasta tener respuesta de fal sobre sus términos |
 | MCP | Protocolo y herramientas probados con un cliente de prueba propio. **No probado con clientes reales** como Claude Desktop |
 | Blender | **Nunca se ha ejecutado dentro de Blender.** Solo se comprobó que el archivo compila |
+| Unity (`unity/OrbitShelfImporter.cs`) | **Nunca se ha ejecutado en Unity.** Solo lee modelos (`assets:read`) y los guarda como GLB en `Assets/OrbitShelf`. Necesita glTFast |
+| WooCommerce (`woocommerce/orbitshelf-viewer.php`) | **Nunca se ha instalado en WordPress.** Shortcode `[orbitshelf_viewer url="…"]` que incrusta el visor; solo acepta el dominio que fijes en Ajustes → OrbitShelf |
 
 ## MCP
 
@@ -59,4 +61,4 @@ Requiere `INTEGRATIONS_KEY`, porque el secreto se guarda cifrado. Solo se ha pro
 ## Pendiente, según demanda
 
 - Generar desde Blender.
-- WooCommerce, Unity y Unreal.
+- Unreal, y probar WooCommerce y Unity en entornos reales.

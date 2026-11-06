@@ -198,8 +198,8 @@ const en: SolutionsCopy = {
     woocommerce: {
       icon: "store",
       name: "WooCommerce",
-      text: "Planned after Shopify. There is nothing to connect yet.",
-      status: "soon",
+      text: "A viewer plugin for your product page. Never installed on a real store yet.",
+      status: "testing",
     },
     blender: {
       icon: "blocks",
@@ -842,8 +842,8 @@ const es: SolutionsCopy = {
     woocommerce: {
       icon: "store",
       name: "WooCommerce",
-      text: "Está planeado después de Shopify. Todavía no hay nada que conectar.",
-      status: "soon",
+      text: "Un plugin del visor para tu ficha de producto. Todavía sin instalar en una tienda real.",
+      status: "testing",
     },
     blender: {
       icon: "blocks",

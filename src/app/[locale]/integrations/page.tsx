@@ -330,6 +330,8 @@ export default async function IntegrationsPage({ params }: Props) {
               <h3 className="text-xl font-semibold leading-tight">{c.items.woocommerce.title}</h3>
               <p className="text-sm leading-relaxed text-muted">{c.items.woocommerce.text}</p>
               <p className="text-sm leading-relaxed text-muted">{c.items.woocommerce.steps[0]}</p>
+              <p className="text-sm leading-relaxed text-muted">{c.items.woocommerce.steps[1]}</p>
+              <p className="border-l-2 border-accent pl-3 text-xs leading-relaxed text-muted">{c.items.woocommerce.note}</p>
             </div>
           </Card>
         </div>

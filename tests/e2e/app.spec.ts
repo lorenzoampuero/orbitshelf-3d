@@ -909,10 +909,10 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/pricing");
     await expect(page.getByTestId("plan-starter-price")).toHaveText("US$19");
-    await expect(page.getByTestId("plan-starter-credits")).toContainText("250");
+    await expect(page.getByTestId("plan-starter-credits")).toContainText("200");
     await expect(page.getByTestId("plan-starter-slider")).toHaveCount(0);
 
-    const steps = { creator: ["US$49", "700", "US$89", "1,350"], commerce: ["US$99", "1,500", "US$179", "2,700"], studio: ["US$199", "3,050", "US$499", "7,700"] };
+    const steps = { creator: ["US$49", "550", "US$89", "1,000"], commerce: ["US$99", "1,100", "US$179", "2,050"], studio: ["US$199", "2,300", "US$499", "5,800"] };
     for (const [id, [basePrice, baseCredits, topPrice, topCredits]] of Object.entries(steps)) {
       await expect(page.getByTestId(`plan-${id}-price`)).toHaveText(basePrice);
       await expect(page.getByTestId(`plan-${id}-credits`)).toContainText(baseCredits);
@@ -934,7 +934,7 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     // The same plans in Spanish, on a phone, without horizontal overflow
     await page.setViewportSize({ width: 375, height: 800 });
     await page.goto("/es/pricing");
-    await expect(page.getByTestId("plan-studio-credits")).toContainText("3.050 créditos al mes");
+    await expect(page.getByTestId("plan-studio-credits")).toContainText("2.300 créditos al mes");
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
 
     await page.setViewportSize({ width: 1280, height: 900 });
@@ -944,8 +944,8 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await page.waitForURL("**/dashboard");
     await page.goto("/dashboard/billing");
     await expect(page.getByTestId("plan-commerce-slider")).toBeVisible();
-    await expect(page.getByTestId("billing-calculator")).toContainText("Starter (250)");
-    await expect(page.getByTestId("billing-calculator")).toContainText("Studio (3050)");
+    await expect(page.getByTestId("billing-calculator")).toContainText("Starter (200)");
+    await expect(page.getByTestId("billing-calculator")).toContainText("Studio (2300)");
     // Only the engines that are switched on (two in this setup), by number: no vendor names and no disabled engines
     await expect(page.getByTestId("billing-calculator").locator("tbody tr")).toHaveCount(2);
     for (const vendor of ["Sloyd", "Rodin", "Hunyuan", "Tripo", "TRELLIS", "Meshy", "US$"]) await expect(page.getByTestId("billing-calculator")).not.toContainText(vendor);
