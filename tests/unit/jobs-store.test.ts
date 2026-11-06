@@ -25,6 +25,8 @@ const fake = (route: Route) => ({ config, fetch: ((u: string | URL | Request, i?
 beforeEach(() => {
   process.env.DATA_DIR = path.join(tmpRoot, "t" + ++n);
   process.env.LOCAL_PAID_ATTEMPT_CAP = "3";
+
+  process.env.BILLING_UNIT = "attempts"; // these tests are about flat attempts; the product default is credits
   process.env.MAX_ACTIVE_JOBS_PER_ORG = "2";
 });
 afterAll(() => rmSync(tmpRoot, { recursive: true, force: true }));

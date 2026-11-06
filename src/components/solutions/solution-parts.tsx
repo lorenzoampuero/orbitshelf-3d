@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import { ModelSilhouette, type SilhouetteKind } from "@/components/model-silhouette";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -95,14 +96,9 @@ const SPAN: Record<2 | 3 | 4 | 6, string> = {
   6: "md:col-span-6",
 };
 
-/** The outlined-grid square that stands for "a 3D model" everywhere on these pages. */
-function ModelTile({ size = "lg" }: { size?: "md" | "lg" }) {
-  const box = size === "lg" ? "h-20 w-20 rounded-3xl" : "h-14 w-14 rounded-2xl";
-  return (
-    <span className={`mesh-lines flex items-center justify-center bg-[#1b0b0c] ${box}`}>
-      <Box className={size === "lg" ? "h-8 w-8 text-accent" : "h-6 w-6 text-accent"} aria-hidden="true" />
-    </span>
-  );
+/** A flat drawing of a demo model: what stands for "a 3D model" in the diagrams on these pages. */
+function ModelTile({ size = "lg", kind = "vase" }: { size?: "md" | "lg"; kind?: SilhouetteKind }) {
+  return <ModelSilhouette kind={kind} className={size === "lg" ? "h-20 w-20" : "h-14 w-14"} />;
 }
 
 function Arrow({ className = "" }: { className?: string }) {
@@ -110,7 +106,7 @@ function Arrow({ className = "" }: { className?: string }) {
 }
 
 /** The drawn strip under the hero: what goes in, what you check, what comes out. */
-export function HeroFlow({ items }: { items: FlowItem[] }) {
+export function HeroFlow({ items, kind = "vase" }: { items: FlowItem[]; kind?: SilhouetteKind }) {
   return (
     <div
       aria-hidden="true"
@@ -121,7 +117,7 @@ export function HeroFlow({ items }: { items: FlowItem[] }) {
           {i > 0 ? <Arrow className="hidden sm:block" /> : null}
           {it.result ? (
             <span className="flex flex-col items-center gap-1.5">
-              <ModelTile />
+              <ModelTile kind={kind} />
               <span className="text-xs text-muted">{it.label}</span>
             </span>
           ) : (
@@ -181,7 +177,7 @@ export function Workflow({ steps }: { steps: Step[] }) {
 
 type Visuals = SolutionsCopy["visual"];
 
-function FeatureVisual({ feature, labels }: { feature: Feature; labels: Visuals }) {
+function FeatureVisual({ feature, labels, kind }: { feature: Feature; labels: Visuals; kind: SilhouetteKind }) {
   switch (feature.visual) {
     case "views":
       return (
@@ -193,7 +189,7 @@ function FeatureVisual({ feature, labels }: { feature: Feature; labels: Visuals 
           ))}
           <Arrow className="hidden sm:block" />
           <span className="flex flex-col items-center gap-1.5">
-            <ModelTile size="md" />
+            <ModelTile size="md" kind={kind} />
             <span className="text-xs text-muted">{labels.model}</span>
           </span>
         </div>
@@ -206,7 +202,7 @@ function FeatureVisual({ feature, labels }: { feature: Feature; labels: Visuals 
           </Tile>
           <Arrow />
           <span className="flex flex-col items-center gap-1.5">
-            <ModelTile size="md" />
+            <ModelTile size="md" kind={kind} />
             <span className="text-xs text-muted">{labels.model}</span>
           </span>
         </div>
@@ -289,7 +285,7 @@ function FeatureVisual({ feature, labels }: { feature: Feature; labels: Visuals 
   }
 }
 
-function FeatureCard({ feature, viewer, labels }: { feature: Feature; viewer?: React.ReactNode; labels: Visuals }) {
+function FeatureCard({ feature, viewer, labels, kind }: { feature: Feature; viewer?: React.ReactNode; labels: Visuals; kind: SilhouetteKind }) {
   const big = feature.span >= 4;
   const head = (
     <div className="space-y-4">
@@ -310,7 +306,7 @@ function FeatureCard({ feature, viewer, labels }: { feature: Feature; viewer?: R
 
   if (feature.visual === "viewer") {
     return (
-      <Card className={`${SPAN[feature.span]} grid grid-cols-1 gap-6 overflow-hidden md:grid-cols-2`}>
+      <Card tone="red" className={`${SPAN[feature.span]} grid grid-cols-1 gap-6 overflow-hidden md:grid-cols-2`}>
         {head}
         <div className="space-y-2 self-center">{viewer}</div>
       </Card>
@@ -323,17 +319,27 @@ function FeatureCard({ feature, viewer, labels }: { feature: Feature; viewer?: R
       className={`${SPAN[feature.span]} flex flex-col justify-between gap-8 overflow-hidden ${feature.span === 6 ? "md:flex-row md:items-center" : ""}`}
     >
       {head}
-      <FeatureVisual feature={feature} labels={labels} />
+      <FeatureVisual feature={feature} labels={labels} kind={kind} />
     </Card>
   );
 }
 
 /** Mixed-size bento. Each row of `items` adds up to 6 columns. */
-export function FeatureBento({ items, viewer, labels }: { items: Feature[]; viewer?: React.ReactNode; labels: Visuals }) {
+export function FeatureBento({
+  items,
+  viewer,
+  labels,
+  kind = "vase",
+}: {
+  items: Feature[];
+  viewer?: React.ReactNode;
+  labels: Visuals;
+  kind?: SilhouetteKind;
+}) {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
       {items.map((f) => (
-        <FeatureCard key={f.tag} feature={f} viewer={viewer} labels={labels} />
+        <FeatureCard key={f.tag} feature={f} viewer={viewer} labels={labels} kind={kind} />
       ))}
     </div>
   );
@@ -343,7 +349,7 @@ export function FeatureBento({ items, viewer, labels }: { items: Feature[]; view
 export function ExpectBlock({ expect }: { expect: Solution["expect"] }) {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-      <Card className="space-y-5 md:col-span-4">
+      <Card tone="outline" className="space-y-5 md:col-span-4">
         <h3 className="text-xl font-semibold leading-tight">{expect.hardTitle}</h3>
         <ul className="space-y-3 text-sm leading-relaxed text-muted">
           {expect.hard.map((h) => (
@@ -354,7 +360,7 @@ export function ExpectBlock({ expect }: { expect: Solution["expect"] }) {
           ))}
         </ul>
       </Card>
-      <Card className="space-y-5 md:col-span-2">
+      <Card tone="planned" className="space-y-5 md:col-span-2">
         <h3 className="text-xl font-semibold leading-tight">{expect.missingTitle}</h3>
         <ul className="space-y-3 text-sm leading-relaxed text-muted">
           {expect.missing.map((m) => (
@@ -399,7 +405,12 @@ export function IntegrationsBlock({
         {items.map(({ id, span }) => {
           const it = copy.integrations[id];
           return (
-            <Card key={id} lift className={`${SPAN[span]} flex flex-col gap-5`}>
+            <Card
+              key={id}
+              lift
+              tone={it.status === "available" || it.status === "testing" ? "default" : "planned"}
+              className={`${SPAN[span]} flex flex-col gap-5`}
+            >
               <div className="flex items-start justify-between gap-3">
                 <span aria-hidden="true" className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-fg">
                   <SolutionIcon name={it.icon} className="h-5 w-5" />

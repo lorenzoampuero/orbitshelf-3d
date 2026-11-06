@@ -1,9 +1,11 @@
 import type { MetadataRoute } from "next";
-import { brand } from "@/config/brand";
+import { brand, siteUrlConfigured } from "@/config/brand";
 import { en } from "@/i18n/dictionaries/en";
 import { localePath } from "@/i18n/config";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  // Absolute URLs are required; with no site URL configured in production, list nothing rather than a wrong host.
+  if (!siteUrlConfigured) return [];
   const base = brand.siteUrl.replace(/\/+$/, "");
   const marketingPaths = [
     "/",
@@ -24,15 +26,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/compare/ai-3d-vs-manual",
     "/privacy",
     "/terms",
-    "/login",
   ];
+  // /login is noindex, so it is not listed. The build time stands in for the last change of the pages.
+  const lastModified = new Date();
 
   const entries: MetadataRoute.Sitemap = [];
   for (const p of marketingPaths) {
     for (const locale of ["en", "es"] as const) {
       entries.push({
         url: `${base}${localePath(locale, p)}`,
-        lastModified: new Date("2026-10-27"),
+        lastModified,
         alternates: {
           languages: {
             en: `${base}${localePath("en", p)}`,

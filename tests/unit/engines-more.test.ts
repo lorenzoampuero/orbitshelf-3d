@@ -28,6 +28,21 @@ describe("engines added from the published documentation", () => {
     expect(usd("meshy-7.1")).toBe(0.6);
   });
 
+  it("Hunyuan Pro: the price lines of a 4-view textured job add up to 0.825, with the face_count add-on included", () => {
+    const pro = getEngine("fal-hunyuan-3.1-pro")!;
+    const { lines, usd: total } = priceOf(pro, { mode: "multi-image", photoCount: 4, texture: "1k" });
+    expect(lines).toEqual([
+      { code: "generation", usd: 0.375 },
+      { code: "texture", usd: 0.15 },
+      { code: "multi_view", usd: 0.15 },
+      { code: "detail", usd: 0.15 }, // face_count: the adapter always sends it, so it is priced in
+    ]);
+    expect(Math.round(lines.reduce((n, l) => n + l.usd, 0) * 1e4) / 1e4).toBe(0.825);
+    expect(total).toBe(0.825);
+    // The adapter really sends the paid parameter this line stands for
+    expect(pro.fal!.buildInput({ source: { kind: "text", prompt: "x" }, textureResolution: "1k" } as never)).toHaveProperty("face_count");
+  });
+
   it("refuses what these engines cannot do", () => {
     expect(capabilityProblem(getEngine("fal-hunyuan-3.1-rapid")!, { mode: "multi-image", photoCount: 2, texture: "1k" })).toBe("mode");
     expect(capabilityProblem(getEngine("fal-trellis-1")!, { mode: "image", photoCount: 1, texture: "none" })).toBe("texture");

@@ -31,6 +31,8 @@ describe("POST /api/v1/jobs when enabled", () => {
     process.env.SLOYD_CLIENT_ID = "cid-0000";
     process.env.SLOYD_CLIENT_SECRET = "sec-0000-xxxx";
     process.env.LOCAL_PAID_ATTEMPT_CAP = "3";
+
+    process.env.BILLING_UNIT = "attempts"; // these tests are about flat attempts; the product default is credits
     process.env.MAX_ACTIVE_JOBS_PER_ORG = "2";
     providerCalls = 0;
     vi.stubGlobal("fetch", (async (u: string | URL) => {

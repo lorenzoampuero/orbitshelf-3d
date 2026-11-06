@@ -6,8 +6,9 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { buildPageMetadata } from "@/lib/seo";
 import { currentUser } from "@/lib/api";
 import { MarketingShell } from "@/components/marketing-shell";
+import { ModelViewerBox } from "@/components/model-viewer-box";
 import { Card, CardBody, Checklist, ClosingBanner, FaqList, PageHero, Section, SectionTitle, StatusBadge, Tag } from "@/components/marketing-kit";
-import { Chips, FlowDiagram, SolutionsRow } from "@/components/features/feature-parts";
+import { Chips, FlowDiagram, SolutionsRow, demoKind } from "@/components/features/feature-parts";
 import { FEATURES_COMMON, FEATURES_INDEX, featureCopy } from "@/content/features";
 import type { FeatureSlug } from "@/content/features";
 import type { Locale } from "@/lib/types";
@@ -52,7 +53,7 @@ function CompareCard({ locale, slug, span, row }: { locale: Locale; slug: Featur
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </div>
-      <FlowDiagram inputs={c.inOut.inputs} outputLabel={common.flowOutput} />
+      <FlowDiagram inputs={c.inOut.inputs} outputLabel={common.flowOutput} kind={demoKind(c.viewer.src)} />
     </Card>
   );
 }
@@ -65,6 +66,14 @@ export default async function FeaturesIndexPage({ params }: Props) {
   const idx = FEATURES_INDEX[locale];
   const common = FEATURES_COMMON[locale];
   const create = localePath(locale, "/dashboard/create");
+  const meshDemo = featureCopy(locale, "multi-image-to-3d").viewer;
+  const viewerLabels = {
+    resetLabel: dict.dash.detail.resetView,
+    autoRotateLabel: dict.dash.detail.autoRotate,
+    autoRotateOffLabel: dict.dash.detail.autoRotateOff,
+    loadingLabel: dict.dash.detail.viewerLoading,
+    errorLabel: dict.dash.detail.viewerError,
+  };
 
   const faqJsonLd = {
     "@context": "https://schema.org",
@@ -103,7 +112,7 @@ export default async function FeaturesIndexPage({ params }: Props) {
       <Section>
         <SectionTitle sub={idx.afterSub}>{idx.afterTitle}</SectionTitle>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-          <Card lift className="space-y-4 md:col-span-2">
+          <Card lift tone="outline" className="space-y-4 md:col-span-2">
             <Tag>{common.review.tag}</Tag>
             <h3 className="text-lg font-semibold leading-tight">{common.review.title}</h3>
             <p className="text-sm leading-relaxed text-muted">{common.review.text}</p>
@@ -116,11 +125,26 @@ export default async function FeaturesIndexPage({ params }: Props) {
             </div>
           </Card>
 
-          <Card lift className="space-y-4 md:col-span-4 md:p-9">
-            <Tag>{common.mesh.tag}</Tag>
-            <h3 className="text-xl font-semibold leading-tight">{common.mesh.title}</h3>
-            <p className="max-w-lg text-sm leading-relaxed text-muted">{common.mesh.text}</p>
-            <Chips items={common.mesh.diagnostics} />
+          {/* The one live viewer on this page: a demo sample with the mesh toggle, on the red card. */}
+          <Card tone="red" className="grid grid-cols-1 items-center gap-6 overflow-hidden md:col-span-4 md:p-9">
+            <div className="flex flex-col items-start space-y-4">
+              <Tag>{common.mesh.tag}</Tag>
+              <h3 className="text-xl font-semibold leading-tight">{common.mesh.title}</h3>
+              <p className="max-w-lg text-sm leading-relaxed text-muted">{common.mesh.text}</p>
+              <Chips items={common.mesh.diagnostics} />
+              <p className="text-xs text-muted">{common.mesh.sample}</p>
+            </div>
+            <ModelViewerBox
+              src={meshDemo.src}
+              alt={meshDemo.alt}
+              heightClass="h-[300px]"
+              provenanceBadge={common.mesh.badge}
+              testId="features-mesh-viewer"
+              wheelZoom={false}
+              wireframeLabel={dict.dash.detail.wireframe}
+              surfaceLabel={dict.dash.detail.surface}
+              {...viewerLabels}
+            />
           </Card>
 
           <Card lift className="md:col-span-4 md:p-9">
@@ -139,8 +163,8 @@ export default async function FeaturesIndexPage({ params }: Props) {
             <StatusBadge>{common.embed.badge}</StatusBadge>
           </Card>
 
-          <Card className="flex flex-col justify-between gap-6 md:col-span-4 md:p-9">
-            <div className="max-w-xl space-y-4">
+          <Card tone="outline" className="flex flex-col justify-between gap-6 md:col-span-4 md:p-9">
+            <div className="flex max-w-xl flex-col items-start space-y-4">
               <Tag>{common.importCard.tag}</Tag>
               <h3 className="text-xl font-semibold leading-tight">{common.importCard.title}</h3>
               <p className="text-sm leading-relaxed text-muted">{common.importCard.text}</p>
@@ -157,7 +181,7 @@ export default async function FeaturesIndexPage({ params }: Props) {
       <Section>
         <SectionTitle>{idx.limitsTitle}</SectionTitle>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-          <Card className="space-y-4 md:col-span-2">
+          <Card tone="planned" className="space-y-4 md:col-span-2">
             <Tag>{common.engine.tag}</Tag>
             <h3 className="text-xl font-semibold leading-tight">{common.engine.title}</h3>
             <p className="text-sm leading-relaxed text-muted">{common.engine.text}</p>

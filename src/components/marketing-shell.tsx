@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   ArrowUpRight,
   BookOpen,
@@ -49,9 +50,18 @@ export function MarketingShell({
   isSignedIn: boolean;
   children: React.ReactNode;
 }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [menu, setMenu] = useState<MenuId>(null);
+  const pathname = usePathname();
+  // Open state is stored with the path it was opened on, so a route change closes both menus without an effect.
+  const [menuAt, setMenuAt] = useState<{ id: MenuId; path: string }>({ id: null, path: "" });
+  const [mobileAt, setMobileAt] = useState<string | null>(null);
+  const menu = menuAt.path === pathname ? menuAt.id : null;
+  const mobileOpen = mobileAt === pathname;
+  const setMenu = (id: MenuId) => setMenuAt({ id, path: pathname });
+  const setMobileOpen = (open: boolean) => setMobileAt(open ? pathname : null);
   const headerRef = useRef<HTMLElement>(null);
+  const triggerRefs = useRef<Partial<Record<Exclude<MenuId, null>, HTMLButtonElement | null>>>({});
+  const mobileToggleRef = useRef<HTMLButtonElement>(null);
+  const mobilePanelRef = useRef<HTMLElement>(null);
   const nav = navCopy[locale];
   const accountHref = localePath(locale, isSignedIn ? "/dashboard" : "/login");
   const accountLabel = isSignedIn ? dict.nav.dashboard : dict.nav.signIn;
@@ -65,14 +75,16 @@ export function MarketingShell({
     { href: "/compare/ai-3d-vs-manual", title: dict.nav.compare, text: dict.nav.compareDesc },
   ];
 
-  // Close the open panel on Escape or on a click outside the bar.
+  // Desktop panels: Escape closes the open one and returns focus to its trigger; a click outside the bar closes it.
   useEffect(() => {
     if (!menu) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenu(null);
+      if (e.key !== "Escape") return;
+      setMenuAt({ id: null, path: pathname });
+      triggerRefs.current[menu]?.focus();
     };
     const onPointer = (e: PointerEvent) => {
-      if (headerRef.current && !headerRef.current.contains(e.target as Node)) setMenu(null);
+      if (headerRef.current && !headerRef.current.contains(e.target as Node)) setMenuAt({ id: null, path: pathname });
     };
     document.addEventListener("keydown", onKey);
     document.addEventListener("pointerdown", onPointer);
@@ -80,29 +92,58 @@ export function MarketingShell({
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("pointerdown", onPointer);
     };
-  }, [menu]);
+  }, [menu, pathname]);
 
-  // Lock page scroll behind the full-screen mobile menu.
+  // Mobile menu: lock page scroll, move focus in, close on Escape (focus back to the toggle) and when the viewport grows to desktop.
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    if (!mobileOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    mobilePanelRef.current?.querySelector<HTMLElement>("a, button")?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setMobileAt(null);
+      mobileToggleRef.current?.focus();
+    };
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const onResize = () => {
+      if (desktop.matches) setMobileAt(null);
+    };
+    document.addEventListener("keydown", onKey);
+    desktop.addEventListener("change", onResize);
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKey);
+      desktop.removeEventListener("change", onResize);
     };
   }, [mobileOpen]);
 
-  const topLink = "whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-muted transition-colors hover:text-fg";
-  const toggle = (id: Exclude<MenuId, null>) => setMenu((m) => (m === id ? null : id));
-  const dropdown = (id: Exclude<MenuId, null>, label: string) => (
-    <button
-      type="button"
-      aria-expanded={menu === id}
-      aria-controls={`menu-${id}`}
-      onClick={() => toggle(id)}
-      className={`${topLink} inline-flex items-center gap-1 ${menu === id ? "text-fg" : ""}`}
+  const topLinkBase = "whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition-colors hover:text-fg";
+  const topLink = `${topLinkBase} text-muted`;
+  // The panel comes right after its trigger in the DOM, so Tab goes trigger, then the panel's links, then the next item.
+  // It is positioned against the pill (position: relative), not against this wrapper.
+  const dropdown = (id: Exclude<MenuId, null>, label: string, panel: React.ReactNode) => (
+    <div
+      onBlur={(e) => {
+        const next = e.relatedTarget as Node | null;
+        if (menu === id && next && !e.currentTarget.contains(next)) setMenu(null);
+      }}
     >
-      {label}
-      <ChevronDown className={`h-3.5 w-3.5 transition-transform ${menu === id ? "rotate-180" : ""}`} aria-hidden="true" />
-    </button>
+      <button
+        type="button"
+        ref={(node) => {
+          triggerRefs.current[id] = node;
+        }}
+        aria-expanded={menu === id}
+        aria-controls={menu === id ? `menu-${id}` : undefined}
+        onClick={() => setMenu(menu === id ? null : id)}
+        className={`${topLinkBase} ${menu === id ? "text-fg" : "text-muted"} inline-flex items-center gap-1`}
+      >
+        {label}
+        <ChevronDown className={`h-3.5 w-3.5 transition-transform ${menu === id ? "rotate-180" : ""}`} aria-hidden="true" />
+      </button>
+      {menu === id ? panel : null}
+    </div>
   );
 
   const cards = (items: typeof nav.productItems, cols: string, footer: { href: string; label: string }) => (
@@ -163,15 +204,49 @@ export function MarketingShell({
           <BrandLogo locale={locale} />
 
           <nav aria-label={dict.common.mainNavigation} className="hidden items-center lg:flex">
-            {dropdown("product", nav.product)}
-            {dropdown("solutions", nav.solutions)}
+            {dropdown(
+              "product",
+              nav.product,
+              <div id="menu-product" className="mega-panel menu-in absolute left-1/2 top-full z-50 mt-2 w-[920px] max-w-[calc(100vw-1.5rem)] -translate-x-1/2 rounded-[20px] p-3">
+                {cards(nav.productItems, "grid-cols-4", { href: "/features", label: nav.allFeatures })}
+              </div>,
+            )}
+            {dropdown(
+              "solutions",
+              nav.solutions,
+              <div id="menu-solutions" className="mega-panel menu-in absolute left-1/2 top-full z-50 mt-2 w-[720px] max-w-[calc(100vw-1.5rem)] -translate-x-1/2 rounded-[20px] p-3">
+                {cards(nav.solutionItems, "grid-cols-3", { href: "/solutions", label: nav.allSolutions })}
+              </div>,
+            )}
             <Link href={localePath(locale, "/integrations")} className={topLink}>
               {nav.integrations}
             </Link>
             <Link href={localePath(locale, "/pricing")} className={topLink}>
               {dict.nav.pricing}
             </Link>
-            {dropdown("resources", dict.nav.resources)}
+            {dropdown(
+              "resources",
+              dict.nav.resources,
+              <div id="menu-resources" className="mega-panel menu-in absolute left-1/2 top-full z-50 mt-2 w-[420px] max-w-[calc(100vw-1.5rem)] -translate-x-1/2 rounded-[20px] p-2">
+                <ul>
+                  {resourceLinks.map((l) => (
+                    <li key={l.href}>
+                      <Link
+                        href={localePath(locale, l.href)}
+                        onClick={() => setMenu(null)}
+                        className="flex items-start gap-3 rounded-2xl p-3 transition-colors hover:bg-white/[0.06]"
+                      >
+                        <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
+                        <span>
+                          <span className="block text-sm font-semibold">{l.title}</span>
+                          {l.text ? <span className="block text-xs leading-relaxed text-muted">{l.text}</span> : null}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>,
+            )}
           </nav>
 
           <div className="hidden items-center gap-2 lg:flex">
@@ -195,56 +270,24 @@ export function MarketingShell({
             <LocaleSwitcher locale={locale} label={dict.common.language} />
             <button
               type="button"
+              ref={mobileToggleRef}
               aria-expanded={mobileOpen}
-              aria-controls="mobile-marketing-menu"
+              aria-controls={mobileOpen ? "mobile-marketing-menu" : undefined}
               aria-label={mobileOpen ? dict.common.closeMenu : dict.common.openMenu}
-              onClick={() => setMobileOpen((v) => !v)}
+              onClick={() => setMobileOpen(!mobileOpen)}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-fg"
             >
-              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {mobileOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
             </button>
           </div>
         </div>
-
-        {menu === "product" && (
-          <div id="menu-product" className="mega-panel menu-in mx-auto mt-2 hidden max-w-[920px] rounded-[20px] p-3 lg:block">
-            {cards(nav.productItems, "grid-cols-4", { href: "/features", label: nav.allFeatures })}
-          </div>
-        )}
-
-        {menu === "solutions" && (
-          <div id="menu-solutions" className="mega-panel menu-in mx-auto mt-2 hidden max-w-[720px] rounded-[20px] p-3 lg:block">
-            {cards(nav.solutionItems, "grid-cols-3", { href: "/solutions", label: nav.allSolutions })}
-          </div>
-        )}
-
-        {menu === "resources" && (
-          <div id="menu-resources" className="mega-panel menu-in mx-auto mt-2 hidden max-w-[420px] rounded-[20px] p-2 lg:block">
-            <ul>
-              {resourceLinks.map((l) => (
-                <li key={l.href}>
-                  <Link
-                    href={localePath(locale, l.href)}
-                    onClick={() => setMenu(null)}
-                    className="flex items-start gap-3 rounded-2xl p-3 transition-colors hover:bg-white/[0.06]"
-                  >
-                    <BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
-                    <span>
-                      <span className="block text-sm font-semibold">{l.title}</span>
-                      {l.text ? <span className="block text-xs leading-relaxed text-muted">{l.text}</span> : null}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </header>
 
       {/* Mobile: full-screen menu under the pill. */}
       {mobileOpen && (
         <nav
           id="mobile-marketing-menu"
+          ref={mobilePanelRef}
           aria-label={dict.common.mobileNavigation}
           className="fixed inset-0 z-30 overflow-y-auto bg-bg/95 px-5 pb-10 pt-24 backdrop-blur-xl lg:hidden"
         >
@@ -276,11 +319,12 @@ export function MarketingShell({
         </nav>
       )}
 
-      <main id="main-content" className="relative z-10 flex-1">
+      {/* While the full-screen menu is open the page behind it is inert: no Tab, no screen reader, no clicks. */}
+      <main id="main-content" inert={mobileOpen} className="relative z-10 flex-1">
         {children}
       </main>
 
-      <footer className="relative z-10 border-t border-line bg-bg py-14 text-sm text-muted">
+      <footer inert={mobileOpen} className="relative z-10 border-t border-line bg-bg py-14 text-sm text-muted">
         <div className="container-page space-y-10">
           <div className="grid grid-cols-2 gap-10 md:grid-cols-6">
             <div className="col-span-2 space-y-3">

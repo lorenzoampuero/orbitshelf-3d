@@ -1,6 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { isLocale, localePath } from "@/i18n/config";
+import { forBilling } from "@/i18n/billing-copy";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { billingUnit } from "@/lib/env";
 import { currentUser } from "@/lib/api";
 import { store, toDto } from "@/lib/store";
 import { buildPageMetadata } from "@/lib/seo";
@@ -22,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function UsagePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  const t = getDictionary(locale);
+  const t = forBilling(getDictionary(locale), locale, billingUnit());
   const session = await currentUser();
   if (!session) redirect(localePath(locale, "/login"));
 
@@ -81,7 +83,6 @@ export default async function UsagePage({ params }: { params: Promise<{ locale: 
       {/* Job History Table */}
       <section className="rounded-[16px] border border-line bg-surface p-5">
         <h2 className="font-display text-base font-semibold text-fg">{t.dash.usage.jobsTitle}</h2>
-        <p className="mt-1 text-xs text-muted">{t.dash.usage.creditsNote}</p>
         {models.length === 0 ? (
           <p className="mt-4 text-sm text-muted">{t.dash.usage.noJobs}</p>
         ) : (
@@ -93,7 +94,6 @@ export default async function UsagePage({ params }: { params: Promise<{ locale: 
                   <th className="py-2 pr-4">{t.dash.usage.columns.source}</th>
                   <th className="py-2 pr-4">{t.dash.usage.columns.state}</th>
                   <th className="py-2 pr-4">{t.dash.usage.columns.attempts}</th>
-                  <th className="py-2 pr-4">{t.dash.usage.columns.credits}</th>
                   <th className="py-2">{t.dash.usage.columns.date}</th>
                 </tr>
               </thead>
@@ -106,7 +106,6 @@ export default async function UsagePage({ params }: { params: Promise<{ locale: 
                     <td className="py-2.5 pr-4">
                       {m.attemptsDebited} / {m.attemptsRefunded}
                     </td>
-                    <td className="py-2.5 pr-4">{m.providerCreditsEstimate}</td>
                     <td className="py-2.5">{formatDate(m.createdAt, locale)}</td>
                   </tr>
                 ))}

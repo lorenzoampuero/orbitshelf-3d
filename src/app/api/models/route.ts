@@ -1,7 +1,7 @@
 import { apiError, apiJson, readBodyCapped, withUser } from "@/lib/api";
 import { ImageError, MAX_IMAGE_BYTES, validateAndNormalizeImage, type NormalizedImage } from "@/lib/image";
 import { createDemoModel, createProviderModel, refreshEngineSwitches, type ProviderInput } from "@/lib/jobs";
-import { availableEngines } from "@/lib/provider/registry";
+import { availableEngines, BILLING_UNSAFE_MESSAGE, billingConfigProblem } from "@/lib/provider/registry";
 import { checkQuote } from "@/lib/quotes";
 import { rateLimit } from "@/lib/rate-limit";
 import { filterModels } from "@/lib/model-filter";
@@ -53,6 +53,8 @@ async function checkProviderLimits(orgId: string) {
   if (availableEngines().length === 0) {
     return apiError(503, "provider_not_configured", "AI generation is not configured on this server. Use a demo sample or add provider credentials.");
   }
+  // Refused before anything is debited: flat attempts with two engines on would break the margin floor.
+  if (billingConfigProblem()) return apiError(503, "billing_unsafe", BILLING_UNSAFE_MESSAGE);
   const rl = await rateLimit(`create-job:${orgId}`, 5, 60_000);
   if (!rl.ok) return apiError(429, "rate_limited", "Too many generation requests. Try again shortly.", undefined, { "Retry-After": String(rl.retryAfterSeconds) });
   return null;
@@ -69,6 +71,7 @@ function quoteProblem(quoteId: string | undefined, orgId: string, engineId: stri
   if (!quoteId || !engineId) return null;
   const check = checkQuote(quoteId, orgId, engineId, { mode, photoCount, texture });
   if (check === "ok") return null;
+  if (check === "unsafe") return apiError(503, "billing_unsafe", BILLING_UNSAFE_MESSAGE);
   return apiError(409, check === "expired" ? "quote_expired" : "quote_mismatch", "The quote is no longer valid. Review the cost and try again.");
 }
 

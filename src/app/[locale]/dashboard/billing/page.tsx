@@ -4,7 +4,9 @@ import { isLocale, localePath } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { currentUser } from "@/lib/api";
 import { creditsFor, PLAN_TIERS } from "@/lib/credits";
-import { allEngines, planReference, priceOf } from "@/lib/provider/registry";
+import { refreshEngineSwitches } from "@/lib/jobs";
+import { allEngines, engineEnabled, planReference, priceOf } from "@/lib/provider/registry";
+import { TEXTURE_RESOLUTIONS } from "@/lib/types";
 import { buildPageMetadata } from "@/lib/seo";
 import { store } from "@/lib/store";
 import { PlanCards } from "@/components/plan-cards";
@@ -30,11 +32,22 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
   const user = (await currentUser())!;
   const usage = await store.usage(user.orgId);
   const bases = PLAN_TIERS.map((tier) => ({ name: tier.name, units: tier.steps[0].credits }));
-  const engines = allEngines().map((e) => {
-    const mode = e.modes[0];
-    const usd = priceOf(e, { mode, photoCount: mode === "text" ? 0 : 1, texture: "1k" }).usd;
-    return { id: e.id, label: e.label, usd, credits: creditsFor(usd) };
-  });
+  await refreshEngineSwitches().catch(() => undefined);
+  // Only engines that are switched on, by the most expensive thing each can be asked to do. No vendor names and no provider prices: credits only.
+  const engines = allEngines()
+    .filter((e) => engineEnabled(e))
+    .map((e) => {
+      let dearest = 0;
+      for (const mode of e.modes) {
+        for (const texture of TEXTURE_RESOLUTIONS) {
+          if (texture === "none" && !e.geometryOnly) continue;
+          const counts = mode === "text" ? [0] : mode === "image" ? [1] : Array.from({ length: Math.max(e.maxPhotos - 1, 1) }, (_, i) => i + 2);
+          for (const photoCount of counts) dearest = Math.max(dearest, creditsFor(priceOf(e, { mode, photoCount, texture }).usd));
+        }
+      }
+      return { id: e.id, credits: dearest };
+    })
+    .sort((a, b) => a.credits - b.credits || a.id.localeCompare(b.id));
 
   return (
     <div className="space-y-6">
@@ -73,12 +86,12 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {engines.map((e) => (
+              {engines.map((e, i) => (
                 <tr key={e.id}>
-                  <th scope="row" className="py-2.5 pr-4 font-semibold text-fg">{e.label}</th>
+                  <th scope="row" className="py-2.5 pr-4 font-semibold text-fg">{c.engineName.replace("{n}", String(i + 1))}</th>
                   <td className="py-2.5 pr-4 tabular-nums text-muted">{e.credits}</td>
                   {bases.map((p) => (
-                    <td key={p.name} className="py-2.5 pr-4 tabular-nums text-muted">{Math.floor(p.units / e.credits)}</td>
+                    <td key={p.name} className="py-2.5 pr-4 tabular-nums text-muted">{e.credits > 0 ? Math.floor(p.units / e.credits) : 0}</td>
                   ))}
                 </tr>
               ))}

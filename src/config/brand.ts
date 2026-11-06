@@ -1,3 +1,11 @@
+function resolveSiteUrl(): string {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "");
+  if (explicit) return explicit;
+  const vercelHost = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (vercelHost) return `https://${vercelHost}`;
+  return process.env.NODE_ENV === "production" ? "" : "http://localhost:3000";
+}
+
 /**
  * Single source of truth for the provisional brand.
  * "OrbitShelf 3D" is a working name: domain availability and trademark clearance are NOT verified.
@@ -9,12 +17,19 @@ export const brand = {
   fullName: "OrbitShelf 3D",
   /** Wordmark split used by the logo component. */
   wordmark: { lead: "orbit", tail: "shelf" },
-  /** Placeholder only. No domain has been bought or registered. */
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  /**
+   * Public origin used for canonical, hreflang, Open Graph and the sitemap. No domain has been bought or registered.
+   * Order: NEXT_PUBLIC_SITE_URL, then the Vercel production host, then localhost in development only.
+   * In production with none of them set this is an empty string: callers must not print it as a URL (see `siteUrlConfigured`).
+   */
+  siteUrl: resolveSiteUrl(),
   /** Real contact address shown in the footer and legal pages. Null until configured. */
   supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL?.trim() || null,
   status: "provisional",
 } as const;
+
+/** False only in a production build that has no site URL configured. SEO URLs are then left relative and the sitemap is empty. */
+export const siteUrlConfigured = brand.siteUrl !== "";
 
 /**
  * The legal entity operating the service (data controller / contracting party). Every value comes from the

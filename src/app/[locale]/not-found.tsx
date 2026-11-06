@@ -1,6 +1,13 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import type { Metadata } from "next";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { brand } from "@/config/brand";
+
+export const metadata: Metadata = {
+  title: `${getDictionary("en").notFound.title} | ${brand.fullName}`,
+  robots: { index: false, follow: false },
+};
 
 /**
  * Next gives not-found no params, so the language of the visitor is unknown here.

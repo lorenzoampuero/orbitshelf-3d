@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { brand } from "@/config/brand";
+import { brand, siteUrlConfigured } from "@/config/brand";
 import { localeLabels, localePath } from "@/i18n/config";
 import type { Locale } from "@/lib/types";
+
+let warnedSiteUrl = false;
 
 export function buildPageMetadata(input: {
   locale: Locale;
@@ -11,6 +13,10 @@ export function buildPageMetadata(input: {
   noIndex?: boolean;
 }): Metadata {
   const base = brand.siteUrl.replace(/\/+$/, "");
+  if (!siteUrlConfigured && !warnedSiteUrl) {
+    warnedSiteUrl = true;
+    console.warn("[seo] NEXT_PUBLIC_SITE_URL is not set in production: canonical and hreflang are relative and will not name the real host.");
+  }
   const enUrl = `${base}${localePath("en", input.path)}`;
   const esUrl = `${base}${localePath("es", input.path)}`;
   const canonical = input.locale === "es" ? esUrl : enUrl;

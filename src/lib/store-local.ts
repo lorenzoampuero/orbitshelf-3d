@@ -2,7 +2,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { dataDir, maxActiveJobs, paidAttemptCap } from "@/lib/env";
+import { dataDir, initialGrant, maxActiveJobs } from "@/lib/env";
 import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type ApiTokenRow, type DueWebhook, type WebhookDeliveryRow, type WebhookEndpointRow, type WebhookResult, type EmbedRow, type ProjectRow, type IntegrationRow, type PublicationRow, mimeOf, nowIso, orgIdForEmail, versionKey, type CostEventRow, type VersionRow, type LedgerRow, type LocalDb, type ModelRow, type SourcePhoto } from "@/lib/store-shared";
 import type { EngineStats, UserProfile, FailureCode, ImageView, JobEventDto, JobState, PriceEvidence, UsageDto } from "@/lib/types";
 
@@ -125,7 +125,7 @@ export const localStore = {
       if (!org) {
         org = { id: orgId, name: clean.split("@")[0] || "Workspace", createdAt: nowIso() };
         db.orgs.push(org);
-        pushLedger(db, { orgId, idempotencyKey: "grant:initial", delta: paidAttemptCap(), reason: "local_cap_grant", modelId: null });
+        pushLedger(db, { orgId, idempotencyKey: "grant:initial", delta: initialGrant(), reason: "local_cap_grant", modelId: null });
         audit(db, orgId, "org.created", null);
       }
       let user = db.users.find((u) => u.email === clean);

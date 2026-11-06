@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import sharp from "sharp";
 import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
-import { COMPARISON_STRUCTURES, creditsFor, effectiveCost, maxCreditsForPrice, MIN_MARGIN, PLAN_STRUCTURES, PLAN_TIERS, simulate, TARGET_MARGIN, averageUseAtMargin } from "@/lib/credits";
+import { COMPARISON_STRUCTURES, COST_STRESS, creditsFor, effectiveCost, maxCreditsForPrice, MIN_MARGIN, PLAN_STRUCTURES, PLAN_TIERS, simulate, SIZING_MARGIN, TARGET_MARGIN, averageUseAtMargin } from "@/lib/credits";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { allEngines, priceOf } from "@/lib/provider/registry";
 import { validateAndNormalizeImage } from "@/lib/image";
@@ -55,8 +55,8 @@ describe("plan simulation", () => {
 });
 
 describe("the 60% margin floor", () => {
-  const raw = (s: Parameters<typeof simulate>[0], p: Parameters<typeof simulate>[1], usd: number, use: number) => {
-    const r = simulate(s, p, usd, use);
+  const raw = (s: Parameters<typeof simulate>[0], p: Parameters<typeof simulate>[1], usd: number, use: number, stress = 1) => {
+    const r = simulate(s, p, usd, use, undefined, undefined, stress);
     return r.contributionUsd / p.priceUsd;
   };
   /** Every price any engine can reach, not just its default options. */
@@ -74,8 +74,26 @@ describe("the 60% margin floor", () => {
     return [...prices];
   };
 
-  it("is 60%", () => {
+  it("the floor is 60%, and plans are sized above it so it has real headroom", () => {
     expect(MIN_MARGIN).toBe(0.6);
+    expect(SIZING_MARGIN).toBeGreaterThan(MIN_MARGIN);
+    expect(COST_STRESS).toBe(1.1);
+  });
+
+  it("the floor still holds when every real cost runs 10% over what we assumed, at full use, with every engine and option", () => {
+    for (const s of PLAN_STRUCTURES) {
+      for (const p of s.plans) {
+        for (const usd of everyPrice()) expect(raw(s, p, usd, 1, COST_STRESS), `${p.name} at US$${usd} with costs +10%`).toBeGreaterThanOrEqual(MIN_MARGIN);
+      }
+    }
+  });
+
+  it("sizing at 62% would not survive that stress, which is why the sizing margin is higher", () => {
+    // The biggest step sized for 62% (credits rounded down to 50, as the plans are) drops under 60% with costs +10%.
+    const price = 199;
+    const credits = Math.floor(maxCreditsForPrice(price, undefined, 0.62) / 50) * 50;
+    const s = PLAN_STRUCTURES[0];
+    expect(raw(s, { name: "x", priceUsd: price, units: credits, recurring: true }, 0.675, 1, COST_STRESS)).toBeLessThan(MIN_MARGIN);
   });
 
   it("every plan on offer keeps it, with every engine and option, at any level of use", () => {
@@ -136,14 +154,14 @@ describe("the 60% margin floor", () => {
         expect(at85, `${tier.name} US$${step.priceUsd}`).toBeGreaterThan(0.2);
         expect(at85).toBeLessThan(0.35);
         expect(at75, `${tier.name} US$${step.priceUsd}`).toBeGreaterThan(0.5);
-        expect(at75).toBeLessThan(0.65);
+        expect(at75).toBeLessThan(0.7);
       }
     }
   });
 
   it("works out the most credits a price can include", () => {
-    expect(maxCreditsForPrice(19)).toBe(307);
-    expect(maxCreditsForPrice(199)).toBe(3457);
+    expect(maxCreditsForPrice(19)).toBe(269);
+    expect(maxCreditsForPrice(199)).toBe(3059);
     expect(maxCreditsForPrice(1)).toBe(0);
   });
 
@@ -182,7 +200,7 @@ describe("charging in credits", () => {
 
   beforeEach(() => {
     process.env.DATA_DIR = path.join(tmpRoot, "t" + ++n);
-    process.env.LOCAL_PAID_ATTEMPT_CAP = "100";
+    process.env.LOCAL_FREE_CREDITS = "100";
     process.env.MAX_ACTIVE_JOBS_PER_ORG = "5";
     process.env.BILLING_UNIT = "credits";
     process.env.SESSION_SECRET = "unit-test-session-secret-32-characters-long";
@@ -216,7 +234,7 @@ describe("charging in credits", () => {
   });
 
   it("refuses a job the balance cannot cover, without going negative or calling the provider", async () => {
-    process.env.LOCAL_PAID_ATTEMPT_CAP = String(SLOYD_IMAGE_CREDITS - 1);
+    process.env.LOCAL_FREE_CREDITS = String(SLOYD_IMAGE_CREDITS - 1);
     const { org } = await store.signIn("c3@example.com");
     let called = false;
     const d = deps();

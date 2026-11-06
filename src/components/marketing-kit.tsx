@@ -27,16 +27,23 @@ export function SectionTitle({ children, sub, level = 2 }: { children: React.Rea
   );
 }
 
-/** A label inside a card: a pill with a square arrow button at the end. */
-export function Tag({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="tag-pill">
-      {children}
-      <span className="tag-arrow" aria-hidden="true">
-        <ArrowUpRight className="h-4 w-4" />
-      </span>
-    </span>
-  );
+/**
+ * A label inside a card. Plain by default: a pill with no arrow, because an arrow square reads as a button.
+ * Pass `href` only when the whole tag really is a link; it then gets the arrow square.
+ * `w-fit self-start` keeps it from stretching across a flex column.
+ */
+export function Tag({ children, href }: { children: React.ReactNode; href?: string }) {
+  if (href) {
+    return (
+      <Link href={href} className="tag-pill w-fit self-start transition-colors hover:border-accent">
+        {children}
+        <span className="tag-arrow" aria-hidden="true">
+          <ArrowUpRight className="h-4 w-4" />
+        </span>
+      </Link>
+    );
+  }
+  return <span className="tag-pill w-fit self-start !pr-4">{children}</span>;
 }
 
 /** A plain label pill with no arrow, for status and context. */
@@ -64,10 +71,38 @@ export function StatusBadge({ children, tone = "muted" }: { children: React.Reac
   return <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${color}`}>{children}</span>;
 }
 
-/** The standard card. Pass `lift` for the hover rise on cards that are links or invite a look. */
-export function Card({ children, className = "", lift = false }: { children: React.ReactNode; className?: string; lift?: boolean }) {
-  return <article className={`card reveal p-7 md:p-8 ${lift ? "card-lift" : ""} ${className}`}>{children}</article>;
+/**
+ * Card looks, so a page is not ten identical panels:
+ *  - default: the solid surface card.
+ *  - outline: no fill, a visible border. For secondary notes.
+ *  - red: a deep red gradient. For the one card a section is built around.
+ *  - planned: dashed and transparent. For things that do not exist yet, so live items lead.
+ * All share the 24px radius.
+ */
+export type CardTone = "default" | "outline" | "red" | "planned";
+const CARD_TONE: Record<CardTone, string> = {
+  default: "",
+  outline: "bg-transparent border-white/20",
+  red: "bg-[linear-gradient(135deg,#2e0709_0%,#14090a_70%)] border-[#5a1618]",
+  planned: "bg-transparent border-dashed border-white/25",
+};
+/** Pass `lift` for the hover rise on cards that are links or invite a look. */
+export function Card({
+  children,
+  className = "",
+  lift = false,
+  tone = "default",
+}: {
+  children: React.ReactNode;
+  className?: string;
+  lift?: boolean;
+  tone?: CardTone;
+}) {
+  return <article className={`card reveal p-7 md:p-8 ${lift ? "card-lift" : ""} ${CARD_TONE[tone]} ${className}`}>{children}</article>;
 }
+
+/** Tone classes for cards that are not built with <Card> (list items). Same looks as <Card tone>. */
+export const cardToneClass = (tone: CardTone) => CARD_TONE[tone];
 
 /** A tag, a title and a text: the content of most cards. */
 export function CardBody({ tag, title, text, children }: { tag?: string; title: string; text?: string; children?: React.ReactNode }) {
@@ -164,9 +199,10 @@ export function FaqList({ items }: { items: { q: string; a: string }[] }) {
 /** Closing banner on a starfield: two-line title, the second in gradient, one button. */
 export function ClosingBanner({ titleA, titleB, cta, href, note }: { titleA: string; titleB: string; cta: string; href: string; note?: string }) {
   return (
-    <section className="px-5 pb-20 pt-8 md:pb-28">
+    <section className="pb-20 pt-8 md:pb-28">
+      <div className="container-page">
       <div
-        className="reveal relative mx-auto flex max-w-[1120px] flex-col items-center gap-6 overflow-hidden rounded-[32px] px-6 py-20 text-center md:py-28"
+        className="reveal relative flex w-full flex-col items-center gap-6 overflow-hidden rounded-[var(--radius-card)] px-6 py-20 text-center md:py-28"
         style={{
           backgroundColor: "#1a0506",
           backgroundImage: [
@@ -194,6 +230,7 @@ export function ClosingBanner({ titleA, titleB, cta, href, note }: { titleA: str
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
         {note ? <p className="max-w-md text-sm text-white/70">{note}</p> : null}
+      </div>
       </div>
     </section>
   );

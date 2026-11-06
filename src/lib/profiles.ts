@@ -71,7 +71,7 @@ export function resolvePreset(preset: GenerationPreset, engines: EngineDto[], mo
   if (preset === "advanced") return null;
   const usable = engines.filter((e) => e.modes.includes(mode) && (mode === "text" || photoCount <= e.maxPhotos));
   if (usable.length === 0) return null;
-  const cheapest = (list: EngineDto[]) => [...list].sort((a, b) => a.fromPriceUsd - b.fromPriceUsd || a.id.localeCompare(b.id))[0];
+  const cheapest = (list: EngineDto[]) => [...list].sort((a, b) => a.fromCredits - b.fromCredits || a.id.localeCompare(b.id))[0];
   if (preset === "studio") {
     const mostViews = Math.max(...usable.map((e) => e.maxPhotos));
     return { engineId: cheapest(usable.filter((e) => e.maxPhotos === mostViews)).id, texture: "2k" };

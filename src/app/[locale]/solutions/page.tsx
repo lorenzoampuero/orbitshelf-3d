@@ -53,7 +53,7 @@ export default async function SolutionsPage({ params }: Props) {
           {SOLUTION_SLUGS.map((slug, i) => {
             const s = copy.solutions[slug];
             return (
-              <Card key={slug} lift className={`flex flex-col justify-between gap-8 ${CARD_LAYOUT[i]}`}>
+              <Card key={slug} lift tone={i === 2 ? "outline" : "default"} className={`flex flex-col justify-between gap-8 ${CARD_LAYOUT[i]}`}>
                 <div className="space-y-5">
                   <div className="flex items-start justify-between gap-3">
                     <Tag>{s.name}</Tag>
@@ -82,7 +82,7 @@ export default async function SolutionsPage({ params }: Props) {
       <Section>
         <SectionTitle sub={idx.sharedSub}>{idx.sharedTitle}</SectionTitle>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-          <Card lift className="flex flex-col justify-between gap-8 md:col-span-4">
+          <Card lift tone="red" className="flex flex-col justify-between gap-8 md:col-span-4">
             <div className="space-y-4">
               <Tag>{idx.shared.review.tag}</Tag>
               <h3 className="max-w-md text-2xl font-semibold leading-tight">{idx.shared.review.title}</h3>

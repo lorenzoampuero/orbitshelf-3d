@@ -15,6 +15,8 @@ beforeEach(() => {
   process.env.DATA_DIR = path.join(root, "t" + ++n);
   process.env.INTEGRATIONS_KEY = "unit-test-integrations-key-32-characters";
   process.env.LOCAL_PAID_ATTEMPT_CAP = "3";
+
+  process.env.BILLING_UNIT = "attempts"; // these tests are about flat attempts; the product default is credits
 });
 afterEach(() => {
   delete process.env.WEBHOOK_ALLOW_INSECURE;

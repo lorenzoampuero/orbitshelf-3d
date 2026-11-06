@@ -373,8 +373,8 @@ const en: SolutionsCopy = {
           "Shopify one-click publishing (coming soon)",
           "WooCommerce (coming soon)",
           "Client roles for agencies (planned)",
-          "More AI engines: one is on in the pilot, others after testing",
-          "Payments: none is active in the pilot",
+          "AI engine: planned for the pilot (today demo samples and GLB import work)",
+          "Payments: none is active yet",
         ],
       },
       integrations: {
@@ -719,7 +719,7 @@ const en: SolutionsCopy = {
           "Partial editing and retexturing",
           "Exporting from Blender: the add-on only imports",
           "A tested Blender add-on: it has not been run inside Blender yet",
-          "More AI engines: one is on in the pilot, others after testing",
+          "AI engine: planned for the pilot (today demo samples and GLB import work)",
         ],
       },
       integrations: {
@@ -1017,8 +1017,8 @@ const es: SolutionsCopy = {
           "Publicación en Shopify en un clic (próximamente)",
           "WooCommerce (próximamente)",
           "Roles por cliente para agencias (planeado)",
-          "Más motores de IA: hay uno activo en el piloto, otros después de probar",
-          "Pagos: ninguno está activo en el piloto",
+          "Motor de IA: previsto para el piloto (hoy funcionan las muestras de demostración y la importación de GLB)",
+          "Pagos: ninguno está activo todavía",
         ],
       },
       integrations: {
@@ -1363,7 +1363,7 @@ const es: SolutionsCopy = {
           "Edición parcial y retexturizado",
           "Exportar desde Blender: el add-on solo importa",
           "Un add-on de Blender probado: todavía no se ha ejecutado dentro de Blender",
-          "Más motores de IA: hay uno activo en el piloto, otros después de probar",
+          "Motor de IA: previsto para el piloto (hoy funcionan las muestras de demostración y la importación de GLB)",
         ],
       },
       integrations: {

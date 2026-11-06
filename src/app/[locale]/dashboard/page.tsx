@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Plus } from "lucide-react";
 import { isLocale, localePath } from "@/i18n/config";
+import { forBilling } from "@/i18n/billing-copy";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { billingUnit } from "@/lib/env";
 import { currentUser } from "@/lib/api";
 import { ProfileForm } from "@/components/profile-form";
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
@@ -23,7 +25,7 @@ export async function generateMetadata({ params }: Props) {
 export default async function DashboardOverviewPage({ params }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  const dict = getDictionary(locale);
+  const dict = forBilling(getDictionary(locale), locale, billingUnit());
   const user = (await currentUser())!;
   const rows = (await store.listModels(user.orgId)).map(toDto);
   const usage = await store.usage(user.orgId);
@@ -110,7 +112,7 @@ export default async function DashboardOverviewPage({ params }: Props) {
         <div className="rounded-[14px] border border-line bg-surface p-4 col-span-2 lg:col-span-1">
           <div className="text-xs text-muted">{dict.dash.overview.stats.attempts}</div>
           <div className="mt-1 font-display text-2xl font-bold">{usage.balance}</div>
-          <div className="mt-1 text-[11px] text-muted">{dict.dash.overview.attemptsNote}</div>
+          <div className="mt-1 text-xs text-muted">{dict.dash.overview.attemptsNote}</div>
         </div>
       </div>
 

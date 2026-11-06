@@ -17,6 +17,8 @@ const url = process.env.TEST_DATABASE_URL;
 describe.skipIf(!url)("lock contention on a real Postgres", () => {
   it("20 simultaneous requests never spend more than the balance", async () => {
     process.env.LOCAL_PAID_ATTEMPT_CAP = "3";
+
+    process.env.BILLING_UNIT = "attempts"; // these tests are about flat attempts; the product default is credits
     process.env.MAX_ACTIVE_JOBS_PER_ORG = "5";
     const sql = pgClient(url!);
     const exists = await sql.query("SELECT to_regclass('public.models') AS t");

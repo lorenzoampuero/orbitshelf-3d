@@ -3,6 +3,7 @@ import { readBodyCapped } from "@/lib/api";
 import { apiGenerationEnabled, v1Error, v1Json, withToken } from "@/lib/api-tokens";
 import { ImageError, MAX_IMAGE_BYTES, validateAndNormalizeImage, type NormalizedImage } from "@/lib/image";
 import { createProviderModel, refreshEngineSwitches, type ProviderInput } from "@/lib/jobs";
+import { billingConfigProblem } from "@/lib/provider/registry";
 import { checkQuote } from "@/lib/quotes";
 import { category, sku, title } from "@/lib/schemas";
 import { toDto } from "@/lib/store";
@@ -66,6 +67,7 @@ export const POST = withToken("jobs:write", async (req, token) => {
 
   await refreshEngineSwitches().catch(() => undefined);
   const photoCount = source.kind === "text" ? 0 : source.kind === "image" ? 1 : Object.keys(source.images).length;
+  if (billingConfigProblem()) return v1Error(503, "billing_unsafe", "Starting generations is paused because of a server billing setting.");
   const check = checkQuote(d.quoteId, token.orgId, d.engineId, { mode: source.kind, photoCount, texture: d.texture });
   if (check !== "ok") return v1Error(409, check === "expired" ? "quote_expired" : "quote_mismatch", "The quote is not valid for this request. Ask for a new one.");
 

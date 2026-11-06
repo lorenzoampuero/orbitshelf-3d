@@ -14,10 +14,18 @@ export function intEnv(name: string, fallback: number, min = 0, max = 1_000_000)
   return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback;
 }
 
-/** How a job is charged. "attempts": every job counts one. "credits": a job costs what its engine costs. */
-export const billingUnit = (): "attempts" | "credits" => (process.env.BILLING_UNIT === "credits" ? "credits" : "attempts");
+/**
+ * How a job is charged. "credits" (the default): a job costs what its engine costs, which keeps the margin floor whatever the engine.
+ * "attempts": every job counts one. That is only safe with a single engine and for testing: BILLING_UNIT=attempts must be set on purpose.
+ */
+export const billingUnit = (): "attempts" | "credits" => (process.env.BILLING_UNIT === "attempts" ? "attempts" : "credits");
 
+/** Starting balance of a new local workspace when the unit is "attempts". */
 export const paidAttemptCap = () => intEnv("LOCAL_PAID_ATTEMPT_CAP", 3, 0, 10_000);
+/** Starting balance of a new local workspace when the unit is "credits": enough for a few jobs on any engine. Test credits, never sold. */
+export const localStartCredits = () => intEnv("LOCAL_FREE_CREDITS", 100, 0, 1_000_000);
+/** What a new workspace receives once, in the active billing unit. */
+export const initialGrant = () => (billingUnit() === "credits" ? localStartCredits() : paidAttemptCap());
 export const maxActiveJobs = () => intEnv("MAX_ACTIVE_JOBS_PER_ORG", 2, 1, 5);
 
 export function localAuthAllowed(): boolean {

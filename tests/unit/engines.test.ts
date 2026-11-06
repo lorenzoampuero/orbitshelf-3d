@@ -48,6 +48,7 @@ function fakeFal(opts: { outcome?: "ok" | "error"; glbUrl?: string; submitStatus
 beforeEach(() => {
   process.env.DATA_DIR = path.join(tmpRoot, "t" + ++n);
   process.env.LOCAL_PAID_ATTEMPT_CAP = "3";
+  process.env.BILLING_UNIT = "attempts"; // these tests are about flat attempts; the product default is credits
   process.env.MAX_ACTIVE_JOBS_PER_ORG = "2";
   process.env.SESSION_SECRET = "unit-test-session-secret-32-characters-long";
 });

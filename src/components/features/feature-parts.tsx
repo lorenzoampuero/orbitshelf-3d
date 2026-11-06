@@ -26,6 +26,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Card, Tag, Tile } from "@/components/marketing-kit";
+import { ModelSilhouette, type SilhouetteKind } from "@/components/model-silhouette";
 import type { Aside, CommonCopy, FeatureCopy, IconKey } from "@/content/features";
 import { localePath } from "@/i18n/config";
 import type { Locale } from "@/lib/types";
@@ -64,8 +65,21 @@ export function FeatureIcon({ name, className = "h-6 w-6" }: { name: IconKey; cl
   return <Icon className={className} aria-hidden="true" />;
 }
 
-/** Inputs as tiles, an arrow, and the model as a red block. Wraps on narrow screens instead of overflowing. */
-export function FlowDiagram({ inputs, outputLabel }: { inputs: { icon: IconKey; label: string }[]; outputLabel: string }) {
+/** Which demo drawing stands for the result on a mode page, from the demo GLB that page shows. */
+export function demoKind(src: string): SilhouetteKind {
+  return src.includes("lamp") ? "lamp" : src.includes("chair") ? "chair" : "vase";
+}
+
+/** Inputs as tiles, an arrow, and the model as a flat drawing of a demo model. Wraps on narrow screens instead of overflowing. */
+export function FlowDiagram({
+  inputs,
+  outputLabel,
+  kind = "vase",
+}: {
+  inputs: { icon: IconKey; label: string }[];
+  outputLabel: string;
+  kind?: SilhouetteKind;
+}) {
   return (
     <div aria-hidden="true" className="flex flex-wrap items-center gap-x-4 gap-y-5">
       <div className="flex flex-wrap gap-2 sm:gap-4">
@@ -77,9 +91,7 @@ export function FlowDiagram({ inputs, outputLabel }: { inputs: { icon: IconKey; 
       </div>
       <ArrowRight className="h-5 w-5 shrink-0 text-accent" />
       <span className="flex flex-col items-center gap-1.5">
-        <span className="flex h-20 w-20 items-center justify-center rounded-3xl bg-blood text-white sm:h-24 sm:w-24">
-          <Box className="h-9 w-9" />
-        </span>
+        <ModelSilhouette kind={kind} className="h-20 w-20 sm:h-24 sm:w-24" />
         <span className="text-xs text-muted">{outputLabel}</span>
       </span>
     </div>

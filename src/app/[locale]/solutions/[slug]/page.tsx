@@ -35,6 +35,9 @@ const DEMO_MODEL: Record<SolutionSlug, string> = {
   design: "/demo/lamp.glb",
 };
 
+/** The drawing that stands for the result in the diagrams, matching the demo GLB of the trade. */
+const DEMO_KIND: Record<SolutionSlug, "vase" | "lamp" | "chair"> = { stores: "vase", games: "chair", design: "lamp" };
+
 /** Mesh toggle is part of the story for games and design, not for stores. */
 const SHOWS_MESH: Record<SolutionSlug, boolean> = { stores: false, games: true, design: true };
 
@@ -105,7 +108,7 @@ export default async function SolutionPage({ params }: Props) {
         text={s.hero.text}
         primary={{ href: create, label: copy.ui.primaryCta, testId: `solution-${slug}-cta` }}
         secondary={{ href: localePath(locale, "/how-it-works"), label: copy.ui.secondaryCta }}
-        visual={<HeroFlow items={s.flow} />}
+        visual={<HeroFlow items={s.flow} kind={DEMO_KIND[slug]} />}
       />
 
       {/* 1. The workflow in four steps. */}
@@ -117,7 +120,7 @@ export default async function SolutionPage({ params }: Props) {
       {/* 2. The features that matter to this trade. */}
       <Section>
         <SectionTitle sub={s.features.sub}>{s.features.title}</SectionTitle>
-        <FeatureBento items={s.features.items} viewer={viewer} labels={copy.visual} />
+        <FeatureBento items={s.features.items} viewer={viewer} labels={copy.visual} kind={DEMO_KIND[slug]} />
       </Section>
 
       {/* 3. Honest limits. */}

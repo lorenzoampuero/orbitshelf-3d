@@ -65,8 +65,8 @@ export type EngineDto = {
   exports: string[];
   priceVerifiedAt: string;
   priceEvidence: PriceEvidence;
-  /** Lowest published price for one textured photo or text job, in USD. */
-  fromPriceUsd: number;
+  /** Credits one textured photo or text job takes on this engine. Provider prices in USD stay on the server. */
+  fromCredits: number;
 };
 
 export type QuoteDto = {
@@ -76,9 +76,8 @@ export type QuoteDto = {
   mode: InputKind;
   photoCount: number;
   texture: TextureResolution;
-  /** Estimated provider cost in USD. Internal cost, not what a customer pays. */
-  usd: number;
-  lines: { code: string; usd: number }[];
+  /** What the job is worth in credits, whatever the billing unit. The provider cost in USD is never sent to the client. */
+  credits: number;
   /** What this job takes from the balance, in `unit`. */
   charge: number;
   unit: "attempts" | "credits";
@@ -160,8 +159,6 @@ export type ModelDto = {
   provenance: Provenance;
   /** The engine that generated it. null for demo samples and imports. */
   engineId: string | null;
-  /** Provider cost estimated when the job was created, in USD. Not an invoice. */
-  estimatedCostUsd: number | null;
   /** The optimized version in use. null means the original file. */
   currentVersionId: string | null;
   projectId: string | null;
@@ -183,8 +180,8 @@ export type ModelDto = {
   error: string | null;
   failureCode: FailureCode | null;
   attemptsDebited: number;
+  /** In the workspace billing unit (credits or attempts). */
   attemptsRefunded: number;
-  providerCreditsEstimate: number;
   textureResolution: TextureResolution | null;
   reviewState: ReviewState;
   checklist: Checklist;

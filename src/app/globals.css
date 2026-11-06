@@ -52,28 +52,43 @@
   --muted: #a1a1aa;
 }
 
-html {
-  background: var(--bg);
-  scroll-behavior: smooth;
-}
-body {
-  background: var(--bg);
-  color: var(--fg);
-  font-family: var(--font-body);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-h1,
-h2,
-h3,
-.font-display {
-  font-family: var(--font-heading);
-  letter-spacing: -0.025em;
-}
+/* Base rules live in @layer base: unlayered CSS beats every Tailwind utility, so e.g. tracking-tight on an h2 would lose. */
+@layer base {
+  html {
+    background: var(--bg);
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-heading);
+    letter-spacing: -0.025em;
+  }
 
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  model-viewer {
+    width: 100%;
+    height: 100%;
+    --poster-color: transparent;
+    --progress-bar-color: var(--accent);
+    background: transparent;
+    touch-action: pan-y;
+  }
+  model-viewer:focus-visible {
+    outline-offset: -3px;
+  }
 }
 
 @layer components {
@@ -94,11 +109,24 @@ h3,
 }
 
 /* ---------- Floating pill navbar ---------- */
+/*
+ * The blur sits on a pseudo-element, not on the pill itself: an element with backdrop-filter becomes a backdrop root,
+ * so the dropdown panels (children of the pill, to keep Tab order logical) would have nothing to blur.
+ */
 .pill-nav {
-  background: rgb(18 19 23 / 0.72);
-  backdrop-filter: blur(24px) saturate(140%);
+  position: relative;
+  isolation: isolate;
   border: 1px solid var(--line);
   box-shadow: 0 8px 32px rgb(0 0 0 / 0.45);
+}
+.pill-nav::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: rgb(18 19 23 / 0.72);
+  backdrop-filter: blur(24px) saturate(140%);
 }
 .mega-panel {
   background: rgb(18 19 23 / 0.88);
@@ -107,7 +135,7 @@ h3,
   box-shadow: 0 24px 64px rgb(0 0 0 / 0.55);
 }
 @media (prefers-reduced-transparency: reduce) {
-  .pill-nav,
+  .pill-nav::before,
   .mega-panel {
     background: #14141a;
     backdrop-filter: none;
@@ -221,8 +249,10 @@ h3,
     transform: translateY(-10px);
   }
 }
-.float-slow {
-  animation: float-y 5.8s ease-in-out infinite;
+@layer components {
+  .float-slow {
+    animation: float-y 5.8s ease-in-out infinite;
+  }
 }
 @keyframes rise-in {
   from {
@@ -234,12 +264,19 @@ h3,
     transform: none;
   }
 }
-/* Scroll reveal only where the browser can tie it to scroll position; elsewhere the content simply shows. */
+/*
+ * Scroll reveal only where the browser can tie it to scroll position; elsewhere the content simply shows.
+ * Fill mode is "backwards", not "both": "both" keeps the final keyframe's transform after the entry range,
+ * and an animated transform beats .card-lift:hover, so cards never lifted. With "backwards" the element
+ * falls back to its own styles once revealed (the end keyframe equals them), and the hover transform works.
+ */
 @supports (animation-timeline: view()) {
-  .reveal {
-    animation: rise-in linear both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 38%;
+  @layer components {
+    .reveal {
+      animation: rise-in linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 38%;
+    }
   }
 }
 @keyframes menu-in {
@@ -252,20 +289,10 @@ h3,
     transform: none;
   }
 }
-.menu-in {
-  animation: menu-in 0.18s ease-out both;
-}
-
-model-viewer {
-  width: 100%;
-  height: 100%;
-  --poster-color: transparent;
-  --progress-bar-color: var(--accent);
-  background: transparent;
-  touch-action: pan-y;
-}
-model-viewer:focus-visible {
-  outline-offset: -3px;
+@layer components {
+  .menu-in {
+    animation: menu-in 0.18s ease-out backwards;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -295,6 +322,8 @@ model-viewer:focus-visible {
     opacity: 1;
   }
 }
-.os-pulse {
-  animation: os-pulse 1.6s ease-in-out infinite;
+@layer components {
+  .os-pulse {
+    animation: os-pulse 1.6s ease-in-out infinite;
+  }
 }

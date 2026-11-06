@@ -3,10 +3,15 @@ import "@fontsource/poppins/500.css";
 import "@fontsource/poppins/600.css";
 import "@fontsource/poppins/700.css";
 import "../globals.css";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { brand } from "@/config/brand";
 import { isLocale, LOCALES } from "@/i18n/config";
 import type { Locale } from "@/lib/types";
 import { AuthHashRedirect } from "@/components/auth-hash-redirect";
+
+// Lets Next resolve relative metadata URLs against the real site. Unset in a production build with no site URL.
+export const metadata: Metadata = brand.siteUrl ? { metadataBase: new URL(brand.siteUrl) } : {};
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));

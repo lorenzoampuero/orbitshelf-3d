@@ -31,6 +31,8 @@ export async function POST(req: Request) {
   if (mode === "supabase") {
     const raw = read.value as { locale?: unknown };
     const locale = typeof raw.locale === "string" && isLocale(raw.locale) ? raw.locale : "en";
+    // In production the link must name our own host, never one taken from the request.
+    if (process.env.NODE_ENV === "production" && !brand.siteUrl) return apiError(503, "site_url_missing", "The site address is not configured.");
     const origin = process.env.NODE_ENV === "production" ? brand.siteUrl.replace(/\/+$/, "") : new URL(req.url).origin;
     const result = await sendMagicLink(supabaseConfig()!, parsed.data.email, `${origin}/auth/callback?l=${locale}`);
     if (result === "rate_limited") return apiError(429, "email_rate_limited", "Too many emails were sent. Try again later.");

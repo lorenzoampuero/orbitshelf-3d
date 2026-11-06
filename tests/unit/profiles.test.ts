@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { activeWorkspace, defaultMode, defaultPreset, GOALS_BY_USE_CASE, resolvePreset, shortcutsFor, SHORTCUTS } from "@/lib/profiles";
 import { GOALS, USE_CASES, type EngineDto, type UserProfile } from "@/lib/types";
 
-const engine = (id: string, fromPriceUsd: number, maxPhotos: number, modes: EngineDto["modes"]): EngineDto => ({
-  id, label: id, lifecycle: "pilot", modes, maxPhotos, views: ["front"], geometryOnly: true, exports: ["glb"], priceVerifiedAt: "2026-11-05", priceEvidence: "published", fromPriceUsd,
+const engine = (id: string, fromCredits: number, maxPhotos: number, modes: EngineDto["modes"]): EngineDto => ({
+  id, label: id, lifecycle: "pilot", modes, maxPhotos, views: ["front"], geometryOnly: true, exports: ["glb"], priceVerifiedAt: "2026-11-05", priceEvidence: "published", fromCredits,
 });
-const engines = [engine("expensive-4", 0.6, 4, ["image", "multi-image"]), engine("cheap-4", 0.4, 4, ["image", "multi-image", "text"]), engine("cheapest-1", 0.1, 1, ["image"])];
+const engines = [engine("expensive-4", 60, 4, ["image", "multi-image"]), engine("cheap-4", 40, 4, ["image", "multi-image", "text"]), engine("cheapest-1", 10, 1, ["image"])];
 
 describe("workspaces only change what is highlighted", () => {
   it("every workspace can reach every tool through Explore", () => {

@@ -7,7 +7,7 @@ import { buildPageMetadata } from "@/lib/seo";
 import { currentUser } from "@/lib/api";
 import { MarketingShell } from "@/components/marketing-shell";
 import { ModelViewerBox } from "@/components/model-viewer-box";
-import { Card, ClosingBanner, FaqList, PageHero, Section, SectionTitle, StatusBadge, Tag, Tile } from "@/components/marketing-kit";
+import { Card, ClosingBanner, FaqList, PageHero, Section, SectionTitle, StatusBadge, Tag, Tile, cardToneClass } from "@/components/marketing-kit";
 import {
   API_PATHS,
   EMBED_SNIPPET,
@@ -187,7 +187,7 @@ export default async function IntegrationsPage({ params }: Props) {
         <SectionTitle sub={c.bento.sub}>{c.bento.title}</SectionTitle>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
           {/* 1. Web embed: large, with a demo viewer inside a drawn page. */}
-          <Card lift className="min-w-0 space-y-8 md:col-span-6 md:grid md:grid-cols-2 md:gap-8 md:space-y-0 md:p-9">
+          <Card lift tone="red" className="min-w-0 space-y-8 md:col-span-6 md:grid md:grid-cols-2 md:gap-8 md:space-y-0 md:p-9">
             <div className="flex min-w-0 flex-col justify-between gap-8">
               <div className="space-y-6">
                 {head("embed")}
@@ -269,7 +269,7 @@ export default async function IntegrationsPage({ params }: Props) {
             </div>
           </Card>
 
-          <Card className="min-w-0 space-y-6 md:col-span-4 md:p-9">
+          <Card tone="outline" className="min-w-0 space-y-6 md:col-span-4 md:p-9">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-3">
                 <Tag>{c.signature.tag}</Tag>
@@ -318,10 +318,11 @@ export default async function IntegrationsPage({ params }: Props) {
             </div>
           </Card>
 
-          <Card className="mesh-lines min-w-0 space-y-6 md:col-span-2">
+          {/* Planned: dashed and quiet, so the available and in-testing cards lead. */}
+          <Card tone="planned" className="min-w-0 space-y-6 md:col-span-2">
             {head("woocommerce")}
             <div aria-hidden="true" className="flex">
-              <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-dashed border-line bg-surface-2 text-muted">
+              <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-dashed border-white/25 text-muted">
                 <ShoppingCart className="h-7 w-7" />
               </span>
             </div>
@@ -362,7 +363,7 @@ export default async function IntegrationsPage({ params }: Props) {
         <SectionTitle sub={c.after.sub}>{c.after.title}</SectionTitle>
         <ul className="mx-auto grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2">
           {c.after.items.map((it, i) => (
-            <li key={it.name} className="card reveal flex items-start gap-4 p-6">
+            <li key={it.name} className={`card reveal flex items-start gap-4 p-6 ${cardToneClass("planned")}`}>
               <span aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-line bg-surface-2 text-fg">
                 {i === 0 ? <Boxes className="h-5 w-5" /> : <Layers className="h-5 w-5" />}
               </span>

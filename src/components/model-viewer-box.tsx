@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { RotateCcw, Play, Pause, Box, Grid3x3 } from "lucide-react";
 
 type Props = {
@@ -52,6 +52,17 @@ function applyWireframe(el: HTMLElement, on: boolean): boolean {
   return true;
 }
 
+const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
+
+function subscribeReducedMotion(onChange: () => void) {
+  const mq = window.matchMedia(REDUCED_MOTION);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+const getReducedMotion = () => window.matchMedia(REDUCED_MOTION).matches;
+// The server (and the first client render) assume motion is allowed, so there is no hydration mismatch.
+const getReducedMotionOnServer = () => false;
+
 export function ModelViewerBox({
   src,
   alt,
@@ -81,9 +92,9 @@ export function ModelViewerBox({
   const [wireframe, setWireframe] = useState(false);
   const [wireframeReady, setWireframeReady] = useState(false);
   const wireframeRef = useRef(false);
-  const [reducedMotion, setReducedMotion] = useState(() =>
-    typeof window !== "undefined" ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false,
-  );
+  const reducedMotion = useSyncExternalStore(subscribeReducedMotion, getReducedMotion, getReducedMotionOnServer);
+  // The viewer (library and GLB) is only started once the box is near the screen, so models below the fold cost nothing.
+  const [visible, setVisible] = useState(false);
   const dragRef = useRef<{ active: boolean; x: number; y: number; yaw: number; pitch: number; zoom: number }>({
     active: false,
     x: 0,
@@ -94,65 +105,66 @@ export function ModelViewerBox({
   });
 
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const handler = (e: MediaQueryListEvent) => {
-      setReducedMotion(e.matches);
-      if (e.matches) setAutoRotate(false);
-    };
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
+    const host = hostRef.current;
+    if (!host) return;
+    if (typeof IntersectionObserver === "undefined") {
+      const frame = window.requestAnimationFrame(() => setVisible(true));
+      return () => window.cancelAnimationFrame(frame);
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "300px 0px" },
+    );
+    observer.observe(host);
+    return () => observer.disconnect();
   }, []);
 
+  // Load the library only when the box is near the screen. A failed import is a failed preview.
   useEffect(() => {
+    if (!visible) return;
     let cancelled = false;
-
-    async function init() {
-      try {
-        await import("@google/model-viewer");
-        const probe = await fetch(src, { credentials: "same-origin" });
-        if (!probe.ok) throw new Error(`HTTP ${probe.status}`);
-        const buf = await probe.arrayBuffer();
-        if (buf.byteLength < 20) throw new Error("Invalid GLB");
-        const magic = new DataView(buf).getUint32(0, true);
-        if (magic !== 0x46546c67) throw new Error("Bad GLB header");
-        if (!cancelled) {
-          setFailedSrc(null);
-          setLoadedSrc(src);
-        }
-      } catch {
-        if (!cancelled) {
-          setFailedSrc(src);
-        }
-      }
-    }
-
-    void init();
+    import("@google/model-viewer").catch(() => {
+      if (!cancelled) setFailedSrc(src);
+    });
     return () => {
       cancelled = true;
     };
-  }, [src]);
+  }, [visible, src]);
 
   useEffect(() => {
     const el = viewerRef.current;
     if (!el) return;
     el.cameraOrbit = orbit;
-  }, [orbit, status]);
+  }, [orbit, status, visible]);
 
   const onReadyRef = useRef(onReady);
   useEffect(() => {
     onReadyRef.current = onReady;
   }, [onReady]);
 
+  // The viewer's own events drive the state, so the GLB is requested once (by the viewer) and never by a second fetch.
   useEffect(() => {
     const el = viewerRef.current;
-    if (!el || status !== "ready") return;
-    const handle = () => {
+    if (!el || !visible) return;
+    const onLoad = () => {
+      setFailedSrc(null);
+      setLoadedSrc(src);
       setWireframeReady(applyWireframe(el, wireframeRef.current));
       onReadyRef.current?.(async () => (el.toBlob ? el.toBlob({ mimeType: "image/png" }) : null));
     };
-    el.addEventListener("load", handle);
-    return () => el.removeEventListener("load", handle);
-  }, [status]);
+    const onError = () => setFailedSrc(src);
+    el.addEventListener("load", onLoad);
+    el.addEventListener("error", onError);
+    return () => {
+      el.removeEventListener("load", onLoad);
+      el.removeEventListener("error", onError);
+    };
+  }, [visible, src]);
 
   useEffect(() => {
     if (!autoRotate || reducedMotion) return;
@@ -277,7 +289,7 @@ export function ModelViewerBox({
 
       <div className="relative flex-1 min-h-0">
         {status === "loading" && (
-          <div className={`absolute inset-0 flex items-center justify-center text-xs ${bare ? "text-ink" : "text-muted"}`}>
+          <div role="status" className="os-pulse pointer-events-none absolute inset-0 flex items-center justify-center text-xs text-muted">
             {loadingLabel}
           </div>
         )}
@@ -286,7 +298,7 @@ export function ModelViewerBox({
             {errorLabel}
           </div>
         )}
-        {status !== "error" && (
+        {visible && status !== "error" && (
           // @ts-expect-error Custom element registered by @google/model-viewer
           <model-viewer
             ref={(node: ModelViewerEl | null) => {

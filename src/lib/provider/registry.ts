@@ -1,5 +1,6 @@
 import "server-only";
 import { creditsFor } from "@/lib/credits";
+import { billingUnit } from "@/lib/env";
 import { IMAGE_VIEWS, PROVIDER_CREDITS_PER_USD, providerCreditsEstimate, type EngineDto, type ImageView, type TextureResolution } from "@/lib/types";
 import { dataUri, falAdapter } from "./fal";
 import { meshyAdapter } from "./meshy";
@@ -301,6 +302,18 @@ export const getEngine = (id: string): EngineDefinition | null => ENGINES.find((
 export const allEngines = (): readonly EngineDefinition[] => ENGINES;
 export const engineEnabled = (engine: EngineDefinition) => effectiveLifecycle(engine) !== "disabled";
 
+export const BILLING_UNSAFE_MESSAGE = "Flat attempts are only safe with one engine switched on. Set BILLING_UNIT=credits or switch the extra engines off.";
+
+/**
+ * Flat attempts charge the same for a cheap and a dear engine, so two engines on at once break the margin floor.
+ * Returns "attempts_multiple_engines" when that is the case, and the caller must refuse to quote or start a job.
+ * Test runs (ORBITSHELF_TEST=1, which the Playwright and Vitest setups set) are exempt, because they pilot a second engine in attempts mode on purpose.
+ */
+export function billingConfigProblem(): "attempts_multiple_engines" | null {
+  if (billingUnit() !== "attempts" || process.env.ORBITSHELF_TEST === "1") return null;
+  return ENGINES.filter((e) => engineEnabled(e)).length > 1 ? "attempts_multiple_engines" : null;
+}
+
 /** Offered to users: enabled and with credentials on the server. */
 export const availableEngines = (deps?: Deps): EngineDefinition[] => ENGINES.filter((e) => engineEnabled(e) && adapterFor(e).isConfigured(deps));
 
@@ -316,7 +329,7 @@ export function toEngineDto(engine: EngineDefinition): EngineDto {
     exports: engine.exports,
     priceVerifiedAt: engine.priceVerifiedAt,
     priceEvidence: engine.priceEvidence,
-    fromPriceUsd: priceOf(engine, { mode: engine.modes[0], photoCount: engine.modes[0] === "text" ? 0 : 1, texture: "1k" }).usd,
+    fromCredits: creditsFor(priceOf(engine, { mode: engine.modes[0], photoCount: engine.modes[0] === "text" ? 0 : 1, texture: "1k" }).usd),
   };
 }
 

@@ -1,6 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { isLocale, localePath } from "@/i18n/config";
+import { forBilling } from "@/i18n/billing-copy";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { billingUnit } from "@/lib/env";
 import { currentUser } from "@/lib/api";
 import { getEngine } from "@/lib/provider/registry";
 import { store, toDto } from "@/lib/store";
@@ -33,7 +35,7 @@ export default async function ModelDetailPage({
 }) {
   const { locale, id } = await params;
   if (!isLocale(locale)) notFound();
-  const t = getDictionary(locale);
+  const t = forBilling(getDictionary(locale), locale, billingUnit());
   const session = await currentUser();
   if (!session) redirect(localePath(locale, "/login"));
 

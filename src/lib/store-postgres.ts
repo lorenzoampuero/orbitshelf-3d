@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { blobStoreFromEnv, type BlobStore } from "@/lib/blob";
-import { maxActiveJobs, paidAttemptCap } from "@/lib/env";
+import { initialGrant, maxActiveJobs } from "@/lib/env";
 import { pgClient, type Queryable, type SqlClient, type SqlRow } from "@/lib/sql";
 import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type ApiTokenRow, type DueWebhook, type WebhookDeliveryRow, type WebhookEndpointRow, type EmbedRow, type ProjectRow, type PublicationRow, glbKey, mimeOf, nowIso, orgIdForEmail, sourceKey, versionKey, type VersionRow, type CostEventRow, type ExtraImage, type ModelRow, type OrgRow, type SourcePhoto, type UserRow } from "@/lib/store-shared";
 import type { Store } from "@/lib/store-local";
@@ -278,7 +278,7 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
       return sql.transaction(async (tx) => {
         const inserted = await tx.query("INSERT INTO public.organizations (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING RETURNING id", [orgId, (clean.split("@")[0] || "Workspace").slice(0, 120)]);
         if (inserted.rows.length > 0) {
-          await pushLedger(tx, { orgId, idempotencyKey: "grant:initial", delta: paidAttemptCap(), reason: "local_cap_grant", modelId: null }).catch(async (e) => {
+          await pushLedger(tx, { orgId, idempotencyKey: "grant:initial", delta: initialGrant(), reason: "local_cap_grant", modelId: null }).catch(async (e) => {
             throw e;
           });
           await audit(tx, orgId, "org.created", null);

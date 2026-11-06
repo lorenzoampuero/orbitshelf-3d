@@ -49,8 +49,8 @@ export type PricingExtra = {
 /** Top-ups are a proposal, not on sale. Each one stays under the plan margin floor (see credits.ts). */
 export const TOP_UPS: { usd: number; credits: number }[] = [
   { usd: 15, credits: 200 },
-  { usd: 40, credits: 600 },
-  { usd: 100, credits: 1600 },
+  { usd: 40, credits: 550 },
+  { usd: 100, credits: 1500 },
 ];
 
 const es: PricingExtra = {

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLocale, localePath } from "@/i18n/config";
+import { forBilling } from "@/i18n/billing-copy";
 import { getDictionary } from "@/i18n/get-dictionary";
+import { billingUnit } from "@/lib/env";
 import { PRESETS } from "@/lib/glb-presets";
 import { refreshEngineSwitches } from "@/lib/jobs";
 import { allEngines, availableEngines, toEngineDto } from "@/lib/provider/registry";
@@ -22,7 +24,7 @@ export async function generateMetadata({ params }: Props) {
 export default async function ExplorePage({ params }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  const dict = getDictionary(locale);
+  const dict = forBilling(getDictionary(locale), locale, billingUnit());
   const c = dict.dash.explore;
   await refreshEngineSwitches().catch(() => undefined);
   const available = new Set(availableEngines().map((e) => e.id));
@@ -75,7 +77,7 @@ export default async function ExplorePage({ params }: Props) {
                   <td className="py-2.5 pr-4 tabular-nums text-muted">{e.maxPhotos}</td>
                   <td className="py-2.5 pr-4 uppercase text-muted">{e.exports.join(", ")}</td>
                   <td className="py-2.5 tabular-nums text-muted">
-                    {c.priceFrom.replace("{usd}", e.fromPriceUsd.toFixed(2))} · {e.priceVerifiedAt}
+                    {c.priceFrom.replace("{n}", String(e.fromCredits))} · {e.priceVerifiedAt}
                   </td>
                 </tr>
               ))}

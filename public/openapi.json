@@ -3,7 +3,7 @@
   "info": {
     "title": "OrbitShelf 3D API",
     "version": "1.0.0",
-    "description": "Same engines, quotes, balance and limits as the web app. Create tokens under API in the dashboard. Prices are published provider prices, not invoices."
+    "description": "Same engines, quotes, balance and limits as the web app. Create tokens under API in the dashboard. Costs are given in credits (the workspace balance unit), never in provider prices."
   },
   "servers": [{ "url": "/api/v1" }],
   "security": [{ "token": [] }],
@@ -58,7 +58,7 @@
     "/quotes": {
       "post": {
         "summary": "Cost of a generation, valid for 15 minutes",
-        "description": "Permission: jobs:write",
+        "description": "Permission: jobs:write. The quote gives charge (what is taken from the balance, in unit) and credits (what the job is worth in credits). It does not include provider prices. Answers 503 billing_unsafe if the server is set to flat attempts with more than one engine on.",
         "requestBody": {
           "required": true,
           "content": {

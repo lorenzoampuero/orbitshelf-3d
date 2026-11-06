@@ -8,7 +8,7 @@ import { currentUser } from "@/lib/api";
 import { MarketingShell } from "@/components/marketing-shell";
 import { ModelViewerBox } from "@/components/model-viewer-box";
 import { Card, CardBody, ClosingBanner, FaqList, PageHero, Section, SectionTitle, StatusBadge, Tag } from "@/components/marketing-kit";
-import { AsideCard, Chips, FlowDiagram, ModeLinkCard, SolutionsRow, TIP_SPANS, TipCard } from "@/components/features/feature-parts";
+import { AsideCard, Chips, FlowDiagram, ModeLinkCard, SolutionsRow, TIP_SPANS, TipCard, demoKind } from "@/components/features/feature-parts";
 import { FEATURES_COMMON, FEATURE_SLUGS, featureCopy, isFeatureSlug } from "@/content/features";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
@@ -80,7 +80,7 @@ export default async function FeatureModePage({ params }: Props) {
               <h3 className="max-w-md text-2xl font-semibold leading-tight">{c.inOut.title}</h3>
               <p className="max-w-md text-sm leading-relaxed text-muted">{c.inOut.text}</p>
             </div>
-            <FlowDiagram inputs={c.inOut.inputs} outputLabel={common.flowOutput} />
+            <FlowDiagram inputs={c.inOut.inputs} outputLabel={common.flowOutput} kind={demoKind(c.viewer.src)} />
           </Card>
 
           <Card className="space-y-5 md:col-span-2">
@@ -118,8 +118,8 @@ export default async function FeatureModePage({ params }: Props) {
       <Section>
         <SectionTitle sub={common.afterSub}>{common.afterTitle}</SectionTitle>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-          <Card className="grid grid-cols-1 gap-6 overflow-hidden md:col-span-6 md:grid-cols-2 md:p-9">
-            <div className="flex flex-col justify-center space-y-4">
+          <Card tone="red" className="grid grid-cols-1 gap-6 overflow-hidden md:col-span-6 md:grid-cols-2 md:p-9">
+            <div className="flex flex-col items-start justify-center space-y-4">
               <Tag>{common.mesh.tag}</Tag>
               <h3 className="text-2xl font-semibold leading-tight">{common.mesh.title}</h3>
               <p className="max-w-sm text-sm leading-relaxed text-muted">{common.mesh.text}</p>
@@ -142,7 +142,7 @@ export default async function FeatureModePage({ params }: Props) {
             />
           </Card>
 
-          <Card lift className="space-y-4 md:col-span-4 md:p-9">
+          <Card lift tone="outline" className="space-y-4 md:col-span-4 md:p-9">
             <Tag>{common.review.tag}</Tag>
             <h3 className="text-xl font-semibold leading-tight">{common.review.title}</h3>
             <p className="max-w-lg text-sm leading-relaxed text-muted">{c.reviewText}</p>
@@ -166,8 +166,8 @@ export default async function FeatureModePage({ params }: Props) {
             <Chips items={["GLB", "OBJ", "STL"]} />
           </Card>
 
-          <Card className="flex flex-col justify-between gap-6 md:col-span-4 md:p-9">
-            <div className="max-w-xl space-y-4">
+          <Card tone="outline" className="flex flex-col justify-between gap-6 md:col-span-4 md:p-9">
+            <div className="flex max-w-xl flex-col items-start space-y-4">
               <Tag>{common.embed.tag}</Tag>
               <h3 className="text-xl font-semibold leading-tight">{common.embed.title}</h3>
               <p className="text-sm leading-relaxed text-muted">{common.embed.text}</p>
@@ -185,7 +185,7 @@ export default async function FeatureModePage({ params }: Props) {
       <Section>
         <SectionTitle sub={common.limitsSub}>{common.limitsTitle}</SectionTitle>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-          <Card className="md:col-span-4 md:p-9">
+          <Card tone="outline" className="md:col-span-4 md:p-9">
             <ul className="space-y-5">
               {c.limits.map((l) => (
                 <li key={l.title} className="space-y-1">
@@ -195,7 +195,7 @@ export default async function FeatureModePage({ params }: Props) {
               ))}
             </ul>
           </Card>
-          <Card className="space-y-4 self-start md:col-span-2">
+          <Card tone="planned" className="space-y-4 self-start md:col-span-2">
             <Tag>{common.engine.tag}</Tag>
             <h3 className="text-xl font-semibold leading-tight">{common.engine.title}</h3>
             <p className="text-sm leading-relaxed text-muted">{common.engine.text}</p>

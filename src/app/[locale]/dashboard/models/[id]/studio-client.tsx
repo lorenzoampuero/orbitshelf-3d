@@ -422,10 +422,6 @@ export function StudioClient({
                   {model.attemptsDebited} / {model.attemptsRefunded}
                 </dd>
               </div>
-              <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
-                <dt className="text-muted">{t.dash.detail.creditsLabel}</dt>
-                <dd className="font-medium text-fg">{model.providerCreditsEstimate}</dd>
-              </div>
               {model.checksum && (
                 <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2 sm:col-span-2">
                   <dt className="text-muted">{t.dash.detail.checksumLabel}</dt>

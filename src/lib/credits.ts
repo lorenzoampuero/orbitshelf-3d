@@ -29,11 +29,20 @@ export const creditsFor = (providerUsd: number, a: CostAssumptions = ASSUMED_COS
  */
 export const MIN_MARGIN = 0.6;
 
+/**
+ * Plans are sized for this margin, not for the floor, so the floor keeps real headroom. The floor is the owner's promise; this is the safety margin on top.
+ * 0.62 is not enough: with every credit used and a 10 % rise in real cost, the biggest steps drop to about 58.7 %. 0.64 keeps every step at or above 60 % under that stress (tests/unit/credits.test.ts).
+ */
+export const SIZING_MARGIN = 0.64;
+
+/** Real cost rise the floor must survive at full use. The tests apply it; it is not charged to anyone. */
+export const COST_STRESS = 1.1;
+
 /** What the owner expects from normal use. Unlike the floor, it depends on how much customers really use, so it can only be confirmed with real data. */
 export const TARGET_MARGIN = { low: 0.75, high: 0.85 };
 
 /** The most credits a price can include and still keep the floor at full use. */
-export const maxCreditsForPrice = (priceUsd: number, fee = ASSUMED_PAYMENT_FEE, floor = MIN_MARGIN) => Math.max(0, Math.floor((priceUsd * (1 - floor - fee.pct) - fee.fixedUsd) / CREDIT_USD));
+export const maxCreditsForPrice = (priceUsd: number, fee = ASSUMED_PAYMENT_FEE, floor = SIZING_MARGIN) => Math.max(0, Math.floor((priceUsd * (1 - floor - fee.pct) - fee.fixedUsd) / CREDIT_USD));
 
 /** The share of its credits a plan's customers can use, on average, for the plan to earn this margin. */
 export const averageUseAtMargin = (priceUsd: number, credits: number, margin: number, fee = ASSUMED_PAYMENT_FEE) => (priceUsd * (1 - margin - fee.pct) - fee.fixedUsd) / (credits * CREDIT_USD);
@@ -41,7 +50,7 @@ export const averageUseAtMargin = (priceUsd: number, credits: number, margin: nu
 export type PlanStep = { priceUsd: number; credits: number };
 export type PlanTier = { id: string; name: string; steps: PlanStep[] };
 
-/** Credits come straight from the floor, rounded down to a clean number, so a step cannot be set more generous than the rule allows. */
+/** Credits come from the sizing margin (the floor plus headroom), rounded down to a clean number, so a step cannot be set more generous than the rule allows. */
 const step = (priceUsd: number): PlanStep => ({ priceUsd, credits: Math.floor(maxCreditsForPrice(priceUsd) / 50) * 50 });
 
 /** Starter is a fixed plan. On the others a slider moves between these steps: more credits for a higher price. The first step is the plan's base price. */
@@ -68,8 +77,8 @@ export const PLAN_STRUCTURES: PlanStructure[] = [
     unit: "credits",
     plans: [
       { name: "Recarga S", priceUsd: 15, units: 200, recurring: false },
-      { name: "Recarga M", priceUsd: 40, units: 600, recurring: false },
-      { name: "Recarga L", priceUsd: 100, units: 1600, recurring: false },
+      { name: "Recarga M", priceUsd: 40, units: 550, recurring: false },
+      { name: "Recarga L", priceUsd: 100, units: 1500, recurring: false },
     ],
   },
 ];
@@ -106,11 +115,11 @@ export type PlanResult = { plan: string; priceUsd: number; units: number; jobsAt
  * One plan, one engine, one level of use. Contribution margin before fixed costs, support, refunds and taxes.
  * In a credits plan a job costs what the engine costs; in an attempts plan every job counts the same, so an expensive engine eats the margin.
  */
-export function simulate(structure: PlanStructure, plan: PlanStructure["plans"][number], providerUsd: number, utilization: number, a: CostAssumptions = ASSUMED_COSTS, fee = ASSUMED_PAYMENT_FEE): PlanResult {
+export function simulate(structure: PlanStructure, plan: PlanStructure["plans"][number], providerUsd: number, utilization: number, a: CostAssumptions = ASSUMED_COSTS, fee = ASSUMED_PAYMENT_FEE, costStress = 1): PlanResult {
   const perJob = structure.unit === "credits" ? creditsFor(providerUsd, a) : 1;
   const jobsAtFullUse = Math.floor(plan.units / perJob);
   const jobs = Math.floor(jobsAtFullUse * utilization);
-  const variableCostUsd = round(jobs * effectiveCost(providerUsd, a));
+  const variableCostUsd = round(jobs * effectiveCost(providerUsd, a) * costStress);
   const paymentFeeUsd = round(plan.priceUsd * fee.pct + fee.fixedUsd);
   const contributionUsd = round(plan.priceUsd - variableCostUsd - paymentFeeUsd);
   return { plan: plan.name, priceUsd: plan.priceUsd, units: plan.units, jobsAtFullUse, utilization, jobs, revenueUsd: plan.priceUsd, variableCostUsd, paymentFeeUsd, contributionUsd, marginPct: Math.round((contributionUsd / plan.priceUsd) * 1000) / 10 };

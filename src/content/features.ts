@@ -187,9 +187,9 @@ export const FEATURES_COMMON: Record<Locale, CommonCopy> = {
     },
     engine: {
       tag: "Engines",
-      title: "One engine in the pilot",
-      text: "Only one AI engine is on during the pilot. More engines come after testing, and quality is not promised before then.",
-      badge: "Pilot",
+      title: "An AI engine is planned for the pilot",
+      text: "No AI engine is switched on yet: one is planned for the pilot. Today demo samples and GLB import work. Quality is not promised before engines are tested.",
+      badge: "Planned",
     },
     importCard: {
       tag: "Already have a GLB?",
@@ -256,9 +256,9 @@ export const FEATURES_COMMON: Record<Locale, CommonCopy> = {
     },
     engine: {
       tag: "Motores",
-      title: "Un motor en el piloto",
-      text: "Solo hay un motor de IA activo durante el piloto. Habrá más motores después de probarlos, y no prometemos calidad antes de eso.",
-      badge: "Piloto",
+      title: "Un motor de IA está previsto para el piloto",
+      text: "Todavía no hay un motor de IA conectado: hay uno previsto para el piloto. Hoy funcionan las muestras de demostración y la importación de GLB. No prometemos calidad antes de probar los motores.",
+      badge: "Previsto",
     },
     importCard: {
       tag: "¿Ya tienes un GLB?",

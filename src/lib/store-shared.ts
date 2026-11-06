@@ -31,6 +31,10 @@ export type ExtraImage = { view: Exclude<ImageView, "front">; ext: ImageExt };
 
 /** Everything a stored model has: the client-safe DTO plus private fields. */
 export type ModelRow = ModelDto & {
+  /** Provider cost when the job was created, in USD. Owner-only: never part of ModelDto, so it never reaches a customer or the API. */
+  estimatedCostUsd: number | null;
+  /** Sloyd credits the job was estimated at. Owner-only, same as above. */
+  providerCreditsEstimate: number;
   orgId: string;
   providerJobId: string | null;
   /** Extension of the stored thumbnail, when there is one. */
@@ -91,6 +95,8 @@ export const nowIso = () => new Date().toISOString();
 export function toDto(row: ModelRow): ModelDto {
   const {
     orgId: _o,
+    estimatedCostUsd: _cost,
+    providerCreditsEstimate: _pce,
     providerJobId,
     providerJobUrls: _u,
     idempotencyKey: _i,
@@ -108,7 +114,6 @@ export function toDto(row: ModelRow): ModelDto {
   return {
     ...dto,
     engineId: row.engineId ?? null,
-    estimatedCostUsd: row.estimatedCostUsd ?? null,
     currentVersionId: row.currentVersionId ?? null,
     projectId: row.projectId ?? null,
     tags: row.tags ?? [],

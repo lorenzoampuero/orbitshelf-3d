@@ -2,6 +2,7 @@ import { z } from "zod";
 import { apiError, apiJson, readBodyCapped, withUser } from "@/lib/api";
 import { refreshEngineSwitches } from "@/lib/jobs";
 import { createQuote } from "@/lib/quotes";
+import { BILLING_UNSAFE_MESSAGE } from "@/lib/provider/registry";
 import { fieldErrors } from "@/lib/schemas";
 import { INPUT_KINDS, TEXTURE_RESOLUTIONS } from "@/lib/types";
 
@@ -30,6 +31,7 @@ export const POST = withUser(async (req, user) => {
   const { engineId, ...q } = parsed.data;
   const result = createQuote(user.orgId, engineId, q);
   if (!result.ok) {
+    if (result.code === "billing_unsafe") return apiError(503, "billing_unsafe", BILLING_UNSAFE_MESSAGE);
     return result.code === "engine_unavailable"
       ? apiError(503, "engine_unavailable", "This engine is not available.")
       : apiError(422, "engine_unsupported", "This engine does not support these options.", { problem: result.problem });

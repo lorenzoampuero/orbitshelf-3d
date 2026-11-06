@@ -382,11 +382,12 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await page.getByTestId("source-sloyd-radio").check();
     const png = await makeTestPng(320, 320);
     await page.getByTestId("create-photo-input").setInputFiles({ name: "front.png", mimeType: "image/png", buffer: png });
-    // One photo costs 20 credits; adding views switches the estimate to the 30-credit multi-photo price.
-    await expect(page.getByTestId("create-cost-text")).toContainText("US$0.27");
+    // The customer sees credits, never the provider price: one photo is worth 23 credits, and adding views switches it to the 30-credit multi-photo price.
+    await expect(page.getByTestId("create-cost-text")).toContainText("23 credits");
+    await expect(page.getByTestId("create-cost-text")).not.toContainText("US$");
     await page.getByTestId("create-photo-input-back").setInputFiles({ name: "back.png", mimeType: "image/png", buffer: png });
     await page.getByTestId("create-photo-input-left").setInputFiles({ name: "left.png", mimeType: "image/png", buffer: png });
-    await expect(page.getByTestId("create-cost-text")).toContainText("US$0.40");
+    await expect(page.getByTestId("create-cost-text")).toContainText("30 credits");
     await page.getByTestId("confirm-paid-checkbox").check();
     await page.getByTestId("confirm-rights-checkbox").check();
     await page.getByTestId("create-submit-btn").click();
@@ -433,7 +434,8 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await page.getByTestId("create-photo-input").setInputFiles({ name: "front.png", mimeType: "image/png", buffer: png });
     await page.getByTestId("create-photo-input-back").setInputFiles({ name: "back.png", mimeType: "image/png", buffer: png });
     await expect(page.getByTestId("create-cost-text")).toContainText("Rodin 2.5");
-    await expect(page.getByTestId("create-cost-text")).toContainText("US$0.40");
+    await expect(page.getByTestId("create-cost-text")).toContainText("30 credits");
+    await expect(page.getByTestId("create-cost-text")).not.toContainText("US$");
     await page.getByTestId("confirm-paid-checkbox").check();
     await page.getByTestId("confirm-rights-checkbox").check();
     await page.getByTestId("create-submit-btn").click();
@@ -838,7 +840,9 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     expect(engines).toEqual(["sloyd", "fal-rodin-2.5"]); // never a disabled engine
     expect((await (await request.get("/api/v1/credits", { headers: auth })).json()).balance).toBe((await (await page.request.get("/api/usage")).json()).usage.balance);
     const quote = await (await request.post("/api/v1/quotes", { headers: auth, data: { engineId: "sloyd", mode: "text", photoCount: 0, texture: "1k" } })).json();
-    expect(quote.quote.usd).toBeCloseTo(0.3333, 3);
+    expect(quote.quote.credits).toBe(26);
+    expect(quote.quote).not.toHaveProperty("usd"); // the provider price is not part of the public API
+    expect(JSON.stringify(quote)).not.toMatch(/usd/i);
     expect((await request.post("/api/v1/quotes", { headers: auth, data: { engineId: "fal-trellis-2", mode: "image", photoCount: 1, texture: "1k" } })).status()).toBe(503);
 
     // Starting paid jobs through the API stays off, and it says so before anything is charged
@@ -905,10 +909,10 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/pricing");
     await expect(page.getByTestId("plan-starter-price")).toHaveText("US$19");
-    await expect(page.getByTestId("plan-starter-credits")).toContainText("300");
+    await expect(page.getByTestId("plan-starter-credits")).toContainText("250");
     await expect(page.getByTestId("plan-starter-slider")).toHaveCount(0);
 
-    const steps = { creator: ["US$49", "800", "US$89", "1,500"], commerce: ["US$99", "1,700", "US$179", "3,100"], studio: ["US$199", "3,450", "US$499", "8,700"] };
+    const steps = { creator: ["US$49", "700", "US$89", "1,350"], commerce: ["US$99", "1,500", "US$179", "2,700"], studio: ["US$199", "3,050", "US$499", "7,700"] };
     for (const [id, [basePrice, baseCredits, topPrice, topCredits]] of Object.entries(steps)) {
       await expect(page.getByTestId(`plan-${id}-price`)).toHaveText(basePrice);
       await expect(page.getByTestId(`plan-${id}-credits`)).toContainText(baseCredits);
@@ -930,7 +934,7 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     // The same plans in Spanish, on a phone, without horizontal overflow
     await page.setViewportSize({ width: 375, height: 800 });
     await page.goto("/es/pricing");
-    await expect(page.getByTestId("plan-studio-credits")).toContainText("3.450 créditos al mes");
+    await expect(page.getByTestId("plan-studio-credits")).toContainText("3.050 créditos al mes");
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
 
     await page.setViewportSize({ width: 1280, height: 900 });
@@ -940,8 +944,11 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await page.waitForURL("**/dashboard");
     await page.goto("/dashboard/billing");
     await expect(page.getByTestId("plan-commerce-slider")).toBeVisible();
-    await expect(page.getByTestId("billing-calculator")).toContainText("Starter (300)");
-    await expect(page.getByTestId("billing-calculator")).toContainText("Studio (3450)");
+    await expect(page.getByTestId("billing-calculator")).toContainText("Starter (250)");
+    await expect(page.getByTestId("billing-calculator")).toContainText("Studio (3050)");
+    // Only the engines that are switched on (two in this setup), by number: no vendor names and no disabled engines
+    await expect(page.getByTestId("billing-calculator").locator("tbody tr")).toHaveCount(2);
+    for (const vendor of ["Sloyd", "Rodin", "Hunyuan", "Tripo", "TRELLIS", "Meshy", "US$"]) await expect(page.getByTestId("billing-calculator")).not.toContainText(vendor);
   });
 
   test("7z. Webhooks: an address gets a secret once, a test arrives signed, and a disabled address gets nothing", async ({ page }) => {

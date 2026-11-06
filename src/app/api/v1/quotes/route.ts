@@ -24,6 +24,7 @@ export const POST = withToken("jobs:write", async (req, token) => {
   await refreshEngineSwitches().catch(() => undefined);
   const { engineId, ...q } = parsed.data;
   const result = createQuote(token.orgId, engineId, q);
+  if (!result.ok && result.code === "billing_unsafe") return v1Error(503, "billing_unsafe", "Quotes are paused because of a server billing setting.");
   if (!result.ok) return result.code === "engine_unavailable" ? v1Error(503, result.code, "This engine is not available.") : v1Error(422, result.code, `This engine does not support these options (${result.problem}).`);
   return v1Json({ quote: result.quote });
 });
