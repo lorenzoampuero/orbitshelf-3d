@@ -68,13 +68,15 @@ export function LoginForm({
 
   if (sentTo) {
     return (
-      <div role="status" className="space-y-4 rounded-xl border border-accent/40 bg-accent/10 p-4" data-testid="login-check-email">
-        <div className="flex items-center gap-2 font-display text-base font-semibold text-fg">
-          <MailCheck className="h-5 w-5 text-accent" aria-hidden="true" />
+      <div role="status" className="space-y-4 rounded-2xl border border-accent/40 bg-accent/10 p-5" data-testid="login-check-email">
+        <div className="flex items-center gap-3 text-base font-semibold text-fg">
+          <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blood text-white">
+            <MailCheck className="h-5 w-5" />
+          </span>
           {dict.checkEmailTitle}
         </div>
-        <p className="text-sm text-muted leading-relaxed">{dict.checkEmailText.replace("{email}", sentTo)}</p>
-        <button type="button" onClick={() => setSentTo(null)} className="text-sm font-semibold text-accent hover:underline">
+        <p className="text-sm leading-relaxed text-muted">{dict.checkEmailText.replace("{email}", sentTo)}</p>
+        <button type="button" onClick={() => setSentTo(null)} className="text-sm font-semibold text-accent underline-offset-4 hover:underline">
           {dict.useAnotherEmail}
         </button>
       </div>
@@ -84,7 +86,7 @@ export function LoginForm({
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
       <div>
-        <label htmlFor="login-email" className="block text-sm font-medium text-fg mb-1.5">
+        <label htmlFor="login-email" className="mb-2 block text-sm font-medium text-fg">
           {dict.emailLabel}
         </label>
         <input
@@ -96,12 +98,12 @@ export function LoginForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder={dict.emailPlaceholder}
-          className="w-full rounded-xl border border-line bg-bg px-3.5 py-2.5 text-sm text-fg placeholder:text-muted"
+          className="w-full rounded-2xl border border-white/20 bg-bg px-4 py-3.5 text-sm text-fg placeholder:text-muted focus:border-accent"
         />
       </div>
 
       {error && (
-        <div role="alert" className="rounded-xl border border-danger/50 bg-danger/10 px-3.5 py-2.5 text-sm text-danger">
+        <div role="alert" className="rounded-2xl border border-danger/50 bg-danger/10 px-4 py-3 text-sm text-danger">
           {error}
         </div>
       )}
@@ -110,12 +112,12 @@ export function LoginForm({
         type="submit"
         disabled={submitting}
         data-testid="login-submit"
-        className="w-full rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-bg disabled:opacity-50"
+        className="btn-pill btn-solid w-full whitespace-normal! px-5! disabled:opacity-50"
       >
         {submitting ? (magicLink ? dict.sending : dict.submitting) : magicLink ? dict.submitMagic : dict.submit}
       </button>
 
-      <p className="text-sm text-muted">{dict.workspaceNote}</p>
+      <p className="text-center text-sm leading-relaxed text-muted">{dict.workspaceNote}</p>
     </form>
   );
 }

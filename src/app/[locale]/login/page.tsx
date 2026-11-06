@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { TriangleAlert } from "lucide-react";
 import { isLocale, localePath } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { buildPageMetadata } from "@/lib/seo";
@@ -38,18 +39,22 @@ export default async function LoginPage({ params, searchParams }: Props) {
 
   return (
     <MarketingShell locale={locale} dict={dict} isSignedIn={false}>
-      <section className="py-16 md:py-24">
-        <div className="container-page max-w-md">
-          <div className="rounded-xl border border-line bg-surface p-6 space-y-5">
-            <div className="space-y-1.5">
-              <h1 className="font-display text-2xl font-bold">{dict.login.title}</h1>
-              <p className="text-sm text-muted">{magicLink ? dict.login.introMagic : dict.login.intro}</p>
+      <section className="relative overflow-hidden pb-20 pt-32 md:pb-28 md:pt-40">
+        <div aria-hidden="true" className="glow left-1/2 top-24 h-[420px] w-[420px] -translate-x-1/2 md:h-[560px] md:w-[560px]" />
+        <div className="container-page relative max-w-md">
+          <div className="card space-y-6 p-6 md:p-9">
+            <div className="space-y-2">
+              <h1 className="text-2xl font-semibold leading-tight">{dict.login.title}</h1>
+              <p className="text-sm leading-relaxed text-muted">{magicLink ? dict.login.introMagic : dict.login.intro}</p>
             </div>
 
             {!magicLink && (
-              <div className="rounded-xl border border-line bg-surface-2 p-3.5 space-y-1 text-sm">
-                <div className="font-semibold text-warn">{dict.login.warningTitle}</div>
-                <p className="text-muted leading-relaxed">{dict.login.warning}</p>
+              <div className="flex items-start gap-3 rounded-2xl border border-line bg-surface-2 p-4 text-sm">
+                <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-warn" aria-hidden="true" />
+                <div className="space-y-1">
+                  <div className="font-semibold text-warn">{dict.login.warningTitle}</div>
+                  <p className="leading-relaxed text-muted">{dict.login.warning}</p>
+                </div>
               </div>
             )}
 

@@ -992,8 +992,40 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     expect((await page.request.delete(`/api/integrations/webhooks/${endpoint.id}`)).status()).toBe(404);
   });
 
+  test("7w. Navbar: Product, Solutions and Resources open panels with real links, and plan prices live only on /pricing", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 840 });
+    await page.goto("/");
+    const nav = page.getByRole("navigation", { name: /main|principal/i }).first();
+
+    await nav.getByRole("button", { name: /Product/i }).click();
+    await expect(page.locator("#menu-product a[href='/features/image-to-3d']")).toBeVisible();
+    await expect(page.locator("#menu-product a[href='/features/multi-image-to-3d']")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#menu-product")).toHaveCount(0);
+
+    await nav.getByRole("button", { name: /Solutions/i }).click();
+    for (const href of ["/solutions/stores", "/solutions/games", "/solutions/design"]) {
+      await expect(page.locator(`#menu-solutions a[href='${href}']`)).toBeVisible();
+    }
+    await page.keyboard.press("Escape");
+
+    await expect(nav.getByRole("link", { name: /Integrations/i })).toHaveAttribute("href", "/integrations");
+    await expect(nav.getByRole("link", { name: /Pricing/i })).toHaveAttribute("href", "/pricing");
+
+    // The home links to pricing but shows no price; /pricing shows the plans.
+    const homeText = await page.locator("main").innerText();
+    expect(homeText).not.toMatch(/US\$\s?\d|\$\s?\d{2}/);
+    await page.goto("/pricing");
+    await expect(page.locator("main")).toContainText(/US\$\s?19|\$\s?19/);
+  });
+
   test("8. Marketing pages: accessible (axe), no horizontal overflow at 375 px, and no sub-12px text", async ({ page }) => {
-    const paths = ["/", "/examples", "/how-it-works", "/pricing", "/resources", "/resources/photograph-clothing-for-3d", "/compare/ai-3d-vs-manual", "/privacy", "/es/examples", "/es/pricing"];
+    const paths = [
+      "/", "/examples", "/how-it-works", "/pricing", "/resources", "/resources/photograph-clothing-for-3d", "/compare/ai-3d-vs-manual", "/privacy",
+      "/features", "/features/text-to-3d", "/features/image-to-3d", "/features/multi-image-to-3d",
+      "/solutions", "/solutions/stores", "/solutions/games", "/solutions/design", "/integrations",
+      "/es", "/es/examples", "/es/pricing", "/es/features", "/es/solutions/stores", "/es/integrations",
+    ];
     for (const width of [1280, 375]) {
       await page.setViewportSize({ width, height: 840 });
       for (const p of paths) {

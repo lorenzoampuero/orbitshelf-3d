@@ -28,8 +28,8 @@ export default async function TermsPage({ params }: Props) {
 
   return (
     <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
-      <section className="py-14 md:py-20">
-        <LegalDocument dict={dict} title={dict.legal.terms.title} sections={dict.legal.terms.sections} />
+      <section className="pb-20 pt-32 md:pb-28 md:pt-40">
+        <LegalDocument dict={dict} locale={locale} title={dict.legal.terms.title} sections={dict.legal.terms.sections} />
       </section>
     </MarketingShell>
   );

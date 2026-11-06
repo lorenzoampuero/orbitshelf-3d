@@ -7,6 +7,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = brand.siteUrl.replace(/\/+$/, "");
   const marketingPaths = [
     "/",
+    "/features",
+    "/features/text-to-3d",
+    "/features/image-to-3d",
+    "/features/multi-image-to-3d",
+    "/solutions",
+    "/solutions/stores",
+    "/solutions/games",
+    "/solutions/design",
+    "/integrations",
     "/how-it-works",
     "/examples",
     "/pricing",

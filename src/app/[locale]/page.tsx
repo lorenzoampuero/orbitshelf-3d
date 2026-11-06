@@ -1,15 +1,35 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, ArrowUpRight, Box, Check, Code2, Download, Image as ImageIcon, Plug, Store, Type, Webhook } from "lucide-react";
+import {
+  Armchair,
+  ArrowRight,
+  Box,
+  Check,
+  Code2,
+  Coins,
+  FileBox,
+  Footprints,
+  Gamepad2,
+  GitCompare,
+  Image as ImageIcon,
+  Lamp,
+  MapPinOff,
+  PenTool,
+  Plug,
+  Shirt,
+  ShoppingCart,
+  Store,
+  Type,
+  Webhook,
+} from "lucide-react";
 import { isLocale, localePath } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { buildPageMetadata } from "@/lib/seo";
 import { currentUser } from "@/lib/api";
 import { MarketingShell } from "@/components/marketing-shell";
 import { ModelViewerBox } from "@/components/model-viewer-box";
-import { PlanCards } from "@/components/plan-cards";
-import { planReference } from "@/lib/provider/registry";
+import { Card, CardBody, Checklist, ClosingBanner, FaqList, Pill, Section, SectionTitle, StatusBadge, Tile } from "@/components/marketing-kit";
 import { showcase, showcaseBeforeAfter, showcaseHero } from "@/config/showcase";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -26,37 +46,29 @@ export async function generateMetadata({ params }: Props) {
   });
 }
 
-/** Section title: one centred line, no eyebrow. */
-function SectionTitle({ children, sub }: { children: React.ReactNode; sub?: string }) {
+/** A plain text link with an arrow, for the end of a card. */
+function TextLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <div className="reveal mx-auto max-w-2xl space-y-3 text-center">
-      <h2 className="text-[clamp(1.75rem,3.4vw,2.45rem)] font-semibold leading-tight">{children}</h2>
-      {sub ? <p className="text-base leading-relaxed text-muted">{sub}</p> : null}
-    </div>
-  );
-}
-
-/** A label inside a card: a pill with a square arrow button at the end. */
-function Tag({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="tag-pill">
+    <Link href={href} className="group inline-flex items-center gap-2 self-start text-sm font-semibold text-fg transition-colors hover:text-accent">
       {children}
-      <span className="tag-arrow" aria-hidden="true">
-        <ArrowUpRight className="h-4 w-4" />
-      </span>
+      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+    </Link>
+  );
+}
+
+/** The 3D result in a diagram: a blood-red square with a box in it. Never a render. */
+function ResultBox({ size = "md" }: { size?: "md" | "lg" }) {
+  return (
+    <span
+      className={`flex shrink-0 items-center justify-center bg-blood text-white ${size === "lg" ? "h-20 w-20 rounded-3xl sm:h-24 sm:w-24" : "h-14 w-14 rounded-2xl"}`}
+    >
+      <Box className={size === "lg" ? "h-9 w-9" : "h-6 w-6"} />
     </span>
   );
 }
 
-/** A drawn tile for diagrams: an icon in a rounded square. Not a screenshot, never presented as a result. */
-function Tile({ children, label }: { children: React.ReactNode; label?: string }) {
-  return (
-    <span className="flex flex-col items-center gap-1.5">
-      <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-line bg-surface-2 text-fg">{children}</span>
-      {label ? <span className="text-xs text-muted">{label}</span> : null}
-    </span>
-  );
-}
+/** Vase-like silhouette used by the "surface and mesh" drawing. */
+const VASE = "polygon(36% 0, 64% 0, 64% 16%, 86% 44%, 86% 80%, 70% 100%, 30% 100%, 14% 80%, 14% 44%, 36% 16%)";
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
@@ -89,7 +101,27 @@ export default async function HomePage({ params }: Props) {
     errorLabel: dict.dash.detail.viewerError,
   };
 
-  const flowIcons = [Code2, Webhook, Plug, Box, Store];
+  const intIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+    embed: Code2,
+    shopify: Store,
+    blender: Box,
+    api: Webhook,
+    mcp: Plug,
+    woo: ShoppingCart,
+    engines: Gamepad2,
+  };
+  const intSpan: Record<string, string> = {
+    embed: "md:col-span-4",
+    shopify: "md:col-span-2",
+    blender: "md:col-span-2",
+    api: "md:col-span-2",
+    mcp: "md:col-span-2",
+    woo: "md:col-span-3",
+    engines: "md:col-span-3",
+  };
+  const intTone = (status: string) => (status === "available" ? "ok" : status === "testing" ? "warn" : "muted");
+  const storeIcons = [Shirt, Armchair, Footprints, Lamp];
+  const stepIcons = [ImageIcon, Box, FileBox];
 
   return (
     <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
@@ -98,7 +130,7 @@ export default async function HomePage({ params }: Props) {
       {/* 1. Hero: giant title, then the model over a giant outlined "3D". */}
       <section className="relative overflow-hidden pb-6 pt-32 md:pt-40">
         <div className="container-page relative flex flex-col items-center text-center">
-          <span className="tag-pill !pr-4">{h.pill}</span>
+          <Pill>{h.pill}</Pill>
           <h1 className="hero-title mt-6 max-w-5xl text-[clamp(2.4rem,5.5vw,4.5rem)]">{h.heroTitle}</h1>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-muted md:text-lg">{h.heroText}</p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -141,159 +173,215 @@ export default async function HomePage({ params }: Props) {
         </div>
       </section>
 
-      {/* 2. Create: one wide card and three small ones, mixed sizes. */}
-      <section className="py-20 md:py-28">
-        <div className="container-page space-y-10">
-          <SectionTitle>{h.createTitle}</SectionTitle>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-            <article className="card card-lift reveal flex flex-col justify-between gap-8 overflow-hidden p-7 md:col-span-4 md:p-9">
-              <div className="space-y-4">
-                <Tag>{h.create.photo.tag}</Tag>
-                <h3 className="max-w-md text-2xl font-semibold leading-tight">{h.create.photo.title}</h3>
-                <p className="max-w-md text-sm leading-relaxed text-muted">{h.create.photo.text}</p>
-              </div>
-              <div aria-hidden="true" className="flex items-center gap-3 sm:gap-5">
-                <Tile label={views.front}>
-                  <ImageIcon className="h-6 w-6" />
-                </Tile>
-                <Tile label={views.back}>
-                  <ImageIcon className="h-6 w-6" />
-                </Tile>
-                <Tile label={views.left}>
-                  <ImageIcon className="h-6 w-6" />
-                </Tile>
+      {/* 2. Three ways in: image, text and several images, each with a drawn diagram and a link to its page. */}
+      <Section>
+        <SectionTitle sub={h.waysSub}>{h.waysTitle}</SectionTitle>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
+          <Card lift className="flex flex-col justify-between gap-10 overflow-hidden md:col-span-4">
+            <CardBody tag={h.ways.image.tag} title={h.ways.image.title} text={h.ways.image.text} />
+            <div className="space-y-6">
+              <div aria-hidden="true" className="flex items-center gap-4 sm:gap-6">
+                <span className="mesh-lines flex h-24 w-32 items-center justify-center rounded-2xl border border-line bg-[#1b0b0c] sm:h-28 sm:w-40">
+                  <ImageIcon className="h-8 w-8 text-accent" />
+                </span>
                 <ArrowRight className="h-5 w-5 shrink-0 text-accent" />
-                <span className="flex h-20 w-20 items-center justify-center rounded-3xl bg-blood text-white sm:h-24 sm:w-24">
-                  <Box className="h-9 w-9" />
-                </span>
+                <ResultBox size="lg" />
               </div>
-            </article>
+              <TextLink href={localePath(locale, "/features/image-to-3d")}>{h.ways.image.cta}</TextLink>
+            </div>
+          </Card>
 
-            <article className="card card-lift reveal flex flex-col justify-between gap-8 p-7 md:col-span-2">
-              <div className="space-y-4">
-                <Tag>{h.create.text.tag}</Tag>
-                <h3 className="text-xl font-semibold leading-tight">{h.create.text.title}</h3>
-                <p className="text-sm leading-relaxed text-muted">{h.create.text.text}</p>
-              </div>
-              <div aria-hidden="true" className="flex items-center gap-3">
-                <Tile>
-                  <Type className="h-6 w-6" />
-                </Tile>
-                <ArrowRight className="h-5 w-5 text-accent" />
-                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blood text-white">
-                  <Box className="h-6 w-6" />
-                </span>
-              </div>
-            </article>
-
-            <article className="card card-lift reveal space-y-3 p-7 md:col-span-3">
-              <Tag>{h.create.views.tag}</Tag>
-              <h3 className="text-xl font-semibold leading-tight">{h.create.views.title}</h3>
-              <p className="text-sm leading-relaxed text-muted">{h.create.views.text}</p>
-            </article>
-
-            <article className="card card-lift reveal space-y-3 p-7 md:col-span-3">
-              <Tag>{h.create.status.tag}</Tag>
-              <h3 className="text-xl font-semibold leading-tight">{h.create.status.title}</h3>
-              <p className="text-sm leading-relaxed text-muted">{h.create.status.text}</p>
-            </article>
-
-            {/* Only when a real, approved result exists. */}
-            {beforeAfter && (
-              <article className="card reveal grid grid-cols-1 gap-6 p-7 md:col-span-6 md:grid-cols-12">
-                <ul className="grid grid-cols-2 gap-3 md:col-span-5">
-                  {beforeAfter.photos.map((p) => (
-                    <li key={p.view} className="space-y-1.5">
-                      <Image
-                        src={p.src}
-                        width={p.width}
-                        height={p.height}
-                        alt={`${beforeAfter.title[locale]} · ${views[p.view]}`}
-                        className="h-auto w-full rounded-xl border border-line"
-                        sizes="(min-width: 1024px) 20vw, 45vw"
-                      />
-                      <span className="block text-xs text-muted">{views[p.view]}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="space-y-3 md:col-span-7">
-                  <ModelViewerBox
-                    src={beforeAfter.glb}
-                    alt={beforeAfter.alt[locale]}
-                    heightClass="h-[340px]"
-                    testId="home-before-after-viewer"
-                    wheelZoom={false}
-                    {...viewerLabels}
-                  />
-                  <p className="text-xs text-muted">{h.generatedPhotos.replace("{n}", String(beforeAfter.photos.length))}</p>
-                </div>
-              </article>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Control: the mesh view is real and interactive; the other three are plain cards. */}
-      <section className="py-16 md:py-24">
-        <div className="container-page space-y-10">
-          <SectionTitle>{h.controlTitle}</SectionTitle>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-            <article className="card reveal grid grid-cols-1 gap-4 overflow-hidden p-7 md:col-span-6 md:grid-cols-2 md:p-9">
-              <div className="flex flex-col justify-center space-y-4">
-                <Tag>{h.control.mesh.tag}</Tag>
-                <h3 className="text-2xl font-semibold leading-tight">{h.control.mesh.title}</h3>
-                <p className="max-w-sm text-sm leading-relaxed text-muted">{h.control.mesh.text}</p>
-                <p className="text-xs text-muted">{h.sampleNote}</p>
-              </div>
-              <ModelViewerBox
-                src="/demo/chair.glb"
-                alt={h.meshAlt}
-                heightClass="h-[300px] md:h-[360px]"
-                testId="home-mesh-viewer"
-                wheelZoom={false}
-                wireframeLabel={dict.dash.detail.wireframe}
-                surfaceLabel={dict.dash.detail.surface}
-                {...viewerLabels}
-              />
-            </article>
-
-            <article className="card card-lift reveal space-y-4 p-7 md:col-span-2">
-              <Tag>{h.control.review.tag}</Tag>
-              <h3 className="text-lg font-semibold leading-tight">{h.control.review.title}</h3>
-              <p className="text-sm leading-relaxed text-muted">{h.control.review.text}</p>
-              <div aria-hidden="true" className="flex gap-1.5 pt-1">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <span key={i} className="flex h-7 w-7 items-center justify-center rounded-lg bg-blood text-white">
-                    <Check className="h-4 w-4" />
+          <Card lift className="flex flex-col justify-between gap-8 md:col-span-2">
+            <CardBody tag={h.ways.text.tag} title={h.ways.text.title} text={h.ways.text.text} />
+            <div className="space-y-6">
+              <div aria-hidden="true" className="space-y-4">
+                <div className="space-y-1.5 rounded-xl border border-line px-4 py-3">
+                  <span className="flex items-center gap-2 text-xs text-muted">
+                    <Type className="h-3.5 w-3.5 text-accent" />
+                    {h.ways.text.promptLabel}
                   </span>
-                ))}
+                  <span className="block text-sm leading-snug text-fg">{h.ways.text.promptExample}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <ArrowRight className="h-5 w-5 shrink-0 text-accent" />
+                  <ResultBox />
+                </div>
               </div>
-            </article>
+              <TextLink href={localePath(locale, "/features/text-to-3d")}>{h.ways.text.cta}</TextLink>
+            </div>
+          </Card>
 
-            <article className="card card-lift reveal space-y-4 p-7 md:col-span-2">
-              <Tag>{h.control.versions.tag}</Tag>
-              <h3 className="text-lg font-semibold leading-tight">{h.control.versions.title}</h3>
-              <p className="text-sm leading-relaxed text-muted">{h.control.versions.text}</p>
-            </article>
+          <Card lift className="grid grid-cols-1 gap-8 overflow-hidden md:col-span-6 md:grid-cols-2 md:items-center">
+            <div className="flex flex-col items-start gap-6">
+              <CardBody tag={h.ways.multi.tag} title={h.ways.multi.title} text={h.ways.multi.text} />
+              <TextLink href={localePath(locale, "/features/multi-image-to-3d")}>{h.ways.multi.cta}</TextLink>
+            </div>
+            <div aria-hidden="true" className="space-y-3">
+              <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5">
+                <div className="grid grid-cols-4 gap-2 sm:gap-3">
+                  {[0, 1, 2, 3].map((i) => (
+                    <Tile key={i}>
+                      <ImageIcon className="h-6 w-6" />
+                    </Tile>
+                  ))}
+                </div>
+                <ArrowRight className="h-5 w-5 shrink-0 rotate-90 text-accent sm:rotate-0" />
+                <ResultBox size="lg" />
+              </div>
+              <p className="text-xs text-muted">{[views.front, views.left, views.back, views.right].join(", ")}</p>
+            </div>
+          </Card>
 
-            <article className="card card-lift reveal space-y-4 p-7 md:col-span-2">
-              <Tag>{h.control.export.tag}</Tag>
-              <h3 className="text-lg font-semibold leading-tight">{h.control.export.title}</h3>
-              <p className="text-sm leading-relaxed text-muted">{h.control.export.text}</p>
-            </article>
-          </div>
+          {/* Only when a real, approved result exists. */}
+          {beforeAfter && (
+            <Card className="grid grid-cols-1 gap-6 md:col-span-6 md:grid-cols-12">
+              <ul className="grid grid-cols-2 gap-3 md:col-span-5">
+                {beforeAfter.photos.map((p) => (
+                  <li key={p.view} className="space-y-1.5">
+                    <Image
+                      src={p.src}
+                      width={p.width}
+                      height={p.height}
+                      alt={`${beforeAfter.title[locale]} · ${views[p.view]}`}
+                      className="h-auto w-full rounded-xl border border-line"
+                      sizes="(min-width: 1024px) 20vw, 45vw"
+                    />
+                    <span className="block text-xs text-muted">{views[p.view]}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="space-y-3 md:col-span-7">
+                <ModelViewerBox
+                  src={beforeAfter.glb}
+                  alt={beforeAfter.alt[locale]}
+                  heightClass="h-[340px]"
+                  testId="home-before-after-viewer"
+                  wheelZoom={false}
+                  {...viewerLabels}
+                />
+                <p className="text-xs text-muted">{h.generatedPhotos.replace("{n}", String(beforeAfter.photos.length))}</p>
+              </div>
+            </Card>
+          )}
+
+          <Card lift className="space-y-4 md:col-span-2">
+            <span aria-hidden="true" className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-fg">
+              <MapPinOff className="h-5 w-5" />
+            </span>
+            <CardBody tag={h.ways.privacy.tag} title={h.ways.privacy.title} text={h.ways.privacy.text} />
+          </Card>
+
+          <Card lift className="flex flex-col justify-between gap-8 md:col-span-4">
+            <CardBody tag={h.ways.status.tag} title={h.ways.status.title} text={h.ways.status.text} />
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div aria-hidden="true" className="flex items-center gap-3">
+                <span className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 text-xs text-fg">
+                  <Coins className="h-4 w-4 text-accent" />
+                  {h.ways.status.costLabel}
+                </span>
+                <ArrowRight className="h-4 w-4 text-accent" />
+                <ResultBox />
+              </div>
+              <TextLink href={localePath(locale, "/pricing")}>{h.ways.status.link}</TextLink>
+            </div>
+          </Card>
         </div>
-      </section>
+      </Section>
 
-      {/* 4. Three steps, each with a small drawn diagram. */}
-      <section className="py-16 md:py-24">
-        <div className="container-page space-y-10">
-          <SectionTitle sub={h.stepsNote}>{h.stepsTitle}</SectionTitle>
-          <ol className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      {/* 3. Control: the mesh view is real and interactive; the others are drawn. */}
+      <Section>
+        <SectionTitle sub={h.controlSub}>{h.controlTitle}</SectionTitle>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
+          <article className="card reveal grid grid-cols-1 gap-4 overflow-hidden p-7 md:col-span-6 md:grid-cols-2 md:p-9">
+            <div className="flex flex-col justify-center space-y-4">
+              <CardBody tag={h.control.mesh.tag} title={h.control.mesh.title} text={h.control.mesh.text}>
+                <p className="text-xs text-muted">{h.sampleNote}</p>
+              </CardBody>
+            </div>
+            <ModelViewerBox
+              src="/demo/chair.glb"
+              alt={h.meshAlt}
+              heightClass="h-[300px] md:h-[360px]"
+              testId="home-mesh-viewer"
+              wheelZoom={false}
+              wireframeLabel={dict.dash.detail.wireframe}
+              surfaceLabel={dict.dash.detail.surface}
+              {...viewerLabels}
+            />
+          </article>
+
+          <Card lift className="flex flex-col justify-between gap-8 md:col-span-2">
+            <CardBody tag={h.control.review.tag} title={h.control.review.title} text={h.control.review.text} />
+            <div aria-hidden="true" className="flex gap-1.5">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <span key={i} className="flex h-8 w-8 items-center justify-center rounded-lg bg-blood text-white">
+                  <Check className="h-4 w-4" />
+                </span>
+              ))}
+            </div>
+          </Card>
+
+          <Card lift className="flex flex-col justify-between gap-8 md:col-span-4">
+            <CardBody tag={h.control.diag.tag} title={h.control.diag.title} text={h.control.diag.text} />
+            <ul aria-label={h.control.diag.title} className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {h.control.diag.labels.map((label) => (
+                <li key={label} className="space-y-2.5 rounded-xl border border-line px-3 py-3">
+                  <span className="block text-xs text-muted">{label}</span>
+                  <span aria-hidden="true" className="block h-1.5 w-2/3 rounded-full bg-white/15" />
+                </li>
+              ))}
+            </ul>
+          </Card>
+
+          <Card lift className="flex flex-col justify-between gap-8 md:col-span-4 md:flex-row md:items-center">
+            <CardBody tag={h.control.versions.tag} title={h.control.versions.title} text={h.control.versions.text} />
+            <div aria-hidden="true" className="flex shrink-0 items-center gap-3">
+              <span className="flex flex-col items-center gap-1.5">
+                <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-line text-sm font-semibold">v1</span>
+                <span className="text-xs text-muted">{h.control.versions.original}</span>
+              </span>
+              <GitCompare className="h-5 w-5 text-accent" />
+              <span className="flex flex-col items-center gap-1.5">
+                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blood text-sm font-semibold text-white">v2</span>
+                <span className="text-xs text-muted">{h.control.versions.optimized}</span>
+              </span>
+            </div>
+          </Card>
+
+          <Card lift className="space-y-5 md:col-span-2">
+            <CardBody tag={h.control.export.tag} title={h.control.export.title} text={h.control.export.text} />
+            <ul className="space-y-2.5">
+              {(
+                [
+                  ["GLB", h.control.export.glb],
+                  ["OBJ", h.control.export.obj],
+                  ["STL", h.control.export.stl],
+                ] as const
+              ).map(([format, note]) => (
+                <li key={format} className="flex items-center gap-3">
+                  <span aria-hidden="true" className="flex h-8 w-12 shrink-0 items-center justify-center rounded-lg bg-white/10 text-xs font-semibold text-fg">
+                    {format}
+                  </span>
+                  <span className="text-xs leading-snug text-muted">
+                    <span className="sr-only">{format}: </span>
+                    {note}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </div>
+      </Section>
+
+      {/* 4. Three steps in one card, split by lines. */}
+      <Section>
+        <SectionTitle sub={h.stepsNote}>{h.stepsTitle}</SectionTitle>
+        <Card className="!p-0">
+          <ol className="grid grid-cols-1 divide-y divide-line md:grid-cols-3 md:divide-x md:divide-y-0">
             {h.steps.map((s, i) => {
-              const Icon = [ImageIcon, Box, Download][i] ?? Box;
+              const Icon = stepIcons[i] ?? Box;
               return (
-                <li key={s.title} className="card reveal flex flex-col gap-6 p-7">
+                <li key={s.title} className="flex flex-col gap-6 p-7 md:p-8">
                   <div className="flex items-center justify-between">
                     <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-sm font-semibold tabular-nums" aria-hidden="true">
                       {i + 1}
@@ -310,160 +398,144 @@ export default async function HomePage({ params }: Props) {
               );
             })}
           </ol>
-        </div>
-      </section>
+        </Card>
+      </Section>
 
-      {/* 5. One flow per trade. */}
-      <section className="py-16 md:py-24">
-        <div className="container-page space-y-10">
-          <SectionTitle>{h.tradesTitle}</SectionTitle>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
-            {h.trades.map((t, i) => (
-              <article
-                key={t.name}
-                className={`card card-lift reveal flex flex-col justify-between gap-8 p-7 md:p-9 ${i === 0 ? "md:col-span-3" : i === 1 ? "md:col-span-2" : "md:col-span-5 md:flex-row md:items-end"}`}
-              >
-                <div className="space-y-4">
-                  <Tag>{t.name}</Tag>
-                  <h3 className="max-w-md text-2xl font-semibold leading-tight">{t.line}</h3>
-                  <ul className="space-y-2 text-sm text-muted">
-                    {t.points.map((p) => (
-                      <li key={p} className="flex items-start gap-2.5">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
-                        {p}
-                      </li>
-                    ))}
-                  </ul>
+      {/* 5. Who we help: stores (tall, with the apparel note), games, 3D design. */}
+      <Section>
+        <SectionTitle sub={h.whoSub}>{h.whoTitle}</SectionTitle>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
+          <Card lift className="flex flex-col justify-between gap-8 md:col-span-4 md:row-span-2">
+            <div className="space-y-6">
+              <CardBody tag={h.who.stores.tag} title={h.who.stores.title} text={h.who.stores.text} />
+              <div className="flex flex-wrap gap-x-5 gap-y-3">
+                {h.who.stores.categories.map((c, i) => {
+                  const Icon = storeIcons[i] ?? Box;
+                  return (
+                    <Tile key={c} label={c}>
+                      <Icon className="h-6 w-6" />
+                    </Tile>
+                  );
+                })}
+              </div>
+              <Checklist items={h.who.stores.points} />
+              <div className="flex items-start gap-3 rounded-2xl border border-line p-4">
+                <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blood text-white">
+                  <Shirt className="h-4 w-4" />
+                </span>
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold leading-snug">{h.who.stores.apparelTitle}</p>
+                  <p className="text-sm leading-relaxed text-muted">{h.who.stores.apparelText}</p>
                 </div>
-                <Link href={create} className="btn-pill btn-outline self-start md:shrink-0">
-                  {t.cta}
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-              </article>
-            ))}
-          </div>
-          <p className="mx-auto max-w-2xl text-center text-sm leading-relaxed text-muted">
-            {h.tradesNote}{" "}
-            <Link href={localePath(locale, "/compare/ai-3d-vs-manual")} className="font-semibold text-fg underline underline-offset-4 hover:text-accent">
-              {dict.nav.compare}
-            </Link>
-          </p>
-        </div>
-      </section>
+              </div>
+            </div>
+            <TextLink href={localePath(locale, "/solutions/stores")}>{h.who.stores.cta}</TextLink>
+          </Card>
 
-      {/* 6. Gallery: only when real, approved results exist. */}
-      {posters.length >= 3 && (
-        <section className="py-16 md:py-24">
-          <div className="container-page">
-            <ul className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              {posters.slice(0, 8).map((s) => (
-                <li key={s.id} className="card reveal overflow-hidden">
-                  <Image src={s.poster.src} width={s.poster.width} height={s.poster.height} alt={s.alt[locale]} className="h-auto w-full" />
-                </li>
-              ))}
-            </ul>
+          <Card lift className="flex flex-col justify-between gap-8 md:col-span-2">
+            <div className="space-y-5">
+              <span aria-hidden="true" className="mesh-lines flex h-16 w-24 items-center justify-center rounded-xl bg-[#1b0b0c]">
+                <Gamepad2 className="h-7 w-7 text-accent" />
+              </span>
+              <CardBody tag={h.who.games.tag} title={h.who.games.title} text={h.who.games.text} />
+              <Checklist items={h.who.games.points} />
+            </div>
+            <TextLink href={localePath(locale, "/solutions/games")}>{h.who.games.cta}</TextLink>
+          </Card>
+
+          <Card lift className="flex flex-col justify-between gap-8 md:col-span-2">
+            <div className="space-y-5">
+              <span aria-hidden="true" className="mesh-lines flex h-16 w-24 items-center justify-center rounded-xl bg-[#1b0b0c]">
+                <PenTool className="h-7 w-7 text-accent" />
+              </span>
+              <CardBody tag={h.who.design.tag} title={h.who.design.title} text={h.who.design.text} />
+              <Checklist items={h.who.design.points} />
+            </div>
+            <TextLink href={localePath(locale, "/solutions/design")}>{h.who.design.cta}</TextLink>
+          </Card>
+        </div>
+      </Section>
+
+      {/* 6. The same model, solid and mesh: a flat drawing (CSS shapes), labelled as an illustration. */}
+      <Section>
+        <SectionTitle sub={h.twinText}>{h.twinTitle}</SectionTitle>
+        <Card className="mx-auto max-w-3xl space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <figure className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-bg px-4 py-6">
+              <span aria-hidden="true" className="block h-40 w-28 bg-blood sm:h-52 sm:w-36" style={{ clipPath: VASE }} />
+              <figcaption className="text-sm font-medium text-fg">{h.twinSolid}</figcaption>
+            </figure>
+            <figure className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-bg px-4 py-6">
+              <span aria-hidden="true" className="relative block h-40 w-28 bg-accent sm:h-52 sm:w-36" style={{ clipPath: VASE }}>
+                <span className="mesh-lines absolute inset-[2px] block bg-[#1b0b0c]" style={{ clipPath: VASE }} />
+              </span>
+              <figcaption className="text-sm font-medium text-fg">{h.twinMesh}</figcaption>
+            </figure>
           </div>
-        </section>
+          <p className="text-center text-xs text-muted">{h.twinNote}</p>
+        </Card>
+      </Section>
+
+      {/* 7. Gallery: only when real, approved results exist. */}
+      {posters.length >= 3 && (
+        <Section>
+          <ul className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {posters.slice(0, 8).map((s) => (
+              <li key={s.id} className="card reveal overflow-hidden">
+                <Image src={s.poster.src} width={s.poster.width} height={s.poster.height} alt={s.alt[locale]} className="h-auto w-full" />
+              </li>
+            ))}
+          </ul>
+        </Section>
       )}
 
-      {/* 7. In your workflow. Shopify stays "coming soon" until it is tried on a real store. */}
-      <section className="py-16 md:py-24">
-        <div className="container-page space-y-10">
-          <SectionTitle sub={h.flowIntro}>{h.flowTitle}</SectionTitle>
-          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {h.flow.map((f, i) => {
-              const Icon = flowIcons[i] ?? Box;
-              return (
-                <li key={f.title} className="card reveal flex flex-col gap-4 p-6">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-fg" aria-hidden="true">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <div className="space-y-1.5">
-                    <h3 className="flex items-center gap-2 text-base font-semibold">
-                      {f.title}
-                      {"badge" in f && f.badge ? (
-                        <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs font-medium text-muted">{f.badge}</span>
-                      ) : null}
-                    </h3>
-                    <p className="text-sm leading-relaxed text-muted">{f.text}</p>
+      {/* 8. Integrations: the six first, with the status each one really has. */}
+      <Section>
+        <SectionTitle sub={h.intSub}>{h.intTitle}</SectionTitle>
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-6">
+          {h.ints.map((it) => {
+            const Icon = intIcons[it.key] ?? Box;
+            return (
+              <li key={it.key} className={`card card-lift reveal flex flex-col gap-5 p-7 ${intSpan[it.key] ?? "md:col-span-2"}`}>
+                <span aria-hidden="true" className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-fg">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-lg font-semibold leading-tight">{it.name}</h3>
+                    <StatusBadge tone={intTone(it.status)}>{h.intStatus[it.status as keyof typeof h.intStatus]}</StatusBadge>
                   </div>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </section>
-
-      {/* 8. Pricing. */}
-      <section className="py-16 md:py-24">
-        <div className="container-page space-y-10">
-          <SectionTitle sub={h.pricingIntro}>{h.pricingTitle}</SectionTitle>
-          <div className="card reveal p-6 md:p-9">
-            <PlanCards copy={dict.pricing} locale={locale} reference={planReference()} />
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <p className="max-w-xl text-sm text-muted">{h.tryPackNote}</p>
-            <Link href={localePath(locale, "/pricing")} className="btn-pill btn-outline">
-              {h.pricingCta}
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 9. FAQ. */}
-      <section className="py-16 md:py-24">
-        <div className="container-page space-y-10">
-          <SectionTitle>{h.faqTitle}</SectionTitle>
-          <div className="mx-auto max-w-3xl space-y-3">
-            {h.faqs.map((f) => (
-              <details key={f.q} className="card reveal group px-6 py-5">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-base font-semibold">
-                  <span>{f.q}</span>
-                  <span aria-hidden="true" className="text-2xl font-normal leading-none text-accent">
-                    <span className="group-open:hidden">+</span>
-                    <span className="hidden group-open:inline">−</span>
-                  </span>
-                </summary>
-                <p className="mt-3 text-sm leading-relaxed text-muted">{f.a}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 10. Closing banner on a starfield. */}
-      <section className="px-5 pb-20 pt-8 md:pb-28">
-        <div
-          className="reveal relative mx-auto flex max-w-[1120px] flex-col items-center gap-6 overflow-hidden rounded-[32px] px-6 py-20 text-center md:py-28"
-          style={{
-            backgroundColor: "#1a0506",
-            backgroundImage: [
-              "radial-gradient(ellipse 70% 90% at 50% 120%, #8b0000 0%, rgb(139 0 0 / 0) 70%)",
-              "radial-gradient(1.5px 1.5px at 12% 24%, #fff, transparent)",
-              "radial-gradient(1px 1px at 27% 68%, #fff, transparent)",
-              "radial-gradient(1.5px 1.5px at 41% 15%, #fff, transparent)",
-              "radial-gradient(1px 1px at 58% 78%, #fff, transparent)",
-              "radial-gradient(2px 2px at 73% 30%, #fff, transparent)",
-              "radial-gradient(1px 1px at 86% 62%, #fff, transparent)",
-              "radial-gradient(1.5px 1.5px at 92% 14%, #fff, transparent)",
-              "radial-gradient(1px 1px at 6% 82%, #fff, transparent)",
-              "radial-gradient(1px 1px at 66% 10%, #fff, transparent)",
-              "radial-gradient(1.5px 1.5px at 34% 88%, #fff, transparent)",
-            ].join(","),
-          }}
-        >
-          <h2 className="text-[clamp(2rem,5vw,3.75rem)] font-semibold leading-[1.05]">
-            {h.finalTitleA}
-            <br />
-            <span className="bg-gradient-to-r from-white to-[#ffb3b3] bg-clip-text text-transparent">{h.finalTitleB}</span>
-          </h2>
-          <Link href={create} className="btn-pill btn-ink py-3.5">
-            {h.finalCta}
+                  <p className="text-sm leading-relaxed text-muted">{it.text}</p>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="flex justify-center">
+          <Link href={localePath(locale, "/integrations")} className="btn-pill btn-outline">
+            {h.intCta}
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
-          <p className="max-w-md text-sm text-white/70">{h.finalNote}</p>
         </div>
-      </section>
+      </Section>
+
+      {/* 9. What to expect: the honest limits. */}
+      <Section>
+        <SectionTitle sub={h.expectSub}>{h.expectTitle}</SectionTitle>
+        <Card className="mx-auto max-w-3xl space-y-6">
+          <Checklist items={h.expectItems} />
+          <TextLink href={localePath(locale, "/compare/ai-3d-vs-manual")}>{h.expectLink}</TextLink>
+        </Card>
+      </Section>
+
+      {/* 10. FAQ. */}
+      <Section>
+        <SectionTitle>{h.faqTitle}</SectionTitle>
+        <FaqList items={h.faqs} />
+      </Section>
+
+      {/* 11. Closing banner. */}
+      <ClosingBanner titleA={h.finalTitleA} titleB={h.finalTitleB} cta={h.finalCta} href={create} note={h.finalNote} />
     </MarketingShell>
   );
 }

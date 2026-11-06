@@ -1,9 +1,12 @@
 import { notFound } from "next/navigation";
-import { isLocale } from "@/i18n/config";
+import { ArrowUpRight } from "lucide-react";
+import { isLocale, localePath } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { buildPageMetadata } from "@/lib/seo";
 import { currentUser } from "@/lib/api";
+import { innerPagesCopy, plainTitle } from "@/content/inner-pages";
 import { MarketingShell } from "@/components/marketing-shell";
+import { Card, Checklist, ClosingBanner, PageHero, Section } from "@/components/marketing-kit";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -14,7 +17,7 @@ export async function generateMetadata({ params }: Props) {
   return buildPageMetadata({
     locale,
     path: "/compare/ai-3d-vs-manual",
-    title: dict.meta.compare.title,
+    title: plainTitle(dict.meta.compare.title),
     description: dict.meta.compare.description,
   });
 }
@@ -24,75 +27,80 @@ export default async function ComparePage({ params }: Props) {
   if (!isLocale(locale)) notFound();
   const dict = getDictionary(locale);
   const user = await currentUser();
+  const copy = innerPagesCopy[locale];
+  const c = dict.compare;
 
   return (
     <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
-      <section className="py-14 md:py-24">
-        <div className="container-page space-y-14">
-          <div className="max-w-3xl space-y-4">
-            <span className="text-xs font-semibold uppercase tracking-wider text-accent">{dict.compare.eyebrow}</span>
-            <h1 className="font-display text-4xl font-bold leading-[1.02] md:text-6xl">{dict.compare.title}</h1>
-            <p className="text-lg leading-relaxed text-muted">{dict.compare.intro}</p>
-          </div>
+      <PageHero pill={c.eyebrow} title={c.title} text={c.intro} />
 
-          <div className="overflow-x-auto" role="region" aria-label={dict.compare.title} tabIndex={0}>
-            <table className="w-full min-w-[640px] text-left text-sm">
-              <thead className="border-b border-fg/30 text-xs uppercase tracking-wider text-muted">
-                <tr>
-                  {dict.compare.columns.map((c) => (
-                    <th key={c} scope="col" className="px-4 py-3 font-semibold first:pl-0">
-                      {c}
+      <Section>
+        <div className="card reveal overflow-hidden">
+          <div className="overflow-x-auto" role="region" aria-label={c.title} tabIndex={0}>
+            <table className="w-full min-w-[620px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-line bg-surface-2 text-xs uppercase tracking-wider text-muted">
+                  {c.columns.map((col, i) => (
+                    <th key={col} scope="col" className={`px-5 py-4 font-semibold md:px-6 ${i === 1 ? "text-fg" : ""}`}>
+                      {col}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-line border-b border-line">
-                {dict.compare.rows.map((r) => (
-                  <tr key={r.topic}>
-                    <th scope="row" className="px-4 py-4 align-top font-semibold text-fg first:pl-0">
+              <tbody>
+                {c.rows.map((r) => (
+                  <tr key={r.topic} className="odd:bg-white/[0.03]">
+                    <th scope="row" className="w-[22%] px-5 py-4 align-top font-semibold text-fg md:px-6">
                       {r.topic}
                     </th>
-                    <td className="px-4 py-4 align-top leading-relaxed text-muted">{r.ai}</td>
-                    <td className="px-4 py-4 align-top leading-relaxed text-muted">{r.manual}</td>
+                    <td className="px-5 py-4 align-top leading-relaxed text-muted md:px-6">{r.ai}</td>
+                    <td className="px-5 py-4 align-top leading-relaxed text-muted md:px-6">{r.manual}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-12">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
+          <Card className="md:col-span-3">
             <div className="space-y-4">
-              <h2 className="font-display text-2xl font-bold">{dict.compare.whenAiTitle}</h2>
-              <ul className="list-disc space-y-2 pl-5 text-base leading-relaxed text-muted marker:text-accent">
-                {dict.compare.whenAi.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
+              <h2 className="text-xl font-semibold leading-tight">{c.whenAiTitle}</h2>
+              <Checklist items={c.whenAi} />
             </div>
+          </Card>
+          <Card className="md:col-span-3">
             <div className="space-y-4">
-              <h2 className="font-display text-2xl font-bold">{dict.compare.whenManualTitle}</h2>
-              <ul className="list-disc space-y-2 pl-5 text-base leading-relaxed text-muted marker:text-accent">
-                {dict.compare.whenManual.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
+              <h2 className="text-xl font-semibold leading-tight">{c.whenManualTitle}</h2>
+              <Checklist items={c.whenManual} />
             </div>
-          </div>
+          </Card>
 
-          <div className="space-y-2 border-t border-line pt-8">
-            <h2 className="font-display text-lg font-bold">{dict.compare.sourceTitle}</h2>
-            <p className="max-w-2xl text-sm leading-relaxed text-muted">{dict.compare.sourceText}</p>
+          <article className="card reveal flex flex-col justify-between gap-6 p-7 md:col-span-6 md:flex-row md:items-end md:p-8">
+            <div className="max-w-2xl space-y-3">
+              <h2 className="text-lg font-semibold leading-tight">{c.sourceTitle}</h2>
+              <p className="text-sm leading-relaxed text-muted">{c.sourceText}</p>
+            </div>
             <a
               href="https://www.sloyd.ai/api/pricing"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block text-sm font-semibold text-fg underline underline-offset-4 hover:text-accent"
+              className="inline-flex shrink-0 items-center gap-1.5 self-start text-sm font-semibold text-fg underline underline-offset-4 hover:text-accent md:self-auto"
             >
-              {dict.compare.sourceLink} ↗
+              {c.sourceLink}
+              <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden="true" />
             </a>
-          </div>
+          </article>
         </div>
-      </section>
+      </Section>
+
+      <ClosingBanner
+        titleA={copy.compare.closing.titleA}
+        titleB={copy.compare.closing.titleB}
+        cta={dict.how.cta}
+        href={localePath(locale, "/dashboard/create")}
+        note={dict.home.finalNote}
+      />
     </MarketingShell>
   );
 }
