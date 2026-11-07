@@ -9,6 +9,7 @@ const scenarios: [string, { pct: number; fixedUsd: number }][] = [
   ["Current assumption 6.5% + 0.30", { pct: 0.065, fixedUsd: 0.3 }],
   ["Whop direct, intl card, FX, billing, fraud 5.7% + 0.40", { pct: 0.057, fixedUsd: 0.4 }],
   ["Whop with the extra 3% platform fee 8.7% + 0.40", { pct: 0.087, fixedUsd: 0.4 }],
+  ["Worst case: 3% platform + intl 1.5% + FX 1% + billing 0.5% + tax 2% + 2.7% = 10.7% + 0.40", { pct: 0.107, fixedUsd: 0.4 }],
 ];
 for (const [label, fee] of scenarios) {
   let min = 100;
