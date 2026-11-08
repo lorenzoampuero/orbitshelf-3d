@@ -1,81 +1,80 @@
-# Proyección de clientes e ingresos (simulada)
+# Proyección de clientes e ingresos por canal (simulada)
 
-> **No son datos: son supuestos.** Hoy no hay clientes, ni tráfico, ni conversión medida. Sirve para ver qué números tendrían que darse para que el negocio se sostenga, no para prometer nada. Se regenera con `npx tsx --conditions=react-server scripts/project-customers.ts`.
+> **No son datos: son supuestos.** Hoy no hay clientes, ni tráfico, ni conversión medida. Sirve para ver qué tendría que cumplirse para llegar a cada cifra y qué canal pesa más, no para prometer nada. Se regenera con `npx tsx --conditions=react-server scripts/project-customers.ts`. El análisis completo y las fuentes están en `docs/ESTUDIO_MERCADO.md`.
 
-## Supuestos
+El mes 1 es el primer mes de ventas (diciembre de 2026, si el producto está listo a tiempo). Marzo de 2027 es el mes 4.
+
+## Supuestos comunes
 
 - Cobro: solo el precio base de cada plan (Starter US$19, Creator US$49, Commerce US$99, Studio US$199); nadie sube la barra. Es prudente.
-- Costo variable: cada crédito usado cuesta US$0.02. Los créditos sin usar no cuestan.
-- Comisión de pago: 6.5 % + US$0.3 por cobro (supuesto, sin proveedor de pago real).
-- Costos fijos: US$150 al mes (hosting, base de datos, correo, dominio, herramientas) más US$1.5 por cliente (almacenamiento, descargas y soporte, hoy sin medir). No incluye tu sueldo ni impuestos.
-- Costo de conseguir cada cliente nuevo: US$40 (publicidad, contenido, herramientas). Es el supuesto más incierto de todos y ya está descontado de la ganancia.
-- Los nuevos clientes crecen cada mes durante el primer año y luego se mantienen. Los que se van se descuentan cada mes (abandono).
-- No incluye clientes gratis ni prueba: cada cliente es de pago.
+- Costo variable: cada crédito usado cuesta US$0.02. Los créditos sin usar no cuestan. Comisión de pago: 6.5 % + US$0.3 por cobro (supuesto; Whop no está verificado).
+- Costos fijos: US$150 al mes más US$1.5 por cliente. Costo único antes de la primera venta: US$60 (pruebas de motores y renders). No incluye tu sueldo, impuestos, abogado ni contador.
+- Costo por cliente fuera de publicidad, sin contar tu tiempo: contacto directo US$30, contenido US$25, redes US$20.
+- Publicidad pagada: el costo por cliente sale de `CPC ÷ (visita→registro × registro→pago)`. Empieza en el mes 3, después de tener una página que convierta.
+- Cada cliente es de pago. No hay prueba gratis de generación (cada intento cuesta dinero), solo las muestras demo.
 
-| Escenario | Nuevos en el mes 1 | Crecimiento mensual (año 1) | Abandono mensual | Uso de créditos | Mezcla Starter / Creator / Commerce / Studio |
-|---|---:|---:|---:|---:|---|
-| Prudente | 3 | 8 % | 10 % | 50 % | 60 % / 30 % / 9 % / 1 % |
-| Base | 6 | 12 % | 7.000000000000001 % | 40 % | 50 % / 33 % / 14.000000000000002 % / 3 % |
-| Optimista | 12 | 15 % | 5 % | 35 % | 40 % / 35 % / 20 % / 5 % |
+## Qué supone cada escenario
 
-## Resumen
+| Escenario | Abandono mensual | Uso de créditos | Contacto directo (nuevos/mes) | Contenido y SEO desde el mes 3 | Redes | Publicidad | Costo por cliente pagado |
+|---|---:|---:|---|---|---|---|---:|
+| Pesimista | 10 % | 50 % | 1.0 → 3.0 | +0.3 por mes cada mes | 0.5 → 1.5 | US$300/mes, CPC US$2, 2 % registra, 5 % paga | US$2,000 |
+| Realista | 7 % | 40 % | 1.5 → 5.9 | +0.6 por mes cada mes | 1.0 → 3.0 | US$500/mes, CPC US$1.2, 3 % registra, 8 % paga | US$500 |
+| Optimista | 5 % | 35 % | 3.0 → 11.8 | +1.5 por mes cada mes | 2.5 → 8.0 | US$1500/mes, CPC US$0.8, 4 % registra, 10 % paga | US$200 |
 
-| Escenario | Clientes mes 6 | Clientes mes 12 | Clientes mes 24 | Ingreso mensual mes 12 | Margen de contribución mes 12 | Ganancia mensual mes 12 | Primer mes con ganancia | Acumulado mes 12 | Acumulado mes 24 |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| Prudente | 18 | 37 | 61 | US$1,379 | 82 % | US$641 | mes 4 | US$2,643 | US$15,533 |
-| Base | 42 | 110 | 219 | US$4,996 | 84 % | US$3,046 | mes 2 | US$14,785 | US$80,897 |
-| Optimista | 95 | 289 | 669 | US$15,728 | 85 % | US$10,576 | mes 2 | US$50,610 | US$298,986 |
+## Cuántos clientes de pago habría (activos, ya descontado el abandono)
 
-### Prudente
+| Escenario | Mes 3 (feb 2027) | Mes 4 (mar 2027) | Mes 6 (may 2027) | Mes 8 (jul 2027) | Mes 10 (sep 2027) | Mes 12 (nov 2027) |
+|---|---:|---:|---:|---:|---:|---:|
+| Pesimista | 6 | 8 | 15 | 23 | 31 | 40 |
+| Realista | 10 | 16 | 31 | 48 | 67 | 88 |
+| Optimista | 29 | 48 | 91 | 141 | 198 | 259 |
 
-| Mes | Clientes | Ingreso | Costo de créditos | Comisiones | Costos fijos | Ganancia del mes (con captación) | Acumulado |
-|---:|---:|---:|---:|---:|---:|---:|---:|
-| 1 | 3 | US$111 | US$12 | US$8 | US$155 | US$-184 | US$-184 |
-| 3 | 9 | US$327 | US$36 | US$24 | US$163 | US$-36 | US$-329 |
-| 6 | 18 | US$651 | US$72 | US$48 | US$176 | US$179 | US$-6 |
-| 9 | 27 | US$994 | US$109 | US$73 | US$190 | US$399 | US$969 |
-| 12 | 37 | US$1,379 | US$152 | US$101 | US$206 | US$641 | US$2,643 |
-| 18 | 53 | US$1,945 | US$214 | US$142 | US$229 | US$1,081 | US$8,161 |
-| 24 | 61 | US$2,247 | US$247 | US$164 | US$241 | US$1,314 | US$15,533 |
+## Ingreso mensual recurrente (MRR, en US$)
 
-### Base
+| Escenario | Mes 3 | Mes 4 | Mes 6 | Mes 8 | Mes 10 | Mes 12 |
+|---|---:|---:|---:|---:|---:|---:|
+| Pesimista | 205 | 306 | 550 | 838 | 1,154 | 1,463 |
+| Realista | 477 | 747 | 1,396 | 2,178 | 3,062 | 4,002 |
+| Optimista | 1,571 | 2,593 | 4,953 | 7,700 | 10,795 | 14,119 |
 
-| Mes | Clientes | Ingreso | Costo de créditos | Comisiones | Costos fijos | Ganancia del mes (con captación) | Acumulado |
-|---:|---:|---:|---:|---:|---:|---:|---:|
-| 1 | 6 | US$273 | US$24 | US$20 | US$159 | US$-170 | US$-170 |
-| 3 | 19 | US$863 | US$77 | US$62 | US$178 | US$245 | US$108 |
-| 6 | 42 | US$1,906 | US$169 | US$136 | US$213 | US$965 | US$2,251 |
-| 9 | 71 | US$3,237 | US$287 | US$232 | US$257 | US$1,867 | US$6,901 |
-| 12 | 110 | US$4,996 | US$443 | US$358 | US$315 | US$3,046 | US$14,785 |
-| 18 | 176 | US$8,022 | US$712 | US$574 | US$414 | US$5,487 | US$42,118 |
-| 24 | 219 | US$9,979 | US$885 | US$714 | US$479 | US$7,066 | US$80,897 |
+## Ganancia del mes, después de costos y marketing, antes de tu sueldo (US$)
 
-### Optimista
+| Escenario | Mes 3 | Mes 4 | Mes 6 | Mes 8 | Mes 10 | Mes 12 | Acumulado mes 12 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Pesimista | -358 | -296 | -141 | 49 | 268 | 491 | -37 |
+| Realista | -379 | -194 | 266 | 833 | 1,487 | 2,192 | 7,536 |
+| Optimista | -605 | 163 | 1,961 | 4,077 | 6,480 | 9,094 | 38,301 |
 
-| Mes | Clientes | Ingreso | Costo de créditos | Comisiones | Costos fijos | Ganancia del mes (con captación) | Acumulado |
-|---:|---:|---:|---:|---:|---:|---:|---:|
-| 1 | 12 | US$654 | US$51 | US$46 | US$168 | US$-91 | US$-91 |
-| 3 | 40 | US$2,170 | US$169 | US$153 | US$210 | US$1,003 | US$1,341 |
-| 6 | 95 | US$5,160 | US$403 | US$364 | US$292 | US$3,136 | US$8,460 |
-| 9 | 173 | US$9,443 | US$737 | US$666 | US$410 | US$6,162 | US$23,675 |
-| 12 | 289 | US$15,728 | US$1,227 | US$1,109 | US$583 | US$10,576 | US$50,610 |
-| 18 | 508 | US$27,682 | US$2,160 | US$1,952 | US$912 | US$20,426 | US$150,010 |
-| 24 | 669 | US$36,470 | US$2,846 | US$2,571 | US$1,154 | US$27,666 | US$298,986 |
+## De dónde vendrían los clientes nuevos (mes 4 y mes 12)
 
-## Cuántos clientes hacen falta (mezcla del escenario base)
+| Escenario | Mes | Contacto directo | Contenido y SEO | Redes | Publicidad | Total nuevos |
+|---|---:|---:|---:|---:|---:|---:|
+| Pesimista | 4 | 1.8 | 0.6 | 0.8 | 0.1 | 3.3 |
+| Pesimista | 12 | 3.0 | 3.0 | 1.5 | 0.1 | 7.7 |
+| Realista | 4 | 2.7 | 1.2 | 1.8 | 1.0 | 6.7 |
+| Realista | 12 | 5.9 | 6.0 | 3.0 | 1.0 | 15.9 |
+| Optimista | 4 | 5.4 | 3.0 | 4.3 | 7.5 | 20.2 |
+| Optimista | 12 | 11.8 | 15.0 | 8.0 | 7.5 | 42.3 |
 
-Cada cliente deja unos US$37 al mes después de créditos, comisión y costos por cliente, sin contar lo que costó conseguirlo.
+## Cuánto vale un cliente frente a lo que cuesta conseguirlo
 
-| Ganancia mensual deseada | Clientes de pago necesarios |
-|---:|---:|
-| US$500 | 18 |
-| US$1,000 | 32 |
-| US$3,000 | 86 |
-| US$5,000 | 141 |
+Ganancia mensual por cliente (después de créditos, comisión y costo por cliente) × meses que se queda (1 ÷ abandono). Sin descontar al presente.
+
+| Escenario | Ganancia mensual por cliente | Vida media | Valor de un cliente | Costo por cliente pagado | Valor ÷ costo (pagada) | ¿Alcanza para pagar publicidad? |
+|---|---:|---:|---:|---:|---:|---|
+| Pesimista | US$29 | 10 meses | US$287 | US$2,000 | 0.1× | No: cada cliente pagado pierde dinero |
+| Realista | US$37 | 14 meses | US$524 | US$500 | 1.0× | Ajustado: pierde margen |
+| Optimista | US$45 | 20 meses | US$898 | US$200 | 4.5× | Sí (3× o más) |
+
+## Lectura
+
+- **Meta de más de 10 clientes en marzo (mes 4):** el escenario realista llega a 16, el pesimista a 8 y el optimista a 48. En los tres casos casi todo viene del contacto directo y las redes, porque el contenido y el SEO recién empiezan y la publicidad arranca en el mes 3.
+- **La publicidad pagada solo se justifica si la conversión es mucho mejor que la normal.** Con los supuestos realistas cada cliente pagado cuesta más de lo que deja. Antes de gastar en anuncios hay que medir visita→registro y registro→pago con tráfico real.
+- **Lo que más mueve las cifras:** la conversión de la página (visita→pago), el abandono y subir la mezcla hacia Creator y Commerce. Cada punto ahí vale más que duplicar el presupuesto de anuncios.
 
 ## Qué no dice esta proyección
 
-- No sabemos cuántas visitas llegan, cuántas se registran ni cuántas pagan. Todo parte de un número inventado de clientes nuevos. Lo primero que hay que medir es esa conversión.
-- El uso de créditos (35-50 %) es una suposición. Si los clientes usan todo, el margen baja hacia el 70 % de dimensionado; si usan poco, sube.
-- La prueba de motores no está incluida: 8 productos en los 9 motores cuestan unos US$24 a precios publicados (menos si pruebas solo 3 o 4 motores), más compras mínimas como los US$12 de Sloyd. Tampoco los reembolsos, los impuestos ni el trabajo propio.
-- Los costos reales de los motores y la comisión del cobro no se han confirmado con facturas.
+- No sabemos cuántas visitas llegan, cuántas se registran ni cuántas pagan. Es el primer número que hay que medir.
+- Supone que el producto genera modelos reales desde el mes 1, que los motores se pueden revender (pendiente por escrito, ver `docs/INFORME_CODEX.md`) y que Whop cobra desde Chile. Si alguna falla, el mes 1 se corre.
+- No incluye tu tiempo, impuestos, abogado, contador, reembolsos ni disputas. El uso de créditos y los costos de los motores no están medidos con facturas.
+- Las cifras de CPC y conversión salen de agregadores y blogs de terceros, no de cuentas propias (ver fuentes en el estudio).

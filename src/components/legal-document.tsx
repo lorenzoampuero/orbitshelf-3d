@@ -1,13 +1,16 @@
+import Link from "next/link";
 import { Info } from "lucide-react";
 import { brand, legalConfigured, legalOperator } from "@/config/brand";
 import { innerPagesCopy } from "@/content/inner-pages";
+import { LEGAL_SLUGS, legalDoc, legalIndexCopy, legalRoute, type LegalSlug } from "@/content/legal";
+import { localePath } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries/en";
 import type { Locale } from "@/lib/types";
 
 type Section = { h: string; p: readonly string[] };
 
-/** Shared body of /privacy and /terms: draft notice, operator details and the dictionary sections with placeholders filled. */
-export function LegalDocument({ dict, locale, title, sections }: { dict: Dictionary; locale: Locale; title: string; sections: readonly Section[] }) {
+/** Shared body of every legal page: draft notice, operator details and the sections with placeholders filled. */
+export function LegalDocument({ dict, locale, title, summary, sections, current }: { dict: Dictionary; locale: Locale; title: string; summary?: string; sections: readonly Section[]; current?: LegalSlug }) {
   const pending = `[${dict.legal.pending}]`;
   const fill = (text: string) =>
     text
@@ -30,6 +33,7 @@ export function LegalDocument({ dict, locale, title, sections }: { dict: Diction
     <div className="container-page max-w-5xl space-y-8">
       <div className="max-w-3xl space-y-3">
         <h1 className="hero-title text-[clamp(2rem,4.6vw,3.25rem)]">{title}</h1>
+        {summary && <p className="text-lg leading-relaxed text-muted">{summary}</p>}
         <p className="text-sm text-muted">{dict.legal.lastUpdated.replace("{date}", legalOperator.lastUpdated)}</p>
       </div>
 
@@ -99,6 +103,19 @@ export function LegalDocument({ dict, locale, title, sections }: { dict: Diction
               </section>
             ))}
           </div>
+
+          <nav aria-label={legalIndexCopy[locale].related} className="card space-y-3 p-6 md:p-8">
+            <h2 className="text-base font-semibold">{legalIndexCopy[locale].related}</h2>
+            <ul className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+              {LEGAL_SLUGS.filter((s) => s !== current).map((s) => (
+                <li key={s}>
+                  <Link href={localePath(locale, legalRoute(s))} className="text-muted hover:text-fg">
+                    {legalDoc(locale, s).title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
       </div>
     </div>

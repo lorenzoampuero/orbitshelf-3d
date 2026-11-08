@@ -11,6 +11,7 @@ import { currentUser } from "@/lib/api";
 import { innerPagesCopy, plainTitle } from "@/content/inner-pages";
 import { MarketingShell } from "@/components/marketing-shell";
 import { ClosingBanner, PageHero, Section, Tile } from "@/components/marketing-kit";
+import { ProductFit, ReadingSuggestions } from "@/components/landing-extra";
 import { ModelViewerBox } from "@/components/model-viewer-box";
 import { SampleGallery } from "./sample-gallery";
 import { showcase } from "@/config/showcase";
@@ -143,6 +144,8 @@ export default async function ExamplesPage({ params }: Props) {
         </div>
       </Section>
 
+      <ProductFit locale={locale} />
+      <ReadingSuggestions locale={locale} page="examples" />
       <ClosingBanner
         titleA={copy.examples.closing.titleA}
         titleB={copy.examples.closing.titleB}

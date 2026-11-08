@@ -26,6 +26,7 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 import type { Locale } from "@/lib/types";
 import { brand } from "@/config/brand";
 import { navCopy, type NavIcon } from "@/content/nav";
+import { legalFooter, legalRoute } from "@/content/legal/labels";
 
 type MenuId = "product" | "solutions" | "resources" | null;
 
@@ -69,6 +70,7 @@ export function MarketingShell({
 
   const resourceLinks = [
     { href: "/examples", title: dict.nav.examples, text: locale === "es" ? "Muestras interactivas de demostración, no resultados de IA" : "Interactive demo samples, not AI results" },
+    { href: "/blog", title: "Blog", text: locale === "es" ? "Guías y análisis sobre 3D para tiendas y estudios" : "Guides and analysis on 3D for stores and studios" },
     { href: "/resources", title: dict.nav.guides, text: dict.nav.guidesDesc },
     { href: "/resources/faq", title: dict.nav.faq, text: dict.nav.faqDesc },
     { href: "/resources/glb-export-and-shopify", title: dict.nav.docs, text: dict.nav.docsDesc },
@@ -294,6 +296,7 @@ export function MarketingShell({
               { href: "/pricing", label: dict.nav.pricing },
               { href: "/examples", label: dict.nav.examples },
               { href: "/resources", label: dict.nav.resources },
+              { href: "/blog", label: "Blog" },
               { href: "/compare/ai-3d-vs-manual", label: dict.nav.compare },
             ].map((l) => (
               <li key={l.href}>
@@ -343,6 +346,7 @@ export function MarketingShell({
               title={dict.footer.resources}
               links={[
                 { href: localePath(locale, "/examples"), label: dict.nav.examples },
+                { href: localePath(locale, "/blog"), label: "Blog" },
                 { href: localePath(locale, "/resources"), label: dict.nav.guides },
                 { href: localePath(locale, "/resources/glb-export-and-shopify"), label: dict.nav.docs },
                 { href: localePath(locale, "/resources/faq"), label: dict.nav.faq },
@@ -352,14 +356,16 @@ export function MarketingShell({
             <div>
               <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-fg">{dict.footer.legal}</h2>
               <ul className="space-y-2 text-xs">
+                {legalFooter[locale].links.map((l) => (
+                  <li key={l.slug}>
+                    <Link href={localePath(locale, legalRoute(l.slug))} className="hover:text-fg">
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
                 <li>
-                  <Link href={localePath(locale, "/privacy")} className="hover:text-fg">
-                    {dict.footer.privacy}
-                  </Link>
-                </li>
-                <li>
-                  <Link href={localePath(locale, "/terms")} className="hover:text-fg">
-                    {dict.footer.terms}
+                  <Link href={localePath(locale, "/legal")} className="font-medium text-fg hover:text-accent">
+                    {legalFooter[locale].all}
                   </Link>
                 </li>
                 <li>

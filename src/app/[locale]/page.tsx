@@ -28,6 +28,7 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { buildPageMetadata } from "@/lib/seo";
 import { currentUser } from "@/lib/api";
 import { MarketingShell } from "@/components/marketing-shell";
+import { ProductFit, ReadingSuggestions, TrustStrip, WorkflowVersus } from "@/components/landing-extra";
 import { ModelViewerBox } from "@/components/model-viewer-box";
 import { ModelSilhouette, type SilhouetteKind } from "@/components/model-silhouette";
 import { HeroShelf, type ShelfItem } from "@/components/home/hero-shelf";
@@ -499,6 +500,8 @@ export default async function HomePage({ params }: Props) {
         </div>
       </Section>
 
+      <ProductFit locale={locale} />
+
       {/* 6. The same model, solid and mesh: a flat drawing (CSS shapes), labelled as an illustration. */}
       <Section>
         <SectionTitle sub={h.twinText}>{h.twinTitle}</SectionTitle>
@@ -531,6 +534,8 @@ export default async function HomePage({ params }: Props) {
           </ul>
         </Section>
       )}
+
+      <WorkflowVersus locale={locale} />
 
       {/* 8. Integrations: the six first, with the status each one really has. Planned ones are dashed so live ones lead. */}
       <Section>
@@ -574,6 +579,9 @@ export default async function HomePage({ params }: Props) {
           <TextLink href={localePath(locale, "/compare/ai-3d-vs-manual")}>{h.expectLink}</TextLink>
         </Card>
       </Section>
+
+      <TrustStrip locale={locale} />
+      <ReadingSuggestions locale={locale} page="home" />
 
       {/* 10. FAQ. */}
       <Section>

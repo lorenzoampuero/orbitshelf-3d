@@ -7,6 +7,7 @@ import { currentUser } from "@/lib/api";
 import { innerPagesCopy, plainTitle } from "@/content/inner-pages";
 import { MarketingShell } from "@/components/marketing-shell";
 import { Checklist, ClosingBanner, PageHero, Section } from "@/components/marketing-kit";
+import { ReadingSuggestions, TrustStrip, WorkflowVersus } from "@/components/landing-extra";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -102,6 +103,9 @@ export default async function HowItWorksPage({ params }: Props) {
         </div>
       </Section>
 
+      <WorkflowVersus locale={locale} />
+      <TrustStrip locale={locale} />
+      <ReadingSuggestions locale={locale} page="howItWorks" />
       <ClosingBanner
         titleA={copy.how.closing.titleA}
         titleB={copy.how.closing.titleB}

@@ -3,6 +3,7 @@ import { isLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { buildPageMetadata } from "@/lib/seo";
 import { currentUser } from "@/lib/api";
+import { legalDoc, legalRoute } from "@/content/legal";
 import { MarketingShell } from "@/components/marketing-shell";
 import { LegalDocument } from "@/components/legal-document";
 
@@ -11,13 +12,8 @@ type Props = { params: Promise<{ locale: string }> };
 export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
-  const dict = getDictionary(locale);
-  return buildPageMetadata({
-    locale,
-    path: "/privacy",
-    title: dict.meta.privacy.title,
-    description: dict.meta.privacy.description,
-  });
+  const doc = legalDoc(locale, "privacy");
+  return buildPageMetadata({ locale, path: legalRoute("privacy"), title: doc.title, description: doc.summary });
 }
 
 export default async function PrivacyPage({ params }: Props) {
@@ -25,11 +21,12 @@ export default async function PrivacyPage({ params }: Props) {
   if (!isLocale(locale)) notFound();
   const dict = getDictionary(locale);
   const user = await currentUser();
+  const doc = legalDoc(locale, "privacy");
 
   return (
     <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
       <section className="pb-20 pt-32 md:pb-28 md:pt-40">
-        <LegalDocument dict={dict} locale={locale} title={dict.legal.privacy.title} sections={dict.legal.privacy.sections} />
+        <LegalDocument dict={dict} locale={locale} title={doc.title} summary={doc.summary} sections={doc.sections} current="privacy" />
       </section>
     </MarketingShell>
   );

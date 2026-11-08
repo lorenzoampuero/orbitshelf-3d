@@ -9,6 +9,7 @@ import { PRICING_EXTRA, TOP_UPS } from "@/content/pricing-extra";
 import { MarketingShell } from "@/components/marketing-shell";
 import { PlanCards } from "@/components/plan-cards";
 import { Card, ClosingBanner, FaqList, PageHero, Pill, Section, SectionTitle, StatusBadge, Tile } from "@/components/marketing-kit";
+import { ReadingSuggestions, TrustStrip, WorkflowVersus } from "@/components/landing-extra";
 import { planReference } from "@/lib/provider/registry";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -251,6 +252,9 @@ export default async function PricingPage({ params }: Props) {
         <FaqList items={x.faq} />
       </Section>
 
+      <WorkflowVersus locale={locale} />
+      <TrustStrip locale={locale} />
+      <ReadingSuggestions locale={locale} page="pricing" />
       <ClosingBanner
         titleA={x.closing.titleA}
         titleB={x.closing.titleB}

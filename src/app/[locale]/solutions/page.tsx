@@ -7,6 +7,7 @@ import { buildPageMetadata } from "@/lib/seo";
 import { currentUser } from "@/lib/api";
 import { MarketingShell } from "@/components/marketing-shell";
 import { Card, Checklist, ClosingBanner, PageHero, Section, SectionTitle, Tag } from "@/components/marketing-kit";
+import { ReadingSuggestions, TrustStrip } from "@/components/landing-extra";
 import { IntegrationBadge, MiniFlow, SolutionIcon } from "@/components/solutions/solution-parts";
 import { SOLUTION_SLUGS, getSolutionsCopy } from "@/content/solutions";
 
@@ -147,6 +148,8 @@ export default async function SolutionsPage({ params }: Props) {
         </div>
       </Section>
 
+      <TrustStrip locale={locale} />
+      <ReadingSuggestions locale={locale} page="solutions" />
       <ClosingBanner titleA={idx.closing.titleA} titleB={idx.closing.titleB} cta={idx.closing.cta} href={create} note={idx.closing.note} />
     </MarketingShell>
   );

@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { brand, siteUrlConfigured } from "@/config/brand";
 import { en } from "@/i18n/dictionaries/en";
 import { localePath } from "@/i18n/config";
+import { LEGAL_SLUGS, legalRoute } from "@/content/legal/labels";
+import { BLOG_POSTS } from "@/content/blog";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // Absolute URLs are required; with no site URL configured in production, list nothing rather than a wrong host.
@@ -21,11 +23,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/how-it-works",
     "/examples",
     "/pricing",
+    "/blog",
+    ...BLOG_POSTS.map((p) => `/blog/${p.slug}`),
     "/resources",
     ...en.resources.articles.map((a) => `/resources/${a.slug}`),
     "/compare/ai-3d-vs-manual",
-    "/privacy",
-    "/terms",
+    "/legal",
+    ...LEGAL_SLUGS.map((s) => legalRoute(s)),
   ];
   // /login is noindex, so it is not listed. The build time stands in for the last change of the pages.
   const lastModified = new Date();

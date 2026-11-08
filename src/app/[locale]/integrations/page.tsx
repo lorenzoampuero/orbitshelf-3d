@@ -8,6 +8,7 @@ import { currentUser } from "@/lib/api";
 import { MarketingShell } from "@/components/marketing-shell";
 import { ModelViewerBox } from "@/components/model-viewer-box";
 import { Card, ClosingBanner, FaqList, PageHero, Section, SectionTitle, StatusBadge, Tag, Tile, cardToneClass } from "@/components/marketing-kit";
+import { ReadingSuggestions } from "@/components/landing-extra";
 import {
   API_PATHS,
   EMBED_SNIPPET,
@@ -386,6 +387,7 @@ export default async function IntegrationsPage({ params }: Props) {
         <FaqList items={c.faqs} />
       </Section>
 
+      <ReadingSuggestions locale={locale} page="integrations" />
       <ClosingBanner titleA={c.closing.titleA} titleB={c.closing.titleB} cta={c.closing.cta} href={create} note={c.closing.note} />
     </MarketingShell>
   );

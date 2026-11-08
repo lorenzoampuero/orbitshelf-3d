@@ -8,6 +8,7 @@ import { currentUser } from "@/lib/api";
 import { MarketingShell } from "@/components/marketing-shell";
 import { plainTitle } from "@/content/inner-pages";
 import { PageHero, Section, Tag } from "@/components/marketing-kit";
+import { ReadingSuggestions, TrustStrip } from "@/components/landing-extra";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -79,6 +80,8 @@ export default async function ResourcesIndexPage({ params }: Props) {
           ))}
         </ul>
       </Section>
+      <ReadingSuggestions locale={locale} page="resources" />
+      <TrustStrip locale={locale} />
     </MarketingShell>
   );
 }

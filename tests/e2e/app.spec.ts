@@ -1026,9 +1026,43 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await expect(page.locator("main")).toContainText(/US\$\s?19|\$\s?19/);
   });
 
+  test("7v. Legal pack and blog: every document opens, the footer links to them and the sitemap responds", async ({ page, request }) => {
+    await page.setViewportSize({ width: 1280, height: 840 });
+    await page.goto("/legal");
+    await expect(page.locator("h1")).toHaveCount(1);
+    const links = page.locator("main a[href^='/legal/'], main a[href='/privacy'], main a[href='/terms']");
+    expect(await links.count()).toBeGreaterThanOrEqual(13);
+
+    for (const path of ["/legal/cookies", "/legal/refunds", "/legal/acceptable-use", "/legal/ip-and-outputs", "/legal/ai-disclosure", "/legal/security", "/legal/subprocessors", "/legal/dpa", "/legal/dmca", "/legal/accessibility", "/legal/legal-notice", "/es/legal/refunds"]) {
+      const res = await page.goto(path);
+      expect(res?.status(), path).toBe(200);
+      await expect(page.locator("h1")).toHaveCount(1);
+      await expect(page.locator("#operator")).toBeVisible();
+    }
+    expect((await page.goto("/legal/does-not-exist"))?.status()).toBe(404);
+
+    await page.goto("/");
+    const footer = page.locator("footer");
+    await expect(footer.locator("a[href='/legal/refunds']")).toBeVisible();
+    await expect(footer.locator("a[href='/legal']")).toBeVisible();
+    await expect(footer.locator("a[href='/blog']")).toBeVisible();
+
+    await page.goto("/blog");
+    const posts = page.locator("main a[href^='/blog/']");
+    expect(await posts.count()).toBeGreaterThanOrEqual(6);
+    const res = await page.goto("/blog/glb-obj-stl-which-format");
+    expect(res?.status()).toBe(200);
+    await expect(page.locator("script[type='application/ld+json']")).toHaveCount(1);
+    expect((await page.goto("/blog/nope"))?.status()).toBe(404);
+
+    const sitemap = await request.get("/sitemap.xml");
+    expect(sitemap.status()).toBe(200);
+  });
+
   test("8. Marketing pages: accessible (axe), no horizontal overflow at 375 px, and no sub-12px text", async ({ page }) => {
     const paths = [
-      "/", "/examples", "/how-it-works", "/pricing", "/resources", "/resources/photograph-clothing-for-3d", "/compare/ai-3d-vs-manual", "/privacy",
+      "/", "/examples", "/how-it-works", "/pricing", "/resources", "/resources/photograph-clothing-for-3d", "/compare/ai-3d-vs-manual", "/privacy", "/terms",
+      "/legal", "/legal/refunds", "/legal/subprocessors", "/blog", "/blog/does-3d-increase-conversion", "/es/blog/first-3d-catalog-in-one-week", "/es/legal/security",
       "/features", "/features/text-to-3d", "/features/image-to-3d", "/features/multi-image-to-3d",
       "/solutions", "/solutions/stores", "/solutions/games", "/solutions/design", "/integrations",
       "/es", "/es/examples", "/es/pricing", "/es/features", "/es/solutions/stores", "/es/integrations",

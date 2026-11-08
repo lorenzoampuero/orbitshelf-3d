@@ -8,6 +8,7 @@ import { currentUser } from "@/lib/api";
 import { MarketingShell } from "@/components/marketing-shell";
 import { ModelViewerBox } from "@/components/model-viewer-box";
 import { Card, CardBody, Checklist, ClosingBanner, FaqList, PageHero, Section, SectionTitle, StatusBadge, Tag } from "@/components/marketing-kit";
+import { ProductFit, ReadingSuggestions } from "@/components/landing-extra";
 import { Chips, FlowDiagram, SolutionsRow, demoKind } from "@/components/features/feature-parts";
 import { FEATURES_COMMON, FEATURES_INDEX, featureCopy } from "@/content/features";
 import type { FeatureSlug } from "@/content/features";
@@ -205,6 +206,8 @@ export default async function FeaturesIndexPage({ params }: Props) {
         <SolutionsRow locale={locale} common={common} />
       </Section>
 
+      <ProductFit locale={locale} />
+      <ReadingSuggestions locale={locale} page="features" />
       <ClosingBanner titleA={idx.closing.titleA} titleB={idx.closing.titleB} cta={common.closingCta} href={create} note={common.closingNote} />
     </MarketingShell>
   );

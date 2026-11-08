@@ -43,7 +43,7 @@ export const legalOperator = {
   /** Law governing the terms, e.g. "Chile" or "the State of Delaware, USA". */
   jurisdiction: process.env.NEXT_PUBLIC_LEGAL_JURISDICTION?.trim() || null,
   /** ISO date of the last substantive change to the legal texts. */
-  lastUpdated: "2026-11-01",
+  lastUpdated: "2026-11-08",
 } as const;
 
 export const legalConfigured = () => Boolean(legalOperator.name && legalOperator.address && legalOperator.country && legalOperator.jurisdiction && brand.supportEmail);
