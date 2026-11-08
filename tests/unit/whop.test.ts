@@ -6,7 +6,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
 import { POST as webhook } from "@/app/api/webhooks/whop/route";
 import { PLAN_TIERS } from "@/lib/credits";
 import { store } from "@/lib/store";
-import { catalogItem, CHECKOUT_CATALOG, createCheckout, decideGrant, parseWhopEvent, verifyWhopWebhook, WhopError, type WhopCheckoutConfig } from "@/lib/whop";
+import { catalogItem, CHECKOUT_CATALOG, createCheckout, decideGrant, needsManualReview, parseWhopEvent, verifyWhopWebhook, WhopError, type WhopCheckoutConfig } from "@/lib/whop";
 
 const SECRET = "ws_test_secret_value";
 const NOW = 1_800_000_000_000;
@@ -89,6 +89,15 @@ describe("deciding a grant", () => {
     expect(rich).toMatchObject({ ok: true, credits: 150 });
     expect(decideGrant(event({ id: "pay_1", usd_total: 1, metadata: { org_id: "o", item: "plan:creator:49" } }))).toEqual({ ok: false, reason: "underpaid" });
     expect(decideGrant(event({ id: "pay_1", total: "15", metadata: { org_id: "o", item: "pack:15" } }))).toMatchObject({ ok: true });
+  });
+});
+
+describe("refunds and disputes", () => {
+  it("are recognised and give the payment id when the payload has one", () => {
+    expect(needsManualReview({ id: "m", type: "refund.created", data: { payment_id: "pay_1" } })).toEqual({ type: "refund.created", paymentId: "pay_1" });
+    expect(needsManualReview({ id: "m", type: "dispute.updated", data: { payment: { id: "pay_2" } } })).toEqual({ type: "dispute.updated", paymentId: "pay_2" });
+    expect(needsManualReview({ id: "m", type: "refund.created", data: {} })).toEqual({ type: "refund.created", paymentId: null });
+    expect(needsManualReview({ id: "m", type: "payment.succeeded", data: { id: "pay_1" } })).toBeNull();
   });
 });
 
@@ -193,6 +202,22 @@ describe("webhook route", () => {
     const other = JSON.stringify({ type: "payment.failed", data: { id: "pay_9", metadata: { org_id: org.id, item: "pack:15" } } });
     expect(await (await send(other, hdr("m2", now(), other))).json()).toMatchObject({ credited: false, reason: "ignored" });
     expect((await store.usage(org.id)).balance).toBe(100);
+  });
+
+  it("does not credit a refund or dispute, and flags it for a person", async () => {
+    const { org } = await store.signIn("w4@example.com");
+    for (const type of ["refund.created", "dispute.created"]) {
+      const body = JSON.stringify({ type, data: { id: "rf_1", payment_id: "pay_77", metadata: { org_id: org.id, item: "pack:15" } } });
+      const r = await send(body, hdr("m-" + type, now(), body));
+      expect(r.status).toBe(200);
+      expect(await r.json()).toMatchObject({ credited: false, reason: "manual_review" });
+    }
+    expect((await store.usage(org.id)).balance).toBe(100);
+  });
+
+  it("refuses a body over the cap without reading it all", async () => {
+    const big = "x".repeat(1024 * 1024 + 1);
+    expect((await send(big, hdr("m1", now(), big))).status).toBe(413);
   });
 
   it("answers 400 to a signed body that is not an event", async () => {

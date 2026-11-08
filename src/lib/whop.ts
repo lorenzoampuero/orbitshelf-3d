@@ -105,6 +105,16 @@ export function decideGrant(event: WhopEvent): GrantDecision {
   return { ok: true, orgId, credits: item.credits, item, key: `whop:${paymentId}` };
 }
 
+/**
+ * Refunds and disputes are NOT reversed automatically: their payload shape is unverified, and a wrong guess would take credits from the wrong workspace.
+ * They are acknowledged and logged so a person can reverse them with `scripts/adjust-credits.ts` (see docs/WHOP.md). Returns the payment id when it can be read.
+ */
+export function needsManualReview(event: WhopEvent): { type: string; paymentId: string | null } | null {
+  if (!/^(refund|dispute)\./.test(event.type)) return null;
+  const nested = event.data.payment && typeof event.data.payment === "object" ? (event.data.payment as Record<string, unknown>) : null;
+  return { type: event.type, paymentId: str(event.data.payment_id) ?? str(nested?.id) ?? null };
+}
+
 type Deps = { fetch?: typeof fetch };
 
 export class WhopError extends Error {}

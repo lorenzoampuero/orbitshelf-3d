@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { readBodyCapped } from "@/lib/api";
 import { shopifyConfig, verifyWebhookHmac } from "@/lib/shopify";
 import { store } from "@/lib/store";
 
@@ -14,8 +15,8 @@ const MAX_BODY_BYTES = 1024 * 1024;
 export async function POST(req: Request) {
   const cfg = shopifyConfig();
   if (!cfg) return new NextResponse(null, { status: 404 });
-  const rawBody = Buffer.from(await req.arrayBuffer());
-  if (rawBody.byteLength > MAX_BODY_BYTES) return new NextResponse(null, { status: 413 });
+  const rawBody = await readBodyCapped(req, MAX_BODY_BYTES);
+  if (!rawBody) return new NextResponse(null, { status: 413 });
   if (!verifyWebhookHmac(rawBody, req.headers.get("x-shopify-hmac-sha256"), cfg.clientSecret)) return new NextResponse(null, { status: 401 });
   const topic = req.headers.get("x-shopify-topic") ?? "";
   const shop = req.headers.get("x-shopify-shop-domain") ?? "";

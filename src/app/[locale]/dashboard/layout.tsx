@@ -4,6 +4,7 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { currentUser } from "@/lib/api";
 import { providerConfigured } from "@/lib/env";
 import { DashboardShell } from "@/components/dashboard-shell";
+import { whopCheckoutConfig } from "@/lib/whop";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export default async function DashboardLayout({
   const dict = getDictionary(locale);
 
   return (
-    <DashboardShell locale={locale} dict={dict} user={user} providerReady={providerConfigured()}>
+    <DashboardShell locale={locale} dict={dict} user={user} providerReady={providerConfigured()} billingLive={whopCheckoutConfig() !== null}>
       {children}
     </DashboardShell>
   );

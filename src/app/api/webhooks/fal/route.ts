@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { readBodyCapped } from "@/lib/api";
 import { refreshJob } from "@/lib/jobs";
 import { falWebhookKeys, verifyFalWebhook } from "@/lib/provider/fal";
 import { store } from "@/lib/store";
@@ -13,8 +14,8 @@ const MAX_BODY_BYTES = 1024 * 1024;
  * replayed delivery cannot change a result or a balance. Polling stays active in case a delivery never arrives.
  */
 export async function POST(req: Request) {
-  const rawBody = Buffer.from(await req.arrayBuffer());
-  if (rawBody.byteLength > MAX_BODY_BYTES) return new NextResponse(null, { status: 413 });
+  const rawBody = await readBodyCapped(req, MAX_BODY_BYTES); // stops reading at the cap instead of buffering everything first
+  if (!rawBody) return new NextResponse(null, { status: 413 });
 
   let keys;
   try {

@@ -5,7 +5,7 @@ import { isLocale, localePath } from "@/i18n/config";
 import { forBilling } from "@/i18n/billing-copy";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { billingUnit } from "@/lib/env";
-import { currentUser } from "@/lib/api";
+import { requireUser } from "@/lib/require-user";
 import { ProfileForm } from "@/components/profile-form";
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { activeWorkspace, SHORTCUTS, shortcutsFor } from "@/lib/profiles";
@@ -26,7 +26,7 @@ export default async function DashboardOverviewPage({ params }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const dict = forBilling(getDictionary(locale), locale, billingUnit());
-  const user = (await currentUser())!;
+  const user = await requireUser(locale);
   const rows = (await store.listModels(user.orgId)).map(toDto);
   const usage = await store.usage(user.orgId);
   const profile = await store.getProfile(user.userId);

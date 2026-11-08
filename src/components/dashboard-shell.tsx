@@ -40,12 +40,14 @@ export function DashboardShell({
   dict,
   user,
   providerReady,
+  billingLive = false,
   children,
 }: {
   locale: Locale;
   dict: Dictionary;
   user: SessionUser;
   providerReady: boolean;
+  billingLive?: boolean;
   children: React.ReactNode;
 }) {
   const pathname = usePathname() || "/dashboard";
@@ -65,7 +67,7 @@ export function DashboardShell({
     { href: "/dashboard/embeds", label: dict.dash.nav.embeds, icon: Share2 },
     { href: "/dashboard/usage", label: dict.dash.nav.usage, icon: Activity },
     { href: "/dashboard/api", label: dict.dash.nav.api, icon: KeyRound },
-    { href: "/dashboard/billing", label: dict.dash.nav.billing, icon: CreditCard, planned: true },
+    { href: "/dashboard/billing", label: dict.dash.nav.billing, icon: CreditCard, planned: !billingLive },
   ];
 
   const bottomItems: NavItem[] = [

@@ -35,11 +35,27 @@ Marcado como "no verificado" en el código:
 | Retiros a Chile | negocio | Verificar con Whop antes de cobrar. |
 | ¿Whop actúa como comerciante de registro? | impuestos | Solo con "Whop Collects and Remits" (+2 %). |
 
+## Reembolsos y disputas (manual por ahora)
+
+Los eventos `refund.*` y `dispute.*` se reciben, **no suman ni restan nada**, y dejan un aviso en el registro del servidor: `[whop] refund.created for payment pay_... needs a manual credit reversal`. Se dejó manual a propósito: su forma real no está verificada y una regla equivocada quitaría créditos a otro cliente.
+
+Para revertir un pago, con el id del espacio de trabajo (está en los metadatos del pago en Whop):
+
+```bash
+npx tsx --conditions=react-server scripts/adjust-credits.ts <org-id> -150 whop-refund:pay_123
+```
+
+Se aplica una sola vez por clave, y se niega a dejar el saldo bajo cero (si el cliente ya gastó los créditos, hay que decidir qué hacer con él). Cuando se vea el cuerpo real de un reembolso, esto se puede automatizar.
+
+## Botón de comprar
+
+En Facturación aparece "Comprar créditos" **solo si** están `WHOP_API_KEY` y `WHOP_COMPANY_ID`; sin ellos la página sigue diciendo que la facturación no está conectada. Planes con selector de paso y las tres recargas. Al pulsar, abre el checkout de Whop; el saldo sube cuando llega el aviso de pago, no al volver a la página.
+
 ## Qué hay que hacer tú
 
 1. Cuenta de Whop con empresa creada; anota el `company_id` (`biz_...`).
 2. Clave de API de la empresa con permisos `checkout_configuration:create`, `plan:create` y `webhook_receive:payments`.
-3. Webhook de la empresa apuntando a `https://TU-DOMINIO/api/webhooks/whop`, con el evento `payment.succeeded`. Copia el secreto (`ws_...`).
+3. Webhook de la empresa apuntando a `https://TU-DOMINIO/api/webhooks/whop`, con los eventos de pago (`payment.succeeded`) y también los de reembolso y disputa, para que queden avisados en el registro. Copia el secreto (`ws_...`).
 4. En `.env`: `WHOP_API_KEY`, `WHOP_COMPANY_ID`, `WHOP_WEBHOOK_SECRET` y, si quieres, `WHOP_RETURN_URL`.
 5. Hacer un pago de prueba de la recarga más barata y revisar la tabla de arriba.
 
@@ -47,7 +63,7 @@ Para probar el webhook en tu computador, Whop necesita una dirección pública (
 
 ## Pendiente de producto
 
-- Botón "Comprar" en facturación (hoy solo existe la ruta).
-- Renovación y vencimiento mensual de créditos de plan.
-- Reembolsos y disputas.
+- Vencimiento de créditos y qué pasa si el cliente cancela el plan (los términos de Whop piden indicar duración).
+- Reembolsos y disputas automáticos, cuando se conozca el cuerpo real.
 - Mostrar al cliente su historial de pagos.
+- Tabla de eventos de pago (el informe de Codex propone `billing_events`) si se quiere reconciliar contra Whop.

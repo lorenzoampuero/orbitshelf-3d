@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { decideGrant, parseWhopEvent, verifyWhopWebhook, whopHeaders, whopWebhookSecret } from "@/lib/whop";
+import { readBodyCapped } from "@/lib/api";
+import { decideGrant, needsManualReview, parseWhopEvent, verifyWhopWebhook, whopHeaders, whopWebhookSecret } from "@/lib/whop";
 import { store } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -16,11 +17,17 @@ const MAX_BODY_BYTES = 1024 * 1024;
 export async function POST(req: Request) {
   const secret = whopWebhookSecret();
   if (!secret) return new NextResponse(null, { status: 404 });
-  const rawBody = Buffer.from(await req.arrayBuffer());
-  if (rawBody.byteLength > MAX_BODY_BYTES) return new NextResponse(null, { status: 413 });
+  const rawBody = await readBodyCapped(req, MAX_BODY_BYTES);
+  if (!rawBody) return new NextResponse(null, { status: 413 });
   if (!verifyWhopWebhook(rawBody, whopHeaders(req.headers), secret)) return new NextResponse(null, { status: 401 });
   const event = parseWhopEvent(rawBody);
   if (!event) return new NextResponse(null, { status: 400 });
+
+  const review = needsManualReview(event);
+  if (review) {
+    console.warn(`[whop] ${review.type} for payment ${review.paymentId ?? "unknown"} needs a manual credit reversal`);
+    return NextResponse.json({ received: true, credited: false, reason: "manual_review" });
+  }
 
   const decision = decideGrant(event);
   if (!decision.ok) {

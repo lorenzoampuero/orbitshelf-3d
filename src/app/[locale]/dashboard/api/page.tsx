@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { isLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
-import { currentUser } from "@/lib/api";
+import { requireUser } from "@/lib/require-user";
 import { buildPageMetadata } from "@/lib/seo";
 import { encryptionConfigured } from "@/lib/secrets";
 import { store, toApiTokenDto, toWebhookDeliveryDto, toWebhookEndpointDto } from "@/lib/store";
@@ -21,7 +21,7 @@ export default async function ApiPage({ params }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const dict = getDictionary(locale);
-  const user = (await currentUser())!;
+  const user = await requireUser(locale);
   const [tokens, endpoints, deliveries] = await Promise.all([store.listApiTokens(user.orgId), store.listWebhookEndpoints(user.orgId), store.listWebhookDeliveries(user.orgId)]);
   return (
     <div className="space-y-6">

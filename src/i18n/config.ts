@@ -12,10 +12,10 @@ export function localePath(locale: Locale, path = "/"): string {
   return clean === "/" ? "/es" : "/es" + clean;
 }
 
-/** Strips a leading `/es` so a public pathname becomes locale-neutral. */
+/** Strips a leading `/es` (or the explicit `/en`) so a public pathname becomes locale-neutral. */
 export function stripLocale(pathname: string): string {
-  if (pathname === "/es") return "/";
-  return pathname.startsWith("/es/") ? pathname.slice(3) : pathname;
+  if (pathname === "/es" || pathname === "/en") return "/";
+  return pathname.startsWith("/es/") || pathname.startsWith("/en/") ? pathname.slice(3) : pathname;
 }
 
 export function switchLocalePath(pathname: string, target: Locale): string {

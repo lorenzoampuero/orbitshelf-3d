@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { isLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
-import { currentUser } from "@/lib/api";
+import { requireUser } from "@/lib/require-user";
 import { buildPageMetadata } from "@/lib/seo";
 import { store, toDto, toEmbedDto } from "@/lib/store";
 import { EmbedsClient } from "./embeds-client";
@@ -24,7 +24,7 @@ export default async function EmbedsPage({ params }: { params: Promise<{ locale:
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const t = getDictionary(locale);
-  const user = (await currentUser())!;
+  const user = await requireUser(locale);
   const approved = (await store.listModels(user.orgId)).filter((m) => m.reviewState === "approved" && m.status === "ready").map(toDto);
   const embeds = (await store.listEmbeds(user.orgId)).map(toEmbedDto);
   const h = await headers();

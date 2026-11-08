@@ -3,7 +3,7 @@ import { isLocale } from "@/i18n/config";
 import { forBilling } from "@/i18n/billing-copy";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { billingUnit } from "@/lib/env";
-import { currentUser } from "@/lib/api";
+import { requireUser } from "@/lib/require-user";
 import { refreshEngineSwitches } from "@/lib/jobs";
 import { availableEngines, toEngineDto } from "@/lib/provider/registry";
 import { activeWorkspace, defaultMode, defaultPreset } from "@/lib/profiles";
@@ -24,7 +24,7 @@ export default async function CreateModelPage({ params, searchParams }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const dict = forBilling(getDictionary(locale), locale, billingUnit());
-  const user = (await currentUser())!;
+  const user = await requireUser(locale);
   const usage = await store.usage(user.orgId);
   const profile = await store.getProfile(user.userId);
   const asked = (await searchParams).mode;

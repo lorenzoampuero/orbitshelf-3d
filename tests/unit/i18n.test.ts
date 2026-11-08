@@ -39,4 +39,12 @@ describe("i18n parity and routing helpers", () => {
     expect(switchLocalePath("/pricing", "es")).toBe("/es/pricing");
     expect(switchLocalePath("/es/pricing", "en")).toBe("/pricing");
   });
+
+  it("switches language from an explicit /en address without doubling the prefix", () => {
+    expect(switchLocalePath("/en/features", "es")).toBe("/es/features");
+    expect(switchLocalePath("/en", "es")).toBe("/es");
+    expect(switchLocalePath("/en/features", "en")).toBe("/features");
+    expect(stripLocale("/english")).toBe("/english");
+    expect(stripLocale("/essay")).toBe("/essay");
+  });
 });

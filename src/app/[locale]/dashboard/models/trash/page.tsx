@@ -3,7 +3,7 @@ import { isLocale } from "@/i18n/config";
 import { forBilling } from "@/i18n/billing-copy";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { billingUnit } from "@/lib/env";
-import { currentUser } from "@/lib/api";
+import { requireUser } from "@/lib/require-user";
 import { buildPageMetadata } from "@/lib/seo";
 import { store, toDto } from "@/lib/store";
 import { TrashClient } from "./trash-client";
@@ -21,7 +21,7 @@ export default async function TrashPage({ params }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const dict = forBilling(getDictionary(locale), locale, billingUnit());
-  const user = (await currentUser())!;
+  const user = await requireUser(locale);
   const models = (await store.listTrash(user.orgId)).map(toDto);
   return (
     <div className="space-y-6">
