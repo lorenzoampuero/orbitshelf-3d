@@ -4,6 +4,7 @@
   "description": "OrbitShelf 3D — product photo to reviewed GLB (MVP, provisional brand)",
   "scripts": {
     "dev": "next dev",
+    "dev:local": "node scripts/dev-local.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

@@ -942,6 +942,7 @@ profile: {
       perModel: "Credits per model, dearest option",
       engineName: "Engine {n}",
       plansTitle: "Proposed plans",
+      subtitleLive: "Buy credits and check your balance.",
       calcNoteLive: "Credits are worked out from published prices plus unmeasured assumptions. They are theoretical maximums if everything is used on one engine.",
       buyTitle: "Buy credits",
       buyText: "You pay on Whop. Credits are added to your balance when Whop confirms the payment, which can take a moment. Plans renew every 30 days.",

@@ -61,7 +61,7 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
     <div className="space-y-6">
       <div>
         <h1 className="font-display text-2xl sm:text-3xl font-bold">{c.title}</h1>
-        <p className="mt-1 text-sm text-muted">{c.subtitle}</p>
+        <p className="mt-1 text-sm text-muted">{live ? c.subtitleLive : c.subtitle}</p>
       </div>
 
       {live ? (

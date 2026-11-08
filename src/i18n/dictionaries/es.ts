@@ -944,6 +944,7 @@ profile: {
       perModel: "Créditos por modelo, opción más cara",
       engineName: "Motor {n}",
       plansTitle: "Planes propuestos",
+      subtitleLive: "Compra créditos y revisa tu saldo.",
       calcNoteLive: "Los créditos se calculan con precios publicados más supuestos sin medir. Son máximos teóricos si todo se usa en el mismo motor.",
       buyTitle: "Comprar créditos",
       buyText: "El pago se hace en Whop. Los créditos se suman a tu saldo cuando Whop confirma el pago, lo que puede tardar un momento. Los planes se renuevan cada 30 días.",
