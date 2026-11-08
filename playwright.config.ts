@@ -56,6 +56,7 @@ export default defineConfig({
         LOCAL_PAID_ATTEMPT_CAP: "5",
         MAX_ACTIVE_JOBS_PER_ORG: "3",
         DATA_DIR: ".data-e2e",
+        ADMIN_EMAILS: "owner@admin.test",
       },
     },
   ],

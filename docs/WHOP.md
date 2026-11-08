@@ -37,15 +37,13 @@ Marcado como "no verificado" en el código:
 
 ## Reembolsos y disputas (manual por ahora)
 
-Los eventos `refund.*` y `dispute.*` se reciben, **no suman ni restan nada**, y dejan un aviso en el registro del servidor: `[whop] refund.created for payment pay_... needs a manual credit reversal`. Se dejó manual a propósito: su forma real no está verificada y una regla equivocada quitaría créditos a otro cliente.
+Los eventos `refund.*` y `dispute.*` se reciben, **no suman ni restan nada**, y quedan registrados como **pendientes** en el panel de administración (Panel → Pagos, filtro "Por revisar") además del aviso en el registro del servidor. Se dejó manual a propósito: su forma real no está verificada y una regla equivocada quitaría créditos a otro cliente. Lo mismo pasa con un pago de un espacio que no existe.
 
-Para revertir un pago, con el id del espacio de trabajo (está en los metadatos del pago en Whop):
+Para revertir un pago, abre Panel → Pagos, escribe el id del espacio (está en los metadatos del pago en Whop), el monto en negativo, un motivo y el id del pago que resuelve. El cambio se aplica una sola vez, queda en el historial del espacio con tu correo y marca el aviso como resuelto. Se niega a dejar el saldo bajo cero (si el cliente ya gastó los créditos, hay que decidir qué hacer con él). El script `scripts/adjust-credits.ts` sigue sirviendo desde la consola.
 
-```bash
-npx tsx --conditions=react-server scripts/adjust-credits.ts <org-id> -150 whop-refund:pay_123
-```
+El panel solo lo abren las cuentas listadas en `ADMIN_EMAILS` (separadas por coma). Sin esa variable no hay administradores y las páginas responden 404. Hace falta la migración `0009_billing_events.sql` en la base de datos.
 
-Se aplica una sola vez por clave, y se niega a dejar el saldo bajo cero (si el cliente ya gastó los créditos, hay que decidir qué hacer con él). Cuando se vea el cuerpo real de un reembolso, esto se puede automatizar.
+Cuando se vea el cuerpo real de un reembolso, esto se puede automatizar.
 
 ## Botón de comprar
 
@@ -66,4 +64,4 @@ Para probar el webhook en tu computador, Whop necesita una dirección pública (
 - Vencimiento de créditos y qué pasa si el cliente cancela el plan (los términos de Whop piden indicar duración).
 - Reembolsos y disputas automáticos, cuando se conozca el cuerpo real.
 - Mostrar al cliente su historial de pagos.
-- Tabla de eventos de pago (el informe de Codex propone `billing_events`) si se quiere reconciliar contra Whop.
+- Conciliar contra Whop: `billing_events` ya guarda lo que llegó por webhook, pero no consulta a Whop para detectar avisos que nunca llegaron.

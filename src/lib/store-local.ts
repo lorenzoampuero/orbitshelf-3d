@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { dataDir, initialGrant, maxActiveJobs } from "@/lib/env";
-import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type ApiTokenRow, type DueWebhook, type WebhookDeliveryRow, type WebhookEndpointRow, type WebhookResult, type EmbedRow, type ProjectRow, type IntegrationRow, type PublicationRow, mimeOf, nowIso, orgIdForEmail, versionKey, type CostEventRow, type VersionRow, type LedgerRow, type LocalDb, type ModelRow, type SourcePhoto } from "@/lib/store-shared";
+import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type ApiTokenRow, type DueWebhook, type WebhookDeliveryRow, type WebhookEndpointRow, type WebhookResult, type EmbedRow, type ProjectRow, type IntegrationRow, type PublicationRow, mimeOf, nowIso, orgIdForEmail, versionKey, type CostEventRow, type BillingEventRow, type AdminSummary, type AdminWorkspaceRow, billingNeedsAttention, type VersionRow, type LedgerRow, type LocalDb, type ModelRow, type SourcePhoto } from "@/lib/store-shared";
 import type { EngineStats, UserProfile, FailureCode, ImageView, JobEventDto, JobState, PriceEvidence, UsageDto } from "@/lib/types";
 
 /* ───────── persistence primitives ───────── */
@@ -31,6 +31,7 @@ function upgradeRows(db: LocalDb): LocalDb {
   db.apiTokens ??= [];
   db.webhookEndpoints ??= [];
   db.webhookDeliveries ??= [];
+  db.billingEvents ??= [];
   for (const m of db.models) {
     if ((m.source as string) === "sloyd") {
       m.source = "ai";
@@ -45,7 +46,7 @@ function upgradeRows(db: LocalDb): LocalDb {
 
 function readDb(): LocalDb {
   ensureDirs();
-  if (!existsSync(dbFile())) return { version: 1, orgs: [], users: [], models: [], ledger: [], audit: [], jobEvents: [], costEvents: [], versions: [], projects: [], embeds: [], integrations: [], publications: [], apiTokens: [], webhookEndpoints: [], webhookDeliveries: [] };
+  if (!existsSync(dbFile())) return { version: 1, orgs: [], users: [], models: [], ledger: [], audit: [], jobEvents: [], costEvents: [], versions: [], projects: [], embeds: [], integrations: [], publications: [], apiTokens: [], webhookEndpoints: [], webhookDeliveries: [], billingEvents: [] };
   let db: LocalDb;
   try {
     db = JSON.parse(readFileSync(dbFile(), "utf8")) as LocalDb;
@@ -735,6 +736,64 @@ export const localStore = {
 
   async listCostEvents(orgId: string): Promise<CostEventRow[]> {
     return tx((db) => db.costEvents.filter((c) => c.orgId === orgId), false);
+  },
+
+  /** One row per payment-webhook outcome or admin credit change. The payment id and event kind are the only keys; the same payment may log several times. */
+  async recordBillingEvent(e: Omit<BillingEventRow, "id" | "createdAt">): Promise<void> {
+    await tx((db) => {
+      db.billingEvents ??= [];
+      db.billingEvents.push({ ...e, id: randomUUID(), createdAt: nowIso() });
+      if (db.billingEvents.length > 5000) db.billingEvents.splice(0, db.billingEvents.length - 5000);
+    });
+  },
+
+  /** Marks what was waiting on a payment (a refund to reverse, a payment not credited) as handled. Returns how many rows changed. */
+  async resolveBillingEvents(paymentId: string): Promise<number> {
+    return tx((db) => {
+      let n = 0;
+      for (const e of db.billingEvents ?? []) {
+        if (e.paymentId === paymentId && billingNeedsAttention(e)) {
+          e.outcome = "resolved";
+          n += 1;
+        }
+      }
+      return n;
+    });
+  },
+
+  /** Newest first. */
+  async listBillingEvents(limit = 100, onlyPending = false): Promise<BillingEventRow[]> {
+    return tx((db) => (db.billingEvents ?? []).filter((e) => !onlyPending || billingNeedsAttention(e)).sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, limit), false);
+  },
+
+  /** Owner-only, across every workspace. Numbers only: nothing a customer typed or uploaded. */
+  async adminSummary(): Promise<AdminSummary> {
+    return tx((db) => ({
+      workspaces: db.orgs.length,
+      users: db.users.length,
+      models: db.models.filter((m) => !m.deletedAt).length,
+      ready: db.models.filter((m) => !m.deletedAt && m.status === "ready").length,
+      failed: db.models.filter((m) => !m.deletedAt && m.status === "failed").length,
+      processing: db.models.filter((m) => !m.deletedAt && m.status === "processing").length,
+      creditsGranted: db.ledger.filter((l) => l.reason === "plan_grant").reduce((n, l) => n + l.delta, 0),
+      paymentsCredited: (db.billingEvents ?? []).filter((e) => e.kind === "payment" && e.outcome === "credited").length,
+      needsAttention: (db.billingEvents ?? []).filter(billingNeedsAttention).length,
+    }), false);
+  },
+
+  /** Newest workspaces first. Balance is the sum of the ledger. */
+  async adminWorkspaces(limit = 200): Promise<AdminWorkspaceRow[]> {
+    return tx((db) =>
+      [...db.orgs]
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .slice(0, limit)
+        .map((o) => {
+          const entries = db.ledger.filter((l) => l.orgId === o.id);
+          const models = db.models.filter((m) => m.orgId === o.id);
+          const last = [...entries.map((l) => l.createdAt), ...models.map((m) => m.updatedAt)].sort().pop() ?? null;
+          return { orgId: o.id, name: o.name, email: db.users.find((u) => u.orgId === o.id)?.email ?? null, createdAt: o.createdAt, balance: entries.reduce((n, l) => n + l.delta, 0), models: models.filter((m) => !m.deletedAt).length, lastActivityAt: last };
+        }),
+    false);
   },
 
   async rawModelsForOrgs(): Promise<number> {

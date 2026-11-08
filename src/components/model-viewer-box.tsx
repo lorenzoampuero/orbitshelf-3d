@@ -22,6 +22,8 @@ type Props = {
   wheelZoom?: boolean;
   /** Frameless variant for use on a coloured field: transparent, no controls bar, no hint. Drag to rotate only. */
   bare?: boolean;
+  /** Starts turning by itself, unless the visitor asked for reduced motion. */
+  spin?: boolean;
   /** Called once the model is on screen, with a way to capture what is shown. */
   onReady?: (capture: () => Promise<Blob | null>) => void;
 };
@@ -34,7 +36,7 @@ type ModelViewerEl = HTMLElement & {
   getCameraOrbit?: () => { theta: number; phi: number; radius: number };
 };
 
-type SceneNode = { material?: { wireframe?: boolean } | { wireframe?: boolean }[] };
+type SceneNode = { material?: { wireframe?: boolean } | { wireframe?: boolean }[]; geometry?: { type?: string } };
 type ThreeScene = { traverse?: (visit: (node: SceneNode) => void) => void; queueRender?: () => void };
 
 /**
@@ -46,6 +48,8 @@ function applyWireframe(el: HTMLElement, on: boolean): boolean {
   const scene = symbol ? (el as unknown as Record<symbol, ThreeScene | undefined>)[symbol] : undefined;
   if (!scene?.traverse || !scene.queueRender) return false;
   scene.traverse((node) => {
+    // The contact shadow is a plane in the same scene: it stays a shadow.
+    if (node.geometry?.type === "PlaneGeometry") return;
     for (const material of [node.material].flat()) if (material) material.wireframe = on;
   });
   scene.queueRender();
@@ -79,6 +83,7 @@ export function ModelViewerBox({
   testId = "model-viewer-box",
   wheelZoom = true,
   bare = false,
+  spin = false,
   onReady,
 }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -313,6 +318,9 @@ export function ModelViewerBox({
             shadow-softness={bare ? "1" : undefined}
             exposure="1.0"
             interaction-prompt="none"
+            auto-rotate={spin && !reducedMotion ? "" : undefined}
+            auto-rotate-delay={spin ? "0" : undefined}
+            rotation-per-second={spin ? "16deg" : undefined}
             style={{ width: "100%", height: "100%" }}
           />
         )}

@@ -85,7 +85,18 @@ export type AuditRow = { id: string; orgId: string; action: string; modelId: str
 export type JobEventRow = JobEventDto & { orgId: string; modelId: string };
 /** What a provider job cost us. Separate from the ledger, which tracks what the customer used. */
 export type CostEventRow = { id: string; orgId: string; modelId: string; engineId: string; usd: number; evidence: PriceEvidence; at: string };
-export type LocalDb = { version: 1; orgs: OrgRow[]; users: UserRow[]; models: ModelRow[]; ledger: LedgerRow[]; audit: AuditRow[]; jobEvents: JobEventRow[]; costEvents: CostEventRow[]; versions: VersionRow[]; projects: ProjectRow[]; embeds: EmbedRow[]; integrations: IntegrationRow[]; publications: PublicationRow[]; apiTokens: ApiTokenRow[]; webhookEndpoints: WebhookEndpointRow[]; webhookDeliveries: WebhookDeliveryRow[] };
+export type LocalDb = { version: 1; billingEvents?: BillingEventRow[]; orgs: OrgRow[]; users: UserRow[]; models: ModelRow[]; ledger: LedgerRow[]; audit: AuditRow[]; jobEvents: JobEventRow[]; costEvents: CostEventRow[]; versions: VersionRow[]; projects: ProjectRow[]; embeds: EmbedRow[]; integrations: IntegrationRow[]; publications: PublicationRow[]; apiTokens: ApiTokenRow[]; webhookEndpoints: WebhookEndpointRow[]; webhookDeliveries: WebhookDeliveryRow[] };
+
+/** What the payment webhook and the admin panel did with a payment or a credit change. Owner-only: never part of a customer DTO. */
+export const BILLING_EVENT_KINDS = ["payment", "refund", "dispute", "admin_adjustment"] as const;
+export type BillingEventKind = (typeof BILLING_EVENT_KINDS)[number];
+export type BillingEventRow = { id: string; kind: BillingEventKind; paymentId: string | null; orgId: string | null; credits: number; outcome: string; detail: string | null; createdAt: string };
+/** Outcomes that need no attention. Anything else (payment not credited, refund waiting for a manual reversal) is listed as pending. */
+export const BILLING_OK_OUTCOMES = ["credited", "duplicate", "ignored", "adjusted", "resolved"] as const;
+export const billingNeedsAttention = (e: Pick<BillingEventRow, "outcome">) => !(BILLING_OK_OUTCOMES as readonly string[]).includes(e.outcome);
+
+export type AdminWorkspaceRow = { orgId: string; name: string; email: string | null; createdAt: string; balance: number; models: number; lastActivityAt: string | null };
+export type AdminSummary = { workspaces: number; users: number; models: number; ready: number; failed: number; processing: number; creditsGranted: number; paymentsCredited: number; needsAttention: number };
 
 export const emptyChecklist = (): Checklist => Object.fromEntries(CHECKLIST_KEYS.map((k) => [k, false])) as Checklist;
 export const emptyDimensions = (): Dimensions => ({ widthMm: null, heightMm: null, depthMm: null });

@@ -6,12 +6,21 @@ Las tres usan la API `/api/v1`, así que comparten permisos, límites y saldo. E
 |---|---|
 | API `/v1` | Probada de punta a punta con el servidor simulado |
 | Iniciar generaciones por API | Apagado (`API_GENERATION_ENABLED`). No se debe encender hasta tener respuesta de fal sobre sus términos |
-| MCP | Protocolo y herramientas probados con un cliente de prueba propio. **No probado con clientes reales** como Claude Desktop |
+| MCP por URL (`POST /api/mcp`) | Probado de punta a punta (e2e) y con el cliente oficial del SDK de MCP. **No probado con las aplicaciones** Claude Code, Cursor, VS Code ni Claude Desktop: sus configuraciones salen de su documentación |
+| MCP local (`integrations/mcp/orbitshelf-mcp.mjs`) | Mismas herramientas, para clientes que solo hablan stdio. Probado con un cliente de prueba propio |
 | Blender | **Nunca se ha ejecutado dentro de Blender.** Solo se comprobó que el archivo compila |
 | Unity (`unity/OrbitShelfImporter.cs`) | **Nunca se ha ejecutado en Unity.** Solo lee modelos (`assets:read`) y los guarda como GLB en `Assets/OrbitShelf`. Necesita glTFast |
 | WooCommerce (`woocommerce/orbitshelf-viewer.php`) | **Nunca se ha instalado en WordPress.** Shortcode `[orbitshelf_viewer url="…"]` que incrusta el visor; solo acepta el dominio que fijes en Ajustes → OrbitShelf |
 
 ## MCP
+
+### Por URL (recomendado)
+
+En el panel, **Agentes y API → MCP** crea un token y rellena el comando de cada cliente. Dirección: `https://tu-sitio/api/mcp`, con `Authorization: Bearer os_...`. Es Streamable HTTP sin sesiones: una respuesta JSON por cada POST; `GET` responde 405. Cada herramienta ejecuta el manejador de la API pública `/api/v1` con ese mismo token, así que tiene sus permisos, límites y saldo. ChatGPT y claude.ai piden inicio de sesión con OAuth, que todavía no existe.
+
+`create_generation` pide `confirm: true`, pero **esa confirmación la hace cumplir la herramienta, no el servidor**: un programa que llame a `/api/v1/jobs` con un token con `jobs:write` no la pide. Iniciar modelos por API sigue apagado (`API_GENERATION_ENABLED`). Los textos que devuelve una herramienta (por ejemplo, los títulos de tus modelos) los escribió una persona, no OrbitShelf: un agente debe tratarlos como datos.
+
+### Local (stdio)
 
 Sin dependencias, requiere Node 22 o superior.
 

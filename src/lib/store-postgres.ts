@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { blobStoreFromEnv, type BlobStore } from "@/lib/blob";
 import { initialGrant, maxActiveJobs } from "@/lib/env";
 import { pgClient, type Queryable, type SqlClient, type SqlRow } from "@/lib/sql";
-import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type ApiTokenRow, type DueWebhook, type WebhookDeliveryRow, type WebhookEndpointRow, type EmbedRow, type ProjectRow, type PublicationRow, glbKey, mimeOf, nowIso, orgIdForEmail, sourceKey, versionKey, type VersionRow, type CostEventRow, type ExtraImage, type ModelRow, type OrgRow, type SourcePhoto, type UserRow } from "@/lib/store-shared";
+import { TRASH_RETENTION_DAYS, thumbnailKey, assertSafeId, emptyChecklist, emptyProfile, type ApiTokenRow, type DueWebhook, type WebhookDeliveryRow, type WebhookEndpointRow, type EmbedRow, type ProjectRow, type PublicationRow, glbKey, mimeOf, nowIso, orgIdForEmail, sourceKey, versionKey, type VersionRow, type CostEventRow, type BillingEventRow, type AdminSummary, type AdminWorkspaceRow, BILLING_OK_OUTCOMES, type ExtraImage, type ModelRow, type OrgRow, type SourcePhoto, type UserRow } from "@/lib/store-shared";
 import type { Store } from "@/lib/store-local";
 import type { UserProfile, FailureCode, ImageView, JobEventDto, JobState, LedgerEntryDto, PriceEvidence, UsageDto } from "@/lib/types";
 
@@ -826,6 +826,55 @@ export function createPostgresStore(sql: SqlClient, blobs: BlobStore): Store {
         )
       ).rows;
       return rows.map((r) => ({ engineId: String(r.engine_id), jobs: Number(r.jobs), ready: Number(r.ready), failed: Number(r.failed), approved: Number(r.approved), rejected: Number(r.rejected), publishedUsd: Number(r.usd) }));
+    },
+
+    async recordBillingEvent(e) {
+      await sql.query("INSERT INTO public.billing_events (id, kind, payment_id, org_id, credits, outcome, detail, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", [randomUUID(), e.kind, e.paymentId, e.orgId, e.credits, e.outcome, e.detail, nowIso()]);
+    },
+
+    async resolveBillingEvents(paymentId) {
+      const res = await sql.query("UPDATE public.billing_events SET outcome = 'resolved' WHERE payment_id = $1 AND outcome <> ALL($2::text[]) RETURNING id", [paymentId, [...BILLING_OK_OUTCOMES]]);
+      return res.rows.length;
+    },
+
+    async listBillingEvents(limit = 100, onlyPending = false) {
+      const rows = (
+        await sql.query(
+          `SELECT * FROM public.billing_events WHERE ($2::boolean = false OR outcome <> ALL($3::text[])) ORDER BY created_at DESC LIMIT $1`,
+          [limit, onlyPending, [...BILLING_OK_OUTCOMES]],
+        )
+      ).rows;
+      return rows.map((r): BillingEventRow => ({ id: String(r.id), kind: r.kind as BillingEventRow["kind"], paymentId: (r.payment_id as string | null) ?? null, orgId: (r.org_id as string | null) ?? null, credits: Number(r.credits), outcome: String(r.outcome), detail: (r.detail as string | null) ?? null, createdAt: iso(r.created_at)! }));
+    },
+
+    async adminSummary(): Promise<AdminSummary> {
+      const one = async (text: string, params: unknown[] = []) => Number((await sql.query<{ n: unknown }>(text, params)).rows[0].n);
+      return {
+        workspaces: await one("SELECT COUNT(*) AS n FROM public.organizations"),
+        users: await one("SELECT COUNT(*) AS n FROM public.app_users"),
+        models: await one("SELECT COUNT(*) AS n FROM public.models WHERE deleted_at IS NULL"),
+        ready: await one("SELECT COUNT(*) AS n FROM public.models WHERE deleted_at IS NULL AND status = 'ready'"),
+        failed: await one("SELECT COUNT(*) AS n FROM public.models WHERE deleted_at IS NULL AND status = 'failed'"),
+        processing: await one("SELECT COUNT(*) AS n FROM public.models WHERE deleted_at IS NULL AND status = 'processing'"),
+        creditsGranted: await one("SELECT COALESCE(SUM(delta), 0) AS n FROM public.usage_ledger WHERE reason = 'plan_grant'"),
+        paymentsCredited: await one("SELECT COUNT(*) AS n FROM public.billing_events WHERE kind = 'payment' AND outcome = 'credited'"),
+        needsAttention: await one("SELECT COUNT(*) AS n FROM public.billing_events WHERE outcome <> ALL($1::text[])", [[...BILLING_OK_OUTCOMES]]),
+      };
+    },
+
+    async adminWorkspaces(limit = 200) {
+      const rows = (
+        await sql.query(
+          `SELECT o.id, o.name, o.created_at,
+             (SELECT email FROM public.app_users u WHERE u.org_id = o.id ORDER BY u.created_at LIMIT 1) AS email,
+             COALESCE((SELECT SUM(delta) FROM public.usage_ledger l WHERE l.org_id = o.id), 0) AS balance,
+             (SELECT COUNT(*) FROM public.models m WHERE m.org_id = o.id AND m.deleted_at IS NULL) AS models,
+             GREATEST((SELECT MAX(created_at) FROM public.usage_ledger l WHERE l.org_id = o.id), (SELECT MAX(updated_at) FROM public.models m WHERE m.org_id = o.id)) AS last_at
+           FROM public.organizations o ORDER BY o.created_at DESC LIMIT $1`,
+          [limit],
+        )
+      ).rows;
+      return rows.map((r): AdminWorkspaceRow => ({ orgId: String(r.id), name: String(r.name), email: (r.email as string | null) ?? null, createdAt: iso(r.created_at)!, balance: Number(r.balance), models: Number(r.models), lastActivityAt: iso(r.last_at) }));
     },
 
     async listDisabledEngines() {

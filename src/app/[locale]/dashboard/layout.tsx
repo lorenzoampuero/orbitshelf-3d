@@ -2,9 +2,13 @@ import { notFound, redirect } from "next/navigation";
 import { isLocale, localePath } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { currentUser } from "@/lib/api";
-import { providerConfigured } from "@/lib/env";
+import { billingUnit, providerConfigured } from "@/lib/env";
+import { forBilling } from "@/i18n/billing-copy";
+import { store } from "@/lib/store";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { whopCheckoutConfig } from "@/lib/whop";
+import { isAdminUser } from "@/lib/admin";
+import { adminCopy } from "@/content/admin-copy";
 
 export const dynamic = "force-dynamic";
 
@@ -22,9 +26,20 @@ export default async function DashboardLayout({
     redirect(localePath(locale, "/login"));
   }
   const dict = getDictionary(locale);
+  const { balance } = await store.usage(user.orgId);
+  const balanceLabel = forBilling(dict, locale, billingUnit()).dash.overview.stats.attempts;
 
   return (
-    <DashboardShell locale={locale} dict={dict} user={user} providerReady={providerConfigured()} billingLive={whopCheckoutConfig() !== null}>
+    <DashboardShell
+      locale={locale}
+      dict={dict}
+      user={user}
+      providerReady={providerConfigured()}
+      billingLive={whopCheckoutConfig() !== null}
+      adminLabel={isAdminUser(user) ? adminCopy[locale].nav.label : undefined}
+      balance={balance}
+      balanceLabel={balanceLabel}
+    >
       {children}
     </DashboardShell>
   );

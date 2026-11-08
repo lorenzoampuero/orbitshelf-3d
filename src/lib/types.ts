@@ -4,7 +4,26 @@ export const LOCALES = ["en", "es"] as const;
 export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "en";
 
-export const DEMO_ASSETS = ["vase", "lamp", "chair"] as const;
+/** The simple samples offered in the create wizard. */
+export const WIZARD_DEMO_ASSETS = ["vase", "lamp", "chair"] as const;
+export type WizardDemoAsset = (typeof WIZARD_DEMO_ASSETS)[number];
+/** Free-to-use models from the dashboard's example gallery (see src/content/examples.ts). */
+export const EXAMPLE_ASSETS = [
+  "modern_arm_chair_01",
+  "mid_century_lounge_chair",
+  "brass_vase_03",
+  "modern_ceiling_lamp_01",
+  "alarm_clock_01",
+  "barrel_01",
+  "wooden_crate_01",
+  "lantern_01",
+  "camera_01",
+  "marble_bust_01",
+  "horse_statue_01",
+  "concrete_cat_statue",
+] as const;
+export type ExampleAsset = (typeof EXAMPLE_ASSETS)[number];
+export const DEMO_ASSETS = [...WIZARD_DEMO_ASSETS, ...EXAMPLE_ASSETS] as const;
 export type DemoAsset = (typeof DEMO_ASSETS)[number];
 
 export const CATEGORIES = ["apparel", "footwear", "furniture", "home-decor", "lighting", "accessories", "other"] as const;

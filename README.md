@@ -58,6 +58,7 @@ npm run start
 | `DATA_DIR` | No | `.data` | Private server directory storing `db.json`, GLB binaries, and stripped source photos |
 | `BILLING_UNIT` | No | `credits` | How a job is charged: `credits` (a job costs what its engine costs) or `attempts` (every job counts one; testing only, and refused when more than one engine is on unless `ORBITSHELF_TEST=1`) |
 | `LOCAL_FREE_CREDITS` | No | `100` | Starting credits of a new local workspace when `BILLING_UNIT` is `credits`. Test credits, not sold |
+| `ADMIN_EMAILS` | No | empty | Comma-separated emails that may open the owner panel (`/dashboard/admin`: workspaces, payments to review, credit adjustments). Empty means no administrators and the pages answer 404. Needs migration `0009_billing_events.sql` |
 | `LOCAL_PAID_ATTEMPT_CAP` | No | `3` | Starting attempts of a new local workspace when `BILLING_UNIT=attempts` (local safety cap) |
 | `MAX_ACTIVE_JOBS_PER_ORG` | No | `2` | Maximum concurrent active Sloyd jobs per workspace (Sloyd enforces 5 per key) |
 | `SLOYD_CLIENT_ID` | Optional | — | Server-only Sloyd API client ID (if omitted, app runs in Demo mode) |
@@ -80,6 +81,8 @@ npm run start
 | GLB import, mesh diagnostics, mesh view, optimization versions, OBJ and STL export | **Live** |
 | Onboarding, workspaces, Explore, generation presets | **Live.** Presets choose by published price and capability: no quality benchmark exists |
 | Projects, tags, favorites, 30-day trash, real thumbnails | **Live** |
+| "Activate your first model" card and credit chip in the dashboard | **Live.** Steps tick only from real data (model, ready, approved, live embed). Works with demo samples and imported GLBs; AI generation still needs an authorised engine |
+| Owner panel (`/dashboard/admin`), payment trail, manual credit adjustments | **Live locally; tested on PGlite only.** Refunds and disputes are listed for a person, never reversed automatically |
 | Public viewer with revocable links and allowed sites | **Live** |
 | Ledger by credits (default) or attempts, plan simulation | **Live, no charges.** Credits is the default (`BILLING_UNIT`). Plans are sized for a 64 % margin so the 60 % floor survives a 10 % cost rise (`SIZING_MARGIN` in `src/lib/credits.ts`) |
 | Postgres store, private bucket, job leases, shared rate limit | **Tested on PGlite only.** Not yet run on a real Supabase project. See `docs/PUESTA_EN_MARCHA.md` |

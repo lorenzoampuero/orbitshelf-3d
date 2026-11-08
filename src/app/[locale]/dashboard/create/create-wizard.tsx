@@ -7,12 +7,12 @@ import { localePath } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import {
   CATEGORIES,
-  DEMO_ASSETS,
+  WIZARD_DEMO_ASSETS,
   IMAGE_VIEWS,
   MAX_PROMPT_CHARS,
   TEXTURE_RESOLUTIONS,
   type Category,
-  type DemoAsset,
+  type WizardDemoAsset,
   GENERATION_PRESETS,
   type EngineDto,
   type GenerationPreset,
@@ -24,6 +24,7 @@ import {
 } from "@/lib/types";
 import { ModelViewerBox } from "@/components/model-viewer-box";
 import { resolvePreset } from "@/lib/profiles";
+import { clearComposerHandoff, peekComposerHandoff } from "@/lib/composer-handoff";
 
 type Mode = "photos" | "text" | "demo" | "import";
 type ApiFailure = {
@@ -51,19 +52,22 @@ export function CreateWizard({
   const providerReady = engines.length > 0;
   const router = useRouter();
   const c = dict.dash.create;
+  // What was dropped or typed in the home composer. Read at the first render, then forgotten so a later visit starts empty.
+  const [handoff] = useState(peekComposerHandoff);
+  useEffect(() => clearComposerHandoff(), []);
 
   // A mode that needs an engine is only opened when one exists: otherwise it would be a form that cannot be submitted.
   const [mode, setMode] = useState<Mode>(initialMode === "import" ? "import" : providerReady ? (initialMode ?? "photos") : "demo");
   const [preset, setPreset] = useState<GenerationPreset>(initialPreset);
-  const [title, setTitle] = useState(providerReady ? "" : c.demoObjects.vase);
+  const [title, setTitle] = useState(handoff?.title ?? (providerReady ? "" : c.demoObjects.vase));
   const [sku, setSku] = useState("");
   const [category, setCategory] = useState<Category>(providerReady ? "apparel" : "home-decor");
-  const [demoAsset, setDemoAsset] = useState<DemoAsset>("vase");
+  const [demoAsset, setDemoAsset] = useState<WizardDemoAsset>("vase");
   const [textureResolution, setTextureResolution] = useState<TextureResolution>("1k");
-  const [files, setFiles] = useState<Partial<Record<ImageView, File>>>({});
+  const [files, setFiles] = useState<Partial<Record<ImageView, File>>>(handoff?.files ?? {});
   const [resets, setResets] = useState<Partial<Record<ImageView, number>>>({});
-  const [prompt, setPrompt] = useState("");
-  const [glbFile, setGlbFile] = useState<File | null>(null);
+  const [prompt, setPrompt] = useState(handoff?.prompt ?? "");
+  const [glbFile, setGlbFile] = useState<File | null>(handoff?.glb ?? null);
   const [confirmPaid, setConfirmPaid] = useState(false);
   const [rightsAffirmed, setRightsAffirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -351,10 +355,10 @@ export function CreateWizard({
                 id="create-demo-asset"
                 name="demoAsset"
                 value={demoAsset}
-                onChange={(e) => setDemoAsset(e.target.value as DemoAsset)}
+                onChange={(e) => setDemoAsset(e.target.value as WizardDemoAsset)}
                 className="w-full rounded-xl border border-line bg-bg px-3.5 py-2 text-sm text-fg"
               >
-                {DEMO_ASSETS.map((a) => (
+                {WIZARD_DEMO_ASSETS.map((a) => (
                   <option key={a} value={a}>
                     {c.demoObjects[a]}
                   </option>

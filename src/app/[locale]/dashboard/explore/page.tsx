@@ -1,5 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { examplePoster } from "@/content/examples";
 import { isLocale, localePath } from "@/i18n/config";
 import { forBilling } from "@/i18n/billing-copy";
 import { getDictionary } from "@/i18n/get-dictionary";
@@ -9,7 +11,17 @@ import { refreshEngineSwitches } from "@/lib/jobs";
 import { allEngines, availableEngines, toEngineDto } from "@/lib/provider/registry";
 import { buildPageMetadata } from "@/lib/seo";
 import { OPTIMIZE_PRESETS } from "@/lib/types";
-import { formatBytes } from "@/lib/utils";
+import { cn, formatBytes } from "@/lib/utils";
+
+/** Pictures for the tool tiles: renders of the free example models, never results of the service. */
+const TOOL_ART = [
+  { id: "marble_bust_01", mesh: false },
+  { id: "lantern_01", mesh: true },
+  { id: "camera_01", mesh: false },
+  { id: "mid_century_lounge_chair", mesh: false },
+  { id: "horse_statue_01", mesh: true },
+  { id: "wooden_crate_01", mesh: false },
+];
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -33,21 +45,33 @@ export default async function ExplorePage({ params }: Props) {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-2xl sm:text-3xl font-bold">{c.title}</h1>
+        <h1 className="font-display text-3xl font-bold sm:text-4xl">{c.title}</h1>
         <p className="mt-1 text-sm text-muted">{c.subtitle}</p>
       </div>
 
       <section className="space-y-3">
         <h2 className="font-display text-lg font-semibold">{c.toolsTitle}</h2>
-        <ul className="divide-y divide-line border-y border-line">
-          {c.tools.map((tool) => (
-            <li key={tool.href}>
-              <Link href={localePath(locale, tool.href)} data-testid={`explore-tool-${tool.id}`} className="group grid gap-1 py-3 text-sm md:grid-cols-12 md:gap-6">
-                <span className="font-semibold text-fg group-hover:text-accent md:col-span-4">{tool.title}</span>
-                <span className="text-xs leading-relaxed text-muted md:col-span-8">{tool.text}</span>
-              </Link>
-            </li>
-          ))}
+        <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {c.tools.map((tool, i) => {
+            const art = TOOL_ART[i % TOOL_ART.length];
+            return (
+              <li key={tool.id} className={cn(i === 0 && "col-span-2 md:row-span-2", (i === 3 || i === 4 || i === 5) && "md:col-span-2")}>
+                <Link
+                  href={localePath(locale, tool.href)}
+                  data-testid={`explore-tool-${tool.id}`}
+                  className="card-lift group flex h-full flex-col overflow-hidden rounded-[24px] border border-line bg-surface p-3"
+                >
+                  <span className="relative block min-h-[150px] flex-1">
+                    <Image src={examplePoster(art.id, art.mesh)} alt="" fill sizes="(min-width: 768px) 25vw, 50vw" unoptimized className="object-contain p-2" />
+                  </span>
+                  <span className="block rounded-2xl bg-bg/85 px-3 py-2.5">
+                    <span className="block text-sm font-semibold text-fg group-hover:text-accent">{tool.title}</span>
+                    <span className="mt-0.5 block text-xs leading-relaxed text-muted">{tool.text}</span>
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </section>
 

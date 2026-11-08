@@ -126,13 +126,13 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await page.getByTestId("login-submit").click();
     await page.waitForURL("**/dashboard");
 
-    // Sidebar collapse keyboard accessibility check
-    const collapseBtn = page.getByTestId("sidebar-collapse-btn");
-    await collapseBtn.focus();
+    // The account menu opens from the keyboard and closes on Escape
+    const accountBtn = page.getByTestId("account-menu-btn");
+    await accountBtn.focus();
     await page.keyboard.press("Enter");
-    await expect(page.locator("aside[data-collapsed]")).toHaveAttribute("data-collapsed", "true");
-    await page.keyboard.press("Enter");
-    await expect(page.locator("aside[data-collapsed]")).toHaveAttribute("data-collapsed", "false");
+    await expect(page.locator("#account-menu")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#account-menu")).toHaveCount(0);
 
     // Navigate to Create 3D
     await page.goto("/dashboard/create");
@@ -514,11 +514,12 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await expect(wireframe).toHaveAttribute("aria-pressed", "false");
     const usesWireframe = () =>
       page.evaluate(() => {
-        const viewer = document.querySelector('[data-testid="studio-viewer"] model-viewer') as HTMLElement & Record<symbol, { traverse(f: (n: { material?: { wireframe?: boolean } }) => void): void }>;
+        const viewer = document.querySelector('[data-testid="studio-viewer"] model-viewer') as HTMLElement & Record<symbol, { traverse(f: (n: { material?: { wireframe?: boolean }; geometry?: { type?: string } }) => void): void }>;
         const symbol = Object.getOwnPropertySymbols(viewer).find((s) => s.description === "scene")!;
         const seen: boolean[] = [];
         viewer[symbol].traverse((n) => {
-          if (n.material) seen.push(Boolean(n.material.wireframe));
+          // The contact shadow is a flat plane that deliberately stays a shadow in mesh view.
+          if (n.material && n.geometry?.type !== "PlaneGeometry") seen.push(Boolean(n.material.wireframe));
         });
         return seen;
       });
@@ -807,7 +808,7 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await page.waitForURL("**/dashboard");
     const made = (await (await page.request.post("/api/models", { data: { source: "demo", title: "API Lamp", category: "lighting", demoAsset: "lamp" } })).json()).model;
 
-    await page.goto("/dashboard/api");
+    await page.goto("/dashboard/api?tab=api");
     await page.fill("#token-name", "Blender");
     await page.getByTestId("token-create").click();
     const token = (await page.getByTestId("token-value").textContent())!;
@@ -957,7 +958,7 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await page.fill("#login-email", "hooks@merchant.test");
     await page.getByTestId("login-submit").click();
     await page.waitForURL("**/dashboard");
-    await page.goto("/dashboard/api");
+    await page.goto("/dashboard/api?tab=webhooks");
 
     await page.getByTestId("webhook-url").fill("http://127.0.0.1:3999/hook");
     await page.getByTestId("webhook-add").click();
@@ -1086,5 +1087,168 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
         expect(metrics.small, `text under 12px on ${p} at ${width}px`).toEqual([]);
       }
     }
+  });
+
+  test("9. First-model card follows real progress; the owner panel exists only for ADMIN_EMAILS", async ({ browser }) => {
+    // A new workspace: nothing is done yet, and the credit chip shows the starting balance.
+    const user = await browser.newContext();
+    const page = await user.newPage();
+    expect((await user.request.post("/api/auth/login", { data: { email: "firstmodel@merchant.test" } })).ok()).toBe(true);
+    await page.goto("/dashboard");
+    await expect(page.getByTestId("first-model-card")).toBeVisible();
+    await expect(page.getByTestId("first-model-progress")).toContainText("0");
+    await expect(page.getByTestId("credit-chip")).toBeVisible();
+    // A customer sees no admin entry and the admin pages answer 404.
+    await expect(page.locator("a[href$='/dashboard/admin']")).toHaveCount(0);
+    expect((await page.goto("/dashboard/admin"))?.status()).toBe(404);
+    expect((await page.goto("/dashboard/admin/payments"))?.status()).toBe(404);
+    const denied = await user.request.post("/api/admin/credits", { data: { orgId: "x", delta: 5, reason: "not allowed" } });
+    expect(denied.status()).toBe(404);
+
+    // Creating a demo model completes step 1 and 2; the card is still there until approved and published.
+    const created = await user.request.post("/api/models", { data: { source: "demo", title: "First chair", sku: "FIRST-1", category: "furniture", demoAsset: "chair" } });
+    expect(created.status()).toBe(201);
+    await page.goto("/dashboard");
+    await expect(page.getByTestId("first-model-card")).toBeVisible();
+    await expect(page.locator("[data-step='create']")).toHaveAttribute("data-state", "done");
+    await expect(page.locator("[data-step='approve']")).toHaveAttribute("data-state", "todo");
+
+    // The gallery of free examples: 12 real models, filterable, each honestly labelled.
+    await page.getByTestId("gallery-tab-examples").click();
+    await expect(page.locator("[data-testid^=example-card-]")).toHaveCount(12);
+    await page.getByTestId("gallery-group-games").click();
+    await expect(page.locator("[data-testid^=example-card-]")).toHaveCount(4);
+    await page.getByTestId("gallery-group-all").click();
+    // One click copies an example into the workspace as a demo sample: it costs nothing.
+    const balanceBefore = await page.getByTestId("credit-chip").innerText();
+    await page.getByTestId("example-card-marble_bust_01").click();
+    await expect(page.getByTestId("example-dialog")).toContainText("CC0");
+    await page.getByTestId("example-try").click();
+    await page.waitForURL("**/dashboard/models/*");
+    await expect(page.getByTestId("studio-title")).toContainText(/bust|busto/i);
+    await page.goto("/dashboard");
+    expect(await page.getByTestId("credit-chip").innerText()).toBe(balanceBefore);
+
+    // Connections: the state of each card comes from real data and from what has been tested.
+    expect((await page.goto("/dashboard/connections"))?.status()).toBe(200);
+    await expect(page.getByTestId("connection-embed")).toHaveAttribute("data-state", "available");
+    await expect(page.getByTestId("connection-bambulab")).toHaveAttribute("data-state", "soon");
+    await user.close();
+
+    // The owner opens the panel, sees workspaces, and every admin page is accessible and fits a phone.
+    const owner = await browser.newContext();
+    const op = await owner.newPage();
+    expect((await owner.request.post("/api/auth/login", { data: { email: "owner@admin.test" } })).ok()).toBe(true);
+    await op.emulateMedia({ reducedMotion: "reduce" });
+    for (const width of [1280, 375]) {
+      await op.setViewportSize({ width, height: 840 });
+      for (const p of ["/dashboard", "/dashboard/connections", "/dashboard/explore", "/dashboard/api", "/dashboard/api?tab=api", "/dashboard/admin", "/dashboard/admin/workspaces", "/dashboard/admin/payments", "/es/dashboard/admin"]) {
+        const res = await op.goto(p);
+        expect(res?.status(), p).toBe(200);
+        await expect(op.locator("h1")).toHaveCount(1);
+        const a11y = await new AxeBuilder({ page: op }).exclude("model-viewer").withTags(["wcag2a", "wcag2aa"]).analyze();
+        expect(a11y.violations, `axe violations on ${p} at ${width}px`).toEqual([]);
+        const overflow = await op.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+        expect(overflow, `horizontal overflow on ${p} at ${width}px`).toBeLessThanOrEqual(0);
+      }
+    }
+    await op.setViewportSize({ width: 1280, height: 840 });
+    await op.goto("/dashboard/admin/workspaces");
+    await expect(op.getByTestId("admin-workspaces")).toContainText("firstmodel@merchant.test");
+    await op.getByRole("link", { name: /open|abrir/i }).first().click();
+    await expect(op.getByTestId("admin-workspace-detail")).toBeVisible();
+    const before = Number(await op.getByTestId("admin-detail-balance").innerText());
+    const adjusted = await owner.request.post("/api/admin/credits", {
+      data: { orgId: new URL(op.url()).pathname.split("/").pop(), delta: 3, reason: "e2e courtesy grant" },
+    });
+    expect(adjusted.status()).toBe(200);
+    await op.reload();
+    expect(Number(await op.getByTestId("admin-detail-balance").innerText())).toBe(before + 3);
+    await owner.close();
+  });
+
+  test("10. MCP by URL: a token is required, tools obey its permissions, nothing spends balance, and the page fills the command in", async ({ browser, request }) => {
+    const user = await browser.newContext();
+    const page = await user.newPage();
+    expect((await user.request.post("/api/auth/login", { data: { email: "agent@merchant.test" } })).ok()).toBe(true);
+    await user.request.post("/api/models", { data: { source: "demo", title: "Agent Lamp", category: "lighting", demoAsset: "lamp" } });
+
+    // The page makes the token and puts it in the command. It is shown once and never listed again.
+    await page.goto("/dashboard/api");
+    await expect(page.getByTestId("mcp-panel")).toBeVisible();
+    await expect(page.getByTestId("mcp-url")).toContainText("/api/mcp");
+    await expect(page.getByTestId("mcp-snippet")).toContainText(/os_(YOUR|TU)_TOKEN/);
+    await page.getByTestId("mcp-create-token").click();
+    await expect(page.getByTestId("mcp-snippet")).not.toContainText(/os_(YOUR|TU)_TOKEN/);
+    const snippet = (await page.getByTestId("mcp-snippet").innerText()).replace(/\s+/g, " ");
+    const token = snippet.match(/os_[A-Za-z0-9_-]{20,}/)![0];
+    expect(snippet).toContain("claude mcp add --transport http orbitshelf");
+    await page.getByTestId("mcp-client-cursor").click();
+    await expect(page.getByTestId("mcp-snippet")).toContainText('"mcpServers"');
+    await expect(page.getByTestId("mcp-tools")).toContainText("create_generation");
+    await expect(page.getByTestId("mcp-tools")).toContainText(/off on this server|apagado en este servidor/i);
+    expect(await user.request.get("/api/tokens").then((r) => r.text())).not.toContain(token);
+
+    // The protocol, with the token.
+    const rpc = (method: string, params?: unknown, id: number | null = 1, headers: Record<string, string> = { Authorization: `Bearer ${token}` }) =>
+      request.post("/api/mcp", { headers, data: { jsonrpc: "2.0", ...(id === null ? {} : { id }), method, params } });
+    expect((await request.post("/api/mcp", { data: { jsonrpc: "2.0", id: 1, method: "ping" } })).status()).toBe(401);
+    expect((await rpc("ping", undefined, 1, { Authorization: "Bearer os_this-token-does-not-exist-at-all" })).status()).toBe(401);
+    expect((await request.get("/api/mcp", { headers: { Authorization: `Bearer ${token}` } })).status()).toBe(405);
+    expect((await rpc("ping", undefined, 1, { Authorization: `Bearer ${token}`, Origin: "https://evil.example" })).status()).toBe(403);
+    const init = await (await rpc("initialize", { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "e2e", version: "1" } })).json();
+    expect(init.result.serverInfo.name).toBe("orbitshelf-3d");
+    expect((await rpc("notifications/initialized", undefined, null)).status()).toBe(202);
+    const listed = await (await rpc("tools/list")).json();
+    expect(listed.result.tools.map((t: { name: string }) => t.name)).toEqual(["list_models", "quote_generation", "create_generation", "get_generation", "list_assets", "export_asset", "get_credit_balance"]);
+    expect((await (await request.post("/api/mcp", { headers: { Authorization: `Bearer ${token}` }, data: "{not json" })).json()).error.code).toBe(-32700);
+
+    // Same data as the web, through the same permissions.
+    const text = async (res: Awaited<ReturnType<typeof rpc>>) => {
+      const body = await res.json();
+      return { isError: Boolean(body.result?.isError), text: String(body.result?.content?.[0]?.text ?? "") };
+    };
+    const balance = (await (await user.request.get("/api/usage")).json()).usage.balance;
+    const credits = await text(await rpc("tools/call", { name: "get_credit_balance", arguments: {} }));
+    expect(credits.isError).toBe(false);
+    expect(JSON.parse(credits.text).balance).toBe(balance);
+    const assets = await text(await rpc("tools/call", { name: "list_assets", arguments: {} }));
+    const made = JSON.parse(assets.text).assets;
+    expect(made).toHaveLength(1);
+    const exported = JSON.parse((await text(await rpc("tools/call", { name: "export_asset", arguments: { asset_id: made[0].id } }))).text);
+    expect(exported.url).toMatch(/\/api\/v1\/assets\/.+\/file$/);
+    expect(exported.provenance).toBe("demo-sample");
+    expect((await text(await rpc("tools/call", { name: "get_generation", arguments: { asset_id: "no-such-model" } }))).isError).toBe(true);
+
+    // A quote costs nothing. Starting a generation needs confirm and is switched off on this server: the balance does not move.
+    const quote = JSON.parse((await text(await rpc("tools/call", { name: "quote_generation", arguments: { engineId: "sloyd", mode: "text", photoCount: 0, texture: "1k" } }))).text);
+    expect(quote.quote.credits).toBe(26);
+    const args = { quoteId: quote.quote.id, engineId: "sloyd", title: "X", category: "other", texture: "1k", prompt: "a wooden chair", idempotencyKey: "key-12345678", rightsAffirmed: true };
+    const unconfirmed = await text(await rpc("tools/call", { name: "create_generation", arguments: args }));
+    expect(unconfirmed.isError).toBe(true);
+    expect(unconfirmed.text).toMatch(/confirm/);
+    const off = await text(await rpc("tools/call", { name: "create_generation", arguments: { ...args, confirm: true } }));
+    expect(off.isError).toBe(true);
+    expect(off.text).toMatch(/not enabled/);
+    expect((await (await user.request.get("/api/usage")).json()).usage.balance).toBe(balance);
+
+    // A token with fewer permissions gets a tool error, not another workspace's data.
+    const narrow = (await (await user.request.post("/api/tokens", { data: { name: "Only models", scopes: ["models:read"] } })).json()).token;
+    const denied = await text(await rpc("tools/call", { name: "list_assets", arguments: {} }, 2, { Authorization: `Bearer ${narrow}` }));
+    expect(denied.isError).toBe(true);
+    expect(denied.text).toMatch(/assets:read/);
+    expect((await text(await rpc("tools/call", { name: "list_models", arguments: {} }, 3, { Authorization: `Bearer ${narrow}` }))).isError).toBe(false);
+
+    // A revoked token stops at once.
+    await page.goto("/dashboard/api?tab=api");
+    await expect(page.getByTestId("token-revoke")).toHaveCount(2);
+    for (let left = 2; left > 0; left--) {
+      await page.getByTestId("token-revoke").first().click();
+      await expect(page.getByTestId("token-revoke")).toHaveCount(left - 1);
+    }
+    await expect(async () => {
+      expect((await rpc("ping")).status()).toBe(401);
+    }).toPass({ timeout: 5_000 });
+    await user.close();
   });
 });

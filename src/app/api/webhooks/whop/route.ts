@@ -8,6 +8,17 @@ export const runtime = "nodejs";
 
 const MAX_BODY_BYTES = 1024 * 1024;
 
+const paymentIdOf = (event: { data: Record<string, unknown> }) => (typeof event.data.id === "string" ? event.data.id.slice(0, 200) : null);
+
+/** Keeps a record the admin panel can show. A failure to write it must never turn a handled payment into a retry storm. */
+async function logEvent(e: Parameters<typeof store.recordBillingEvent>[0]) {
+  try {
+    await store.recordBillingEvent({ ...e, detail: e.detail ? e.detail.slice(0, 500) : null });
+  } catch (err) {
+    console.error("[whop] could not record the billing event:", err instanceof Error ? err.message : "unknown");
+  }
+}
+
 /**
  * Whop tells us a payment went through; this credits the workspace. Never trust the request itself: the signature is checked first,
  * credits come from OrbitShelf's catalogue, and the payment id is the ledger key so a repeated delivery cannot credit twice.
@@ -26,18 +37,26 @@ export async function POST(req: Request) {
   const review = needsManualReview(event);
   if (review) {
     console.warn(`[whop] ${review.type} for payment ${review.paymentId ?? "unknown"} needs a manual credit reversal`);
+    await logEvent({ kind: review.type.startsWith("dispute") ? "dispute" : "refund", paymentId: review.paymentId, orgId: null, credits: 0, outcome: "manual_review", detail: review.type });
     return NextResponse.json({ received: true, credited: false, reason: "manual_review" });
   }
 
   const decision = decideGrant(event);
   if (!decision.ok) {
-    if (decision.reason !== "ignored") console.warn(`[whop] payment not credited: ${decision.reason}`);
+    if (decision.reason !== "ignored") {
+      console.warn(`[whop] payment not credited: ${decision.reason}`);
+      await logEvent({ kind: "payment", paymentId: paymentIdOf(event), orgId: null, credits: 0, outcome: decision.reason, detail: event.type });
+    }
     return NextResponse.json({ received: true, credited: false, reason: decision.reason });
   }
+  const paymentId = decision.key.replace(/^whop:/, "");
   if (!(await store.getOrg(decision.orgId))) {
     console.warn("[whop] payment names a workspace that does not exist");
+    await logEvent({ kind: "payment", paymentId, orgId: null, credits: 0, outcome: "unknown_org", detail: decision.item.key });
     return NextResponse.json({ received: true, credited: false, reason: "unknown_org" });
   }
   const result = await store.adjustBalance(decision.orgId, decision.credits, "plan_grant", decision.key);
+  // A repeated delivery is already in the list from the first time: do not add a row for it.
+  if (result !== "duplicate") await logEvent({ kind: "payment", paymentId, orgId: decision.orgId, credits: result === "applied" ? decision.credits : 0, outcome: result === "applied" ? "credited" : result, detail: decision.item.key });
   return NextResponse.json({ received: true, credited: result === "applied", result });
 }

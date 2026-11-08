@@ -12,6 +12,8 @@ const env = {
   SUPABASE_SECRET_KEY: "",
   DATA_DIR: ".data-dev-local",
   LOCAL_FREE_CREDITS: process.env.LOCAL_FREE_CREDITS || "100",
+  // Sign in with this address locally to see the admin panel. Production has no default: ADMIN_EMAILS must be set on purpose.
+  ADMIN_EMAILS: process.env.ADMIN_EMAILS || "owner@orbitshelf.local",
 };
 
 const child = spawn("npx", ["next", "dev", "-p", process.env.PORT || "3000"], { stdio: "inherit", env, shell: true });

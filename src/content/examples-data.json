@@ -1,0 +1,62 @@
+{
+  "modern_arm_chair_01": {
+    "triangles": 8916,
+    "bytes": 2696164,
+    "textureSize": 1024
+  },
+  "mid_century_lounge_chair": {
+    "triangles": 6148,
+    "bytes": 2086032,
+    "textureSize": 1024
+  },
+  "brass_vase_03": {
+    "triangles": 2616,
+    "bytes": 1580776,
+    "textureSize": 1024
+  },
+  "modern_ceiling_lamp_01": {
+    "triangles": 5602,
+    "bytes": 433320,
+    "textureSize": 1024
+  },
+  "alarm_clock_01": {
+    "triangles": 8985,
+    "bytes": 1652888,
+    "textureSize": 1024
+  },
+  "barrel_01": {
+    "triangles": 2682,
+    "bytes": 692084,
+    "textureSize": 1024
+  },
+  "wooden_crate_01": {
+    "triangles": 6576,
+    "bytes": 2274840,
+    "textureSize": 1024
+  },
+  "lantern_01": {
+    "triangles": 33902,
+    "bytes": 1418460,
+    "textureSize": 1024
+  },
+  "camera_01": {
+    "triangles": 26987,
+    "bytes": 2412248,
+    "textureSize": 1024
+  },
+  "marble_bust_01": {
+    "triangles": 17456,
+    "bytes": 897332,
+    "textureSize": 1024
+  },
+  "horse_statue_01": {
+    "triangles": 22388,
+    "bytes": 1281020,
+    "textureSize": 1024
+  },
+  "concrete_cat_statue": {
+    "triangles": 11950,
+    "bytes": 3097376,
+    "textureSize": 1024
+  }
+}

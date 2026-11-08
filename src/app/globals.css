@@ -108,6 +108,25 @@
   background: radial-gradient(closest-side, rgb(91 61 245 / 0.28), rgb(91 61 245 / 0));
 }
 
+/* ---------- Dashboard: studio floor ---------- */
+/* A fine grid receding behind the composer, in place of a glow. Purely decorative and cheap: two gradients and a transform. */
+.studio-floor {
+  position: absolute;
+  left: -40%;
+  right: -40%;
+  bottom: 0;
+  height: 62%;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgb(183 156 255 / 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(183 156 255 / 0.2) 1px, transparent 1px);
+  background-size: 64px 64px;
+  transform: perspective(560px) rotateX(64deg);
+  transform-origin: bottom;
+  mask-image: linear-gradient(to top, transparent, #000 22%, transparent 82%), linear-gradient(90deg, transparent 12%, #000 34%, #000 66%, transparent 88%);
+  mask-composite: intersect;
+}
+
 /* ---------- Floating pill navbar ---------- */
 /*
  * The blur sits on a pseudo-element, not on the pill itself: an element with backdrop-filter becomes a backdrop root,
