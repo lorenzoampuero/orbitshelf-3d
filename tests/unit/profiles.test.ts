@@ -3,7 +3,7 @@ import { activeWorkspace, defaultMode, defaultPreset, GOALS_BY_USE_CASE, resolve
 import { GOALS, USE_CASES, type EngineDto, type UserProfile } from "@/lib/types";
 
 const engine = (id: string, fromCredits: number, maxPhotos: number, modes: EngineDto["modes"]): EngineDto => ({
-  id, label: id, lifecycle: "pilot", modes, maxPhotos, views: ["front"], geometryOnly: true, exports: ["glb"], priceVerifiedAt: "2026-11-05", priceEvidence: "published", fromCredits,
+  id, label: id, tier: "normal", listed: true, creditsByTexture: { "1k": fromCredits }, lifecycle: "pilot", modes, maxPhotos, views: ["front"], geometryOnly: true, exports: ["glb"], priceVerifiedAt: "2026-11-05", priceEvidence: "published", fromCredits,
 });
 const engines = [engine("expensive-4", 60, 4, ["image", "multi-image"]), engine("cheap-4", 40, 4, ["image", "multi-image", "text"]), engine("cheapest-1", 10, 1, ["image"])];
 

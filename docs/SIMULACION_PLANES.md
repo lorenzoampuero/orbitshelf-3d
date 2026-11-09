@@ -103,3 +103,33 @@ El mínimo se mantiene solo si los créditos por modelo se recalculan cuando cam
 - **Intentos planos:** descartado. Un intento cuesta lo mismo con cualquier motor, así que un motor caro deja el plan con pérdida.
 - **Créditos del informe:** cumple el mínimo, pero entrega menos modelos de los necesarios para llegar a 60 %.
 - **Hasta medir costos reales** (Fase 10), estos márgenes son una estimación. Con facturas hay que actualizar los supuestos y repetir este cálculo.
+
+## Motores por nivel (decisión documental, 2026-11-08)
+
+No se enciende ninguno: faltan los términos de fal por escrito, una comparativa a ciegas con fotos reales (≈US$17 a precios publicados con los 9 motores, ≈US$9 con los 5 del cuadro) y gasto autorizado. Hoy el gasto autorizado es US$0. Costo efectivo y créditos salen de la tabla de arriba; se recalculan con el informe de precios cuando llegue.
+
+| Nivel | Principal | Respaldo | Costo efectivo / créditos |
+|---|---|---|---|
+| Borrador | TRELLIS 1 | Rodin 2.5 Fast | 0,14 / 8 y 0,24 / 12 |
+| Estándar | TRELLIS.2 | Hunyuan 3.1 Rapid | 0,48 / 24 y 0,57 / 29 |
+| Premium multifoto | Rodin 2.5 | Hunyuan 3.1 Pro | 0,60 / 30 y 1,11 / 56 |
+| Texto / paramétrico | Sloyd (piloto) | — | 0,60 / 30 |
+
+### Selector de modelos (implementado, 2026-11-08)
+
+El estudio tiene un control «Automático» que abre una barra con 8 modelos en 4 niveles y una calidad de textura (512 / 1K / 2K) con su costo en créditos. Créditos a calidad 1K y una foto, por precio publicado (no factura):
+
+| Nivel | Modelo | Créditos (1K, 1 foto) |
+|---|---|---:|
+| Bajo costo | TRELLIS 1 | 8 |
+| Bajo costo | Rodin 2.5 Fast | 12 |
+| Normal | TRELLIS.2 (512: 21 · 1,5K: 27) | 24 |
+| Normal | Sloyd (texto y paramétrico) | 23 |
+| Normal | Hunyuan 3.1 Rapid | 29 |
+| Premium | Rodin 2.5 | 30 |
+| Súper premium | Hunyuan 3.1 Pro (56 con multivista) | 47 |
+| Súper premium | Rodin 2.5 HighPack (US$0,40 + US$0,80) | 78 |
+
+La calidad solo cambia el precio donde el proveedor la cobra distinta (hoy TRELLIS.2). Rodin tiene un único precio: el selector no inventa diferencias. 4K y el control de detalle no existen todavía. Todos los motores salvo Sloyd siguen apagados.
+
+Tripo H3.1 y Meshy 7.1 quedan como opcionales: compiten con sus propios planes y, en Meshy, el precio por crédito es estimado. Con Starter de 200 créditos el rango es de 3 a 25 modelos al mes según el nivel; la web debe decir el rango. Con más de un motor encendido, la facturación por créditos es obligatoria (`billingConfigProblem()`).

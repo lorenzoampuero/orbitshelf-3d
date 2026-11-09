@@ -102,28 +102,29 @@ export function ExampleGallery({ locale, copy, models }: { locale: Locale; copy:
                     onPointerEnter={(ev) => ev.pointerType === "mouse" && hover(e.id)}
                     onPointerLeave={() => hover(null)}
                     data-testid={`example-card-${e.id}`}
-                    className="card-lift group relative block aspect-square w-full overflow-hidden rounded-[24px] border border-line bg-surface text-left"
+                    className="card-lift group flex aspect-square w-full flex-col overflow-hidden rounded-[24px] border border-line bg-surface text-left"
                   >
-                    <Image
-                      src={examplePoster(e.id, mesh)}
-                      alt={e.title[locale]}
-                      width={640}
-                      height={640}
-                      unoptimized
-                      loading={i < 4 ? "eager" : "lazy"}
-                      className={cn("absolute inset-0 h-full w-full object-contain p-4 transition-opacity duration-200", liveReady === e.id && isLive && "opacity-0")}
-                    />
-                    {isLive && (
-                      <span className="pointer-events-none absolute inset-0 p-4">
-                        <ModelViewerBox src={exampleGlb(e.id)} alt="" bare spin wheelZoom={false} heightClass="h-full" loadingLabel="" errorLabel="" testId={`example-live-${e.id}`} onReady={() => setLiveReady(e.id)} />
-                      </span>
-                    )}
-                    <span className="absolute inset-x-3 bottom-3 flex items-end justify-between gap-2">
-                      <span className="min-w-0 rounded-2xl bg-bg/80 px-3 py-1.5">
-                        <span className="block truncate text-sm font-medium">{e.title[locale]}</span>
-                        <span className="block font-mono text-xs text-muted">
-                          {e.triangles.toLocaleString("en-US")} tris · {formatBytes(e.bytes)}
+                    {/* The model gets its own area; the name and numbers sit in a bar under it, never on top of it. */}
+                    <span className="relative min-h-0 flex-1 bg-gradient-to-b from-surface to-bg/60">
+                      <Image
+                        src={examplePoster(e.id, mesh)}
+                        alt={e.title[locale]}
+                        width={640}
+                        height={640}
+                        unoptimized
+                        loading={i < 4 ? "eager" : "lazy"}
+                        className={cn("absolute inset-0 h-full w-full object-contain p-5 transition-opacity duration-200", liveReady === e.id && isLive && "opacity-0")}
+                      />
+                      {isLive && (
+                        <span className="pointer-events-none absolute inset-0 p-5">
+                          <ModelViewerBox src={exampleGlb(e.id)} alt="" bare spin wheelZoom={false} heightClass="h-full" loadingLabel="" errorLabel="" testId={`example-live-${e.id}`} onReady={() => setLiveReady(e.id)} />
                         </span>
+                      )}
+                    </span>
+                    <span className="flex flex-col border-t border-line px-3.5 py-2.5">
+                      <span className="truncate text-sm font-medium">{e.title[locale]}</span>
+                      <span className="truncate font-mono text-xs text-muted">
+                        {e.triangles.toLocaleString("en-US")} tris<span className="hidden sm:inline"> · {formatBytes(e.bytes)}</span>
                       </span>
                     </span>
                   </button>

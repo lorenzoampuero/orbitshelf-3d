@@ -73,9 +73,9 @@ export default async function ConnectionsPage({ params }: Props) {
             {items.map((id) => {
               const s = state[id];
               return (
-                <li key={id} data-testid={`connection-${id}`} data-state={s} className="flex flex-col gap-3 rounded-[24px] border border-line bg-surface p-5">
+                <li key={id} data-testid={`connection-${id}`} data-state={s} className="flex flex-col gap-3 rounded-[24px] border border-line bg-surface p-5 transition-colors hover:border-accent/40">
                   <div className="flex items-start justify-between gap-2">
-                    <BrandTile id={id} />
+                    <BrandTile id={id} connected={s === "connected"} />
                     <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", STATE_CLASS[s])}>{c.states[s]}</span>
                   </div>
                   <div>

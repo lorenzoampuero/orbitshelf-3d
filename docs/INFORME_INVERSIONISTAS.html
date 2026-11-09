@@ -1,0 +1,489 @@
+<title>Informe OrbitShelf 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: documento de una columna (máx. 880px) con portada compacta, índice, secciones con tablas y un gráfico de proyección. */
+  :root {
+    --bg: #f5f6f7;
+    --surface: #ffffff;
+    --fg: #14171c;
+    --muted: #56606c;
+    --line: #d9dee3;
+    --accent: #c93c06;
+    --accent-soft: #fbe9e1;
+    --teal: #0b7f74;
+    --slate: #5c6b7c;
+    --ok: #17703f;
+    --ok-soft: #e1f3e8;
+    --warn: #8a5a00;
+    --warn-soft: #fbefd2;
+    --off: #4b5563;
+    --off-soft: #e6e9ed;
+    --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1013; --surface: #161a1f; --fg: #eceef1; --muted: #a4adb8; --line: #2a3038;
+      --accent: #ff7a3d; --accent-soft: #34201a; --teal: #3cc6b5; --slate: #9aa8b8;
+      --ok: #6fd39a; --ok-soft: #17301f; --warn: #f2c15a; --warn-soft: #35290f; --off: #b4bcc6; --off-soft: #262b32;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1013; --surface: #161a1f; --fg: #eceef1; --muted: #a4adb8; --line: #2a3038;
+    --accent: #ff7a3d; --accent-soft: #34201a; --teal: #3cc6b5; --slate: #9aa8b8;
+    --ok: #6fd39a; --ok-soft: #17301f; --warn: #f2c15a; --warn-soft: #35290f; --off: #b4bcc6; --off-soft: #262b32;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--fg);
+    font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 32px 64px;
+  }
+  main { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+  h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.15; margin: 0; }
+  h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); font-weight: 700; letter-spacing: -0.02em; }
+  h2 { font-size: clamp(1.5rem, 3.4vw, 2rem); font-weight: 700; letter-spacing: -0.01em; }
+  h3 { font-size: 1.15rem; font-weight: 700; }
+  p { margin: 0; max-width: 68ch; }
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .stack-lg { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+  .lede { font-size: 1.15rem; color: var(--fg); }
+  .muted { color: var(--muted); }
+  .small { font-size: 0.88rem; }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  header.cover { display: flex; flex-direction: column; gap: 24px; padding-bottom: 32px; border-bottom: 1px solid var(--line); }
+  .cover-meta { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+  .fact { padding: 16px 18px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 0 -1px -1px 0; min-width: 0; }
+  .fact dt { font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .fact dd { margin: 6px 0 0; font-weight: 600; line-height: 1.35; }
+
+  nav.toc ol { margin: 0; padding: 0; list-style: none; columns: 2 260px; column-gap: 32px; }
+  nav.toc li { break-inside: avoid; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  nav.toc a { color: var(--fg); text-decoration: none; display: flex; gap: 10px; }
+  nav.toc a:hover { color: var(--accent); }
+  nav.toc .n { font-family: var(--font-mono); color: var(--muted); min-width: 1.6em; }
+
+  section { display: flex; flex-direction: column; gap: 20px; scroll-margin-top: 24px; min-width: 0; }
+  .sec-head { display: flex; flex-direction: column; gap: 8px; }
+
+  .callout { background: var(--accent-soft); border-left: 4px solid var(--accent); padding: 16px 18px; border-radius: 0 8px 8px 0; max-width: 100%; }
+  .callout p { max-width: none; }
+  .callout.warn { background: var(--warn-soft); border-left-color: var(--warn); }
+
+  .flow { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; counter-reset: step; }
+  .flow li { counter-increment: step; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .flow li::before { content: counter(step); font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent); font-weight: 500; }
+  .flow strong { font-family: var(--font-display); font-size: 1.02rem; }
+  .flow span { font-size: 0.9rem; color: var(--muted); }
+
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .panel p { max-width: none; }
+  ul.tight { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 6px; }
+  ul.tight li { max-width: 68ch; }
+
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); max-width: 100%; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.93rem; min-width: 560px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); font-weight: 500; background: var(--bg); white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.num, th.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.hl td { background: var(--accent-soft); }
+
+  .badge { display: inline-block; font-family: var(--font-mono); font-size: 0.74rem; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .b-ok { background: var(--ok-soft); color: var(--ok); }
+  .b-warn { background: var(--warn-soft); color: var(--warn); }
+  .b-off { background: var(--off-soft); color: var(--off); }
+
+  figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  .chart-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 8px 4px; overflow-x: auto; }
+  .chart-wrap svg { display: block; width: 100%; min-width: 520px; height: auto; }
+  figcaption { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 0.9rem; }
+  .legend i { display: inline-block; width: 22px; height: 0; border-top: 3px solid; vertical-align: middle; margin-right: 8px; }
+
+  footer { border-top: 1px solid var(--line); padding-top: 24px; display: flex; flex-direction: column; gap: 10px; color: var(--muted); font-size: 0.9rem; }
+  @media (max-width: 520px) { body { padding-block: 20px 48px; } main { gap: 44px; } th, td { padding: 9px 11px; } }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<main>
+  <header class="cover">
+    <div class="cover-meta">
+      <span class="eyebrow">Informe para inversionistas</span>
+      <span class="eyebrow">8 de noviembre de 2026</span>
+      <span class="eyebrow">Borrador confidencial</span>
+    </div>
+    <h1>OrbitShelf 3D</h1>
+    <p class="lede">De una foto a un modelo 3D revisado, aprobado y publicado, para tiendas online, estudios de juegos y diseñadores 3D que no tienen un modelador en el equipo.</p>
+    <dl class="facts">
+      <div class="fact"><dt>Etapa</dt><dd>Producto en construcción. Sin clientes ni ingresos todavía.</dd></div>
+      <div class="fact"><dt>Precio</dt><dd>De US$19 a US$499 al mes, por créditos</dd></div>
+      <div class="fact"><dt>Margen mínimo</dt><dd>60 % con el plan usado al 100 %. Diseñado a unos 70 %</dd></div>
+      <div class="fact"><dt>Meta de lanzamiento</dt><dd>Vender desde diciembre de 2026. Más de 10 clientes en marzo de 2027</dd></div>
+    </dl>
+    <p class="small muted">El nombre OrbitShelf 3D es provisional: no hay marca registrada ni dominio comprado. Todas las proyecciones son supuestos, no datos. La sección 14 lista lo que no está verificado.</p>
+  </header>
+
+  <nav class="toc" aria-label="Contenido">
+    <ol>
+      <li><a href="#resumen"><span class="n">1</span>Resumen</a></li>
+      <li><a href="#problema"><span class="n">2</span>Problema y oportunidad</a></li>
+      <li><a href="#solucion"><span class="n">3</span>La solución</a></li>
+      <li><a href="#estado"><span class="n">4</span>Qué existe hoy</a></li>
+      <li><a href="#funcionamiento"><span class="n">5</span>Cómo funciona por dentro</a></li>
+      <li><a href="#diseno"><span class="n">6</span>Diseño y experiencia</a></li>
+      <li><a href="#mercado"><span class="n">7</span>Mercado y clientes</a></li>
+      <li><a href="#competencia"><span class="n">8</span>Competencia y posición</a></li>
+      <li><a href="#precios"><span class="n">9</span>Precios y economía</a></li>
+      <li><a href="#canales"><span class="n">10</span>Cómo llegar a clientes</a></li>
+      <li><a href="#proyeccion"><span class="n">11</span>Proyección a 12 meses</a></li>
+      <li><a href="#construir"><span class="n">12</span>Hoja de ruta e ideas por construir</a></li>
+      <li><a href="#riesgos"><span class="n">13</span>Riesgos</a></li>
+      <li><a href="#verificar"><span class="n">14</span>Qué no está verificado</a></li>
+      <li><a href="#capital"><span class="n">15</span>Capital y próximos pasos</a></li>
+    </ol>
+  </nav>
+
+  <section id="resumen">
+    <div class="sec-head"><span class="eyebrow">1</span><h2>Resumen</h2></div>
+    <div class="stack">
+      <p class="lede">OrbitShelf 3D es una aplicación web que lleva a un negocio pequeño desde una foto de producto hasta un modelo 3D listo para publicar, con revisión obligatoria y control del gasto.</p>
+      <p>Hoy generar 3D con IA es fácil y barato si solo se quiere un archivo. Lo difícil es elegir el motor adecuado para cada objeto, revisar que el resultado sirva, optimizarlo, publicarlo en una tienda y saber cuánto se gastó. Ese flujo completo es lo que vendemos. No construimos un motor de IA propio: conectamos varios y cobramos por el trabajo terminado.</p>
+      <p>Hay un mercado real: Meshy, uno de los generadores, declara más de US$100 millones de ingresos anuales y 15 millones de usuarios (cifra de la propia empresa). No vamos a competir por precio por modelo con quienes fabrican el motor. Competimos en el flujo para tiendas y estudios pequeños, que es una hipótesis que solo los primeros clientes pueden confirmar.</p>
+    </div>
+    <div class="callout">
+      <p><strong>Lectura honesta del momento.</strong> La aplicación está avanzada en revisión, biblioteca, exportación, API y cobro, pero ningún motor de IA se ha probado con dinero real y el cobro no se ha verificado con un pago real. Vender en diciembre depende de cerrar esas dos cosas, más los permisos de reventa de los motores por escrito.</p>
+    </div>
+  </section>
+
+  <section id="problema">
+    <div class="sec-head"><span class="eyebrow">2</span><h2>Problema y oportunidad</h2></div>
+    <div class="grid2">
+      <div class="panel"><h3>Tiendas online</h3><p>El 3D y la realidad aumentada pueden mejorar la presentación del producto, pero un modelador cuesta más que muchos de los productos. Los generadores sueltos entregan un archivo y dejan al comerciante solo con la revisión y la publicación.</p></div>
+      <div class="panel"><h3>Estudios de juegos pequeños</h3><p>Necesitan decenas de objetos de relleno y no tienen horas para modelarlos. Desconfían de la calidad del 3D generado y necesitan control de polígonos y exportación en varios formatos.</p></div>
+      <div class="panel"><h3>Diseñadores y artistas 3D</h3><p>Quieren una base rápida para terminarla en Blender. Son sensibles al precio y tienen alternativas gratuitas.</p></div>
+      <div class="panel"><h3>Agencias que atienden tiendas</h3><p>Quieren ofrecer 3D como servicio a varios clientes, con lotes y API. Tardan en cerrar, pero cada cuenta vale más.</p></div>
+    </div>
+    <p class="small muted">Sobre el efecto del 3D en ventas: la única prueba controlada que encontramos es la de la marca GANT, con +6,3 % de conversión, publicada por el proveedor de la tecnología. Otras cifras de proveedores no muestran metodología y no se usan en la web ni en este informe.</p>
+  </section>
+
+  <section id="solucion">
+    <div class="sec-head"><span class="eyebrow">3</span><h2>La solución</h2></div>
+    <p>El cliente recorre siempre el mismo camino. Cada paso existe como pantalla o función de la aplicación.</p>
+    <ol class="flow">
+      <li><strong>Subir</strong><span>Una o varias fotos, texto o un GLB que ya tiene. Se valida el archivo real y se quitan los metadatos.</span></li>
+      <li><strong>Cotizar</strong><span>El costo en créditos se muestra antes de confirmar. Sin sorpresas.</span></li>
+      <li><strong>Generar</strong><span>Con el motor que mejor sirve para ese objeto, elegido por el cliente o por un preajuste.</span></li>
+      <li><strong>Revisar</strong><span>Visor 3D, vista de malla, diagnóstico y lista de revisión de cinco puntos.</span></li>
+      <li><strong>Optimizar</strong><span>Versiones con menos polígonos, comparación lado a lado.</span></li>
+      <li><strong>Aprobar</strong><span>Nada se publica ni se comparte hasta que el cliente lo aprueba.</span></li>
+      <li><strong>Publicar</strong><span>Visor embebible, descarga GLB, OBJ y STL, API, y Shopify en pruebas.</span></li>
+      <li><strong>Controlar</strong><span>Historial de trabajos, créditos y costo por motor.</span></li>
+    </ol>
+    <div class="grid2">
+      <div class="panel"><h3>Promesa</h3><p>De una foto a un modelo 3D aprobado y publicado en tu tienda, sin modelador.</p></div>
+      <div class="panel"><h3>Entrada comercial</h3><p>Un primer catálogo asistido: ayudamos a fotografiar, generar y aprobar los 5 a 10 primeros productos. Convierte la duda "¿funcionará con mis productos?" en una prueba concreta. Cuesta tiempo, no dinero.</p></div>
+    </div>
+  </section>
+
+  <section id="estado">
+    <div class="sec-head"><span class="eyebrow">4</span><h2>Qué existe hoy</h2></div>
+    <p>El estado de cada pieza viene del README del repositorio y de las auditorías del proyecto. Se marca como operativo solo lo que corre de verdad. Lo que se probó solo con simuladores se dice así.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Capacidad</th><th>Estado</th><th>Detalle</th></tr></thead>
+      <tbody>
+        <tr><td>Validación de fotos y GLB, almacenamiento privado, lista de revisión</td><td><span class="badge b-ok">Operativo</span></td><td>Valida tipo real, tamaño y píxeles. Privado por espacio de trabajo.</td></tr>
+        <tr><td>Biblioteca, proyectos, etiquetas, favoritos, papelera de 30 días, miniaturas</td><td><span class="badge b-ok">Operativo</span></td><td>Organización del catálogo del cliente.</td></tr>
+        <tr><td>Importar GLB, diagnóstico de malla, vista de malla, versiones optimizadas, exportar OBJ y STL</td><td><span class="badge b-ok">Operativo</span></td><td>Es el tramo que más diferencia al producto de un generador suelto.</td></tr>
+        <tr><td>Visor público y embebible con enlaces revocables y sitios permitidos</td><td><span class="badge b-ok">Operativo</span></td><td>Pensado para la ficha de producto de una tienda.</td></tr>
+        <tr><td>Cotización, libro de créditos, historial de trabajos y costos</td><td><span class="badge b-ok">Operativo</span></td><td>Los costos son precios publicados por los motores, no facturas.</td></tr>
+        <tr><td>API pública con tokens</td><td><span class="badge b-ok">Operativo</span></td><td>Iniciar trabajos por API está apagado por decisión.</td></tr>
+        <tr><td>Generación con motores (Sloyd, Hunyuan3D 3.1, Rodin 2.5, Tripo H3.1, TRELLIS, Meshy 7.1)</td><td><span class="badge b-warn">Solo simulador</span></td><td>Los adaptadores están escritos y probados con servidores falsos. Ninguno se ha llamado con dinero real y todos están desactivados.</td></tr>
+        <tr><td>Cobro con Whop (checkout, aviso firmado de pago, botón de compra)</td><td><span class="badge b-warn">Sin pago real</span></td><td>Preparado y probado con cargas simuladas. Reembolsos y disputas se revierten a mano por ahora.</td></tr>
+        <tr><td>Base de datos Postgres y archivos privados</td><td><span class="badge b-warn">Solo PGlite</span></td><td>Probada en una base local. Falta correrla en un proyecto Supabase propio y nuevo.</td></tr>
+        <tr><td>Inicio de sesión con enlace por correo</td><td><span class="badge b-warn">Sin confirmar</span></td><td>El código está listo. Nunca se confirmó con un correo real.</td></tr>
+        <tr><td>Publicación en Shopify</td><td><span class="badge b-warn">Solo simulador</span></td><td>Pendiente de prueba en una tienda real.</td></tr>
+        <tr><td>Webhooks de salida, servidor MCP, add-on de Blender, importador de Unity, plugin de WooCommerce</td><td><span class="badge b-warn">Parcial</span></td><td>Existen en la carpeta de integraciones. El add-on de Blender nunca se ejecutó dentro de Blender.</td></tr>
+        <tr><td>Retopología, rigging, animación, motor propio</td><td><span class="badge b-off">No existe</span></td><td>No se prometen. Retopología y animación las ofrecen otros generadores.</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small muted">Verificación automática: 302 pruebas unitarias y 18 pruebas de navegador, incluida accesibilidad (axe) a 1280 y 375 px de ancho, además de compilación y análisis de tipos sin errores.</p>
+  </section>
+
+  <section id="funcionamiento">
+    <div class="sec-head"><span class="eyebrow">5</span><h2>Cómo funciona por dentro</h2></div>
+    <p>Una sola aplicación Next.js 16 con React 19 y TypeScript, en inglés y español. No hay motor de IA propio, así que el costo variable es lo que cobra cada motor por trabajo.</p>
+    <div class="grid2">
+      <div class="panel"><h3>Motores</h3><p>Un registro de motores con adaptadores intercambiables. Se activan uno a uno con una variable de entorno, y solo cuando exista confirmación escrita de que su licencia permite uso comercial y reventa. Hunyuan3D 2.1, por ejemplo, excluye la UE, el Reino Unido y Corea del Sur.</p></div>
+      <div class="panel"><h3>Créditos</h3><p>Un crédito representa US$0,02 de costo variable cubierto. Cada trabajo cuesta los créditos de su motor, calculados a partir del precio publicado más un 20 % por reintentos facturados, US$0,07 de conversión y almacenamiento y US$0,05 de margen de seguridad.</p></div>
+      <div class="panel"><h3>Cobro</h3><p>Whop cobra y avisa por un webhook firmado (HMAC-SHA256, tolerancia de 5 minutos). Los créditos se acreditan desde el catálogo de OrbitShelf, nunca desde lo que diga el cuerpo del aviso, y una entrega repetida no suma dos veces.</p></div>
+      <div class="panel"><h3>Datos y seguridad</h3><p>Cada espacio de trabajo está aislado: un usuario no puede ver, descargar ni borrar modelos de otro. Las fotos pierden sus metadatos antes de salir hacia un motor. Hay un esquema SQL con seguridad por filas, probado en PGlite.</p></div>
+      <div class="panel"><h3>Integraciones</h3><p>API pública con tokens revocables, webhooks de trabajo terminado con reintentos, servidor MCP, Shopify, y plugins para Blender, Unity y WooCommerce en distintas etapas de prueba.</p></div>
+      <div class="panel"><h3>Operación</h3><p>Hoy corre en un solo proceso con archivos locales. Para producción se pasa a Postgres y un bucket privado, con arrendamiento de trabajos y límite de solicitudes compartido. Ese tramo está probado solo en local.</p></div>
+    </div>
+  </section>
+
+  <section id="diseno">
+    <div class="sec-head"><span class="eyebrow">6</span><h2>Diseño y experiencia</h2></div>
+    <div class="stack">
+      <p>El diseño es la prioridad de las próximas semanas, y la web pública ya tiene el contenido que un comprador necesita para decidir.</p>
+      <ul class="tight">
+        <li><strong>Sitio público en dos idiomas:</strong> inicio, funciones, soluciones por oficio, cómo funciona, integraciones, precios, ejemplos, recursos y comparación con el modelado manual.</li>
+        <li><strong>Blog:</strong> 6 artículos bilingües sobre fotos a 3D para tiendas, efecto del 3D en conversión, formatos GLB, OBJ y STL, cuántos polígonos hacen falta, cómo elegir un motor y cómo armar el primer catálogo en una semana. No usan cifras sin fuente.</li>
+        <li><strong>Documentos legales:</strong> 13 textos en español e inglés (privacidad, términos, cookies, reembolsos, uso aceptable, propiedad de los resultados, uso de IA, seguridad, encargados de tratamiento, DPA, DMCA, accesibilidad y aviso legal). Son borrador y requieren revisión de un abogado.</li>
+        <li><strong>Secciones de confianza:</strong> solo compromisos que el producto cumple hoy (el cliente aprueba cada modelo, las fotos no entrenan IA, cada espacio está aislado, un trabajo fallido se devuelve). No hay sellos, cantidades de usuarios ni logos de clientes que no existen.</li>
+        <li><strong>Panel del cliente:</strong> resumen, crear, biblioteca, explorar, estudio de revisión, uso, facturación, integraciones y ayuda.</li>
+      </ul>
+      <p><strong>Dirección visual.</strong> La referencia de estructura es Hyper3D: barra superior pequeña y flotante, cajas de distintos tamaños con el modelo saliéndose del borde, antes y después dentro de la tarjeta. La paleta objetivo es negro con rojo sangre. La web actual sigue en violeta, así que el rediseño completo (inicio, resto de páginas públicas, panel) es el trabajo de las próximas semanas. Se copian estructura y proporciones, no textos, imágenes ni código de nadie.</p>
+      <p>El rediseño necesita imágenes 3D propias y sin fondo. Mientras no estén, los espacios usan los tres modelos de muestra del producto, marcados como muestras.</p>
+    </div>
+  </section>
+
+  <section id="mercado">
+    <div class="sec-head"><span class="eyebrow">7</span><h2>Mercado y clientes</h2></div>
+    <div class="scroll"><table>
+      <thead><tr><th>Segmento</th><th>Qué compra</th><th>Pago mensual (hipótesis)</th><th>Dificultad de venta</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td><strong>Tiendas online</strong> con 20 a 500 productos</td><td>Modelos aprobados, visor para la ficha, publicación</td><td class="num">US$49 a 179</td><td>Media</td></tr>
+        <tr><td>Estudios de juegos indie</td><td>Control de polígonos, exportación, API</td><td class="num">US$49 a 199</td><td>Alta</td></tr>
+        <tr><td>Diseñadores 3D y artistas</td><td>Una base para terminar en Blender</td><td class="num">US$19 a 49</td><td>Alta</td></tr>
+        <tr><td>Agencias que atienden tiendas</td><td>Cuenta de agencia, lotes, API</td><td class="num">US$199 o más</td><td>Media, cierre lento</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>Dónde empezar:</strong> tiendas online. Tienen un resultado medible (conversión, devoluciones), presupuesto de marketing y se pueden contactar una por una. Estudios y diseñadores llegan solos con el contenido, pero convierten menos al principio.</p>
+    <p class="small muted">El tamaño total del mercado no está calculado con fuente confiable. Lo único citable es la cifra declarada de Meshy. Hasta tener datos propios, no se afirma un tamaño de mercado.</p>
+  </section>
+
+  <section id="competencia">
+    <div class="sec-head"><span class="eyebrow">8</span><h2>Competencia y posición</h2></div>
+    <div class="scroll"><table>
+      <thead><tr><th>Competidor</th><th>Entrada (aprox.)</th><th>Fortaleza</th><th>Frente a nosotros</th></tr></thead>
+      <tbody>
+        <tr><td>Meshy</td><td class="num">~US$20</td><td>Escala, marca, plugins</td><td>Orientado a creadores individuales</td></tr>
+        <tr><td>Tripo</td><td class="num">~US$20</td><td>Calidad, velocidad, retopología</td><td>Generador, no flujo de tienda</td></tr>
+        <tr><td>Hyper3D / Rodin</td><td class="num">US$12 a 120</td><td>Motor propio, precio por modelo muy bajo</td><td>Es motor, no flujo de publicación</td></tr>
+        <tr><td>Luma</td><td class="num">US$30 a 300</td><td>Captura y generación</td><td>Más caro, otro enfoque</td></tr>
+        <tr><td>Kaedim</td><td class="num">US$50 a 1.200</td><td>Revisión humana</td><td>Caro y lento para tiendas chicas</td></tr>
+        <tr><td>Sloyd</td><td class="num">~US$15</td><td>3D paramétrico para juegos</td><td>Otro tipo de resultado</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small muted">Precios de páginas públicas revisadas a mano, pueden cambiar sin aviso. Confianza media.</p>
+    <div class="callout">
+      <p><strong>No podemos ganar por precio por modelo.</strong> Hyper3D declara unos US$0,50 por modelo en su plan de US$30. Con un piso de margen de 60 %, un modelo con buen motor nos sale entre US$0,74 y US$1,88 en el plan Creator. Esas cantidades las estima cada empresa y pueden no ser comparables.</p>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h3>Dónde somos distintos</h3><ul class="tight"><li>Varios motores en un solo lugar, con el costo a la vista antes de confirmar.</li><li>Revisión y aprobación obligatorias antes de publicar.</li><li>Optimización, versiones y comparación en la misma herramienta.</li><li>Visor embebible, exportación y API para tiendas.</li></ul></div>
+      <div class="panel"><h3>Dónde estamos atrás</h3><ul class="tight"><li>Sin retopología, rigging ni animación.</li><li>Sin plugin de Blender o Unity probado.</li><li>Sin marca, comunidad ni escala.</li><li>Sin resultados reales publicados todavía.</li></ul></div>
+    </div>
+    <p><strong>Visión a tres años:</strong> ser la capa de trabajo del 3D generado para quien no es modelador. Cualquier motor puede conectarse. El valor está en revisar, optimizar, publicar y controlar el gasto. Es una dirección, no una promesa de producto.</p>
+  </section>
+
+  <section id="precios">
+    <div class="sec-head"><span class="eyebrow">9</span><h2>Precios y economía</h2></div>
+    <p>Cuatro planes mensuales por créditos. Starter es fijo. En los otros tres un selector sube créditos y precio juntos. Los créditos del plan no pasan al mes siguiente. Hay además tres recargas puntuales: US$15 por 150 créditos, US$40 por 450 y US$100 por 1.150.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Plan</th><th class="num">Precio base</th><th class="num">Créditos</th><th class="num">Modelos con Rodin 2.5 Fast</th><th class="num">Modelos con Rodin 2.5</th><th class="num">Margen al 100 % de uso</th></tr></thead>
+      <tbody>
+        <tr><td>Starter</td><td class="num">US$19</td><td class="num">200</td><td class="num">16</td><td class="num">6</td><td class="num">71,7 %</td></tr>
+        <tr class="hl"><td>Creator <span class="muted small">(hasta US$89 y 1.000)</span></td><td class="num">US$49</td><td class="num">550</td><td class="num">45</td><td class="num">18</td><td class="num">70,6 %</td></tr>
+        <tr class="hl"><td>Commerce <span class="muted small">(hasta US$179 y 2.050)</span></td><td class="num">US$99</td><td class="num">1.100</td><td class="num">91</td><td class="num">36</td><td class="num">71,1 %</td></tr>
+        <tr><td>Studio <span class="muted small">(hasta US$499 y 5.800)</span></td><td class="num">US$199</td><td class="num">2.300</td><td class="num">191</td><td class="num">76</td><td class="num">70,3 %</td></tr>
+      </tbody>
+    </table></div>
+    <div class="grid2">
+      <div class="panel"><h3>Cómo se cuida el margen</h3><ul class="tight"><li>Piso de 60 % de margen de contribución aunque el cliente gaste todos sus créditos y use el motor más caro.</li><li>Los planes se dimensionan a unos 70 %, para que el piso aguante un alza de 10 % en el costo del motor.</li><li>Una prueba automática falla si algún plan baja del piso.</li><li>Si el cliente usa en promedio 33 % a 37 % de sus créditos, el margen sube a 85 %. Con 80 % de uso, a 75 %.</li></ul></div>
+      <div class="panel"><h3>Reglas que se mantienen</h3><ul class="tight"><li>Sin descuentos falsos ni etiquetas de ahorro que no sean ciertas.</li><li>Sin plan anual por ahora: un 20 % de descuento rompe el piso.</li><li>Sin generación gratis antes de confirmar: cada intento le cuesta dinero a la empresa.</li><li>Un trabajo que falla por error del proveedor devuelve sus créditos solo.</li></ul></div>
+    </div>
+    <div class="callout warn">
+      <p><strong>Estos márgenes son estimaciones.</strong> Parten de precios publicados de los motores más supuestos sin medir (reintentos, conversión, comisión de pago de 6,5 % más US$0,30). Hay que repetir el cálculo con facturas reales después de la primera ronda de pruebas. El piso aguanta comisiones de hasta 10,7 % más US$0,40. Whop todavía no confirma sus tarifas.</p>
+    </div>
+    <p>Ejemplo de la economía de un cliente realista: deja unos US$37 de ganancia al mes después de créditos, comisión y costo de atención, y se queda unos 14 meses, es decir, unos US$524 de valor. No incluye el tiempo del fundador, impuestos, abogado ni contador.</p>
+  </section>
+
+  <section id="canales">
+    <div class="sec-head"><span class="eyebrow">10</span><h2>Cómo llegar a clientes</h2></div>
+    <p>La publicidad pagada no es el primer paso. Con 3 % de visitas que se registran y 8 % de registros que pagan, un cliente pagado cuesta unos US$500 con un costo por clic de US$1,2, y deja unos US$524. Apenas empata. Esas conversiones son de benchmarks de terceros, no medidas por nosotros.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Canal</th><th>Qué hacer</th><th>Cuándo</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td><strong>Contacto directo + primer catálogo asistido</strong></td><td>15 a 20 contactos por semana a tiendas, con una prueba concreta y garantía de devolución de créditos si no se aprueba el modelo</td><td>Ya</td></tr>
+        <tr><td>Socios (agencias de Shopify, freelancers de 3D)</td><td>Comisión o créditos de regalo. Un socio con 10 clientes vale más que 10 anuncios</td><td>Desde el mes 2</td></tr>
+        <tr><td>TikTok, Reels y Shorts</td><td>Antes y después, un modelo girando, el proceso. Constancia, no apostar a un video viral</td><td>Ya, bajo costo</td></tr>
+        <tr><td>Contenido y SEO (blog)</td><td>Problemas de tiendas y estudios. Rinde desde el mes 3 a 4</td><td>Ya, resultado lento</td></tr>
+        <tr><td>Google Ads</td><td>US$300 al mes en palabras de intención exacta, solo con cifras de conversión medidas</td><td>Desde el mes 3</td></tr>
+        <tr><td>Meta Ads</td><td>Solo retargeting, después de tener cifras</td><td>Mes 4 o después</td></tr>
+        <tr><td>ChatGPT Ads</td><td>Experimento chico. Sus precios provienen solo de blogs de agencias, sin fuente oficial leída</td><td>Tarde</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>Medir desde el primer día:</strong> visitas, registros, primer modelo, primer pago. Sin eso no se sabe cuándo gastar en anuncios.</p>
+  </section>
+
+  <section id="proyeccion">
+    <div class="sec-head"><span class="eyebrow">11</span><h2>Proyección a 12 meses</h2></div>
+    <div class="callout warn"><p><strong>Son supuestos, no datos.</strong> No hay clientes, tráfico ni conversión medida. La proyección sirve para ver qué tendría que cumplirse para llegar a cada cifra. El mes 1 es diciembre de 2026 y marzo de 2027 es el mes 4. Se regenera con un script del repositorio.</p></div>
+    <figure>
+      <div class="legend" aria-hidden="true">
+        <span><i style="border-color: var(--teal)"></i>Optimista</span>
+        <span><i style="border-color: var(--accent)"></i>Realista</span>
+        <span><i style="border-color: var(--slate); border-top-style: dashed"></i>Pesimista</span>
+      </div>
+      <div class="chart-wrap">
+        <svg viewBox="0 0 680 330" role="img" aria-labelledby="chart-t chart-d" xmlns="http://www.w3.org/2000/svg">
+          <title id="chart-t">Clientes de pago activos por mes según escenario</title>
+          <desc id="chart-d">Mes 12: optimista 259 clientes, realista 88, pesimista 40. El escenario realista llega a 10 clientes en el mes 3. El pesimista tiene 8 en el mes 4 y pasa de 10 después.</desc>
+          <g stroke="var(--line)" stroke-width="1" fill="none">
+            <line x1="50" y1="280" x2="590" y2="280"/>
+            <line x1="50" y1="230" x2="590" y2="230"/>
+            <line x1="50" y1="180" x2="590" y2="180"/>
+            <line x1="50" y1="130" x2="590" y2="130"/>
+            <line x1="50" y1="80" x2="590" y2="80"/>
+            <line x1="50" y1="30" x2="590" y2="30"/>
+          </g>
+          <g fill="var(--muted)" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="end">
+            <text x="42" y="284">0</text><text x="42" y="234">50</text><text x="42" y="184">100</text><text x="42" y="134">150</text><text x="42" y="84">200</text><text x="42" y="34">250</text>
+          </g>
+          <g fill="var(--muted)" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="middle">
+            <text x="50" y="302">mes 3</text><text x="110" y="302">mes 4</text><text x="230" y="302">mes 6</text><text x="350" y="302">mes 8</text><text x="470" y="302">mes 10</text><text x="590" y="302">mes 12</text>
+            <text x="50" y="318">feb</text><text x="110" y="318">mar</text><text x="230" y="318">may</text><text x="350" y="318">jul</text><text x="470" y="318">sep</text><text x="590" y="318">nov 2027</text>
+          </g>
+          <line x1="50" y1="270" x2="590" y2="270" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 4"/>
+          <text x="594" y="266" fill="var(--muted)" font-family="IBM Plex Mono, monospace" font-size="10">meta: 10</text>
+          <polyline fill="none" stroke="var(--slate)" stroke-width="2.5" stroke-dasharray="6 4" points="50,274 110,272 230,265 350,257 470,249 590,240"/>
+          <polyline fill="none" stroke="var(--accent)" stroke-width="3" points="50,270 110,264 230,249 350,232 470,213 590,192"/>
+          <polyline fill="none" stroke="var(--teal)" stroke-width="3" points="50,251 110,232 230,189 350,139 470,82 590,21"/>
+          <g>
+            <circle cx="590" cy="240" r="4.5" fill="var(--slate)"/><circle cx="590" cy="192" r="4.5" fill="var(--accent)"/><circle cx="590" cy="21" r="4.5" fill="var(--teal)"/>
+            <circle cx="110" cy="272" r="3.5" fill="var(--slate)"/><circle cx="110" cy="264" r="3.5" fill="var(--accent)"/><circle cx="110" cy="232" r="3.5" fill="var(--teal)"/>
+          </g>
+          <g font-family="IBM Plex Mono, monospace" font-size="12" font-weight="500">
+            <text x="600" y="25" fill="var(--teal)">259</text>
+            <text x="600" y="196" fill="var(--accent)">88</text>
+            <text x="600" y="244" fill="var(--slate)">40</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>Clientes de pago activos, ya descontado el abandono. En marzo (mes 4): pesimista 8, realista 16, optimista 48.</figcaption>
+    </figure>
+    <div class="scroll"><table>
+      <thead><tr><th>Escenario</th><th class="num">Mes 3</th><th class="num">Mes 4</th><th class="num">Mes 6</th><th class="num">Mes 8</th><th class="num">Mes 10</th><th class="num">Mes 12</th></tr></thead>
+      <tbody>
+        <tr><td colspan="7" class="muted small"><strong>Clientes de pago activos</strong></td></tr>
+        <tr><td>Pesimista</td><td class="num">6</td><td class="num">8</td><td class="num">15</td><td class="num">23</td><td class="num">31</td><td class="num">40</td></tr>
+        <tr class="hl"><td>Realista</td><td class="num">10</td><td class="num">16</td><td class="num">31</td><td class="num">48</td><td class="num">67</td><td class="num">88</td></tr>
+        <tr><td>Optimista</td><td class="num">29</td><td class="num">48</td><td class="num">91</td><td class="num">141</td><td class="num">198</td><td class="num">259</td></tr>
+        <tr><td colspan="7" class="muted small"><strong>Ingreso mensual recurrente (US$)</strong></td></tr>
+        <tr><td>Pesimista</td><td class="num">205</td><td class="num">306</td><td class="num">550</td><td class="num">838</td><td class="num">1.154</td><td class="num">1.463</td></tr>
+        <tr class="hl"><td>Realista</td><td class="num">477</td><td class="num">747</td><td class="num">1.396</td><td class="num">2.178</td><td class="num">3.062</td><td class="num">4.002</td></tr>
+        <tr><td>Optimista</td><td class="num">1.571</td><td class="num">2.593</td><td class="num">4.953</td><td class="num">7.700</td><td class="num">10.795</td><td class="num">14.119</td></tr>
+        <tr><td colspan="7" class="muted small"><strong>Ganancia del mes, antes del sueldo del fundador (US$)</strong></td></tr>
+        <tr><td>Pesimista</td><td class="num">-358</td><td class="num">-296</td><td class="num">-141</td><td class="num">49</td><td class="num">268</td><td class="num">491</td></tr>
+        <tr class="hl"><td>Realista</td><td class="num">-379</td><td class="num">-194</td><td class="num">266</td><td class="num">833</td><td class="num">1.487</td><td class="num">2.192</td></tr>
+        <tr><td>Optimista</td><td class="num">-605</td><td class="num">163</td><td class="num">1.961</td><td class="num">4.077</td><td class="num">6.480</td><td class="num">9.094</td></tr>
+      </tbody>
+    </table></div>
+    <div class="scroll"><table>
+      <thead><tr><th>Supuesto</th><th class="num">Pesimista</th><th class="num">Realista</th><th class="num">Optimista</th></tr></thead>
+      <tbody>
+        <tr><td>Abandono mensual</td><td class="num">10 %</td><td class="num">7 %</td><td class="num">5 %</td></tr>
+        <tr><td>Uso de créditos</td><td class="num">50 %</td><td class="num">40 %</td><td class="num">35 %</td></tr>
+        <tr><td>Publicidad por mes (desde el mes 3)</td><td class="num">US$300</td><td class="num">US$500</td><td class="num">US$1.500</td></tr>
+        <tr><td>Costo por clic</td><td class="num">US$2,0</td><td class="num">US$1,2</td><td class="num">US$0,8</td></tr>
+        <tr><td>Visita a registro / registro a pago</td><td class="num">2 % / 5 %</td><td class="num">3 % / 8 %</td><td class="num">4 % / 10 %</td></tr>
+        <tr><td>Costo por cliente pagado</td><td class="num">US$2.000</td><td class="num">US$500</td><td class="num">US$200</td></tr>
+        <tr><td>Valor de un cliente / costo de adquirirlo con anuncios</td><td class="num">0,1×</td><td class="num">1,0×</td><td class="num">4,5×</td></tr>
+        <tr><td>Ganancia acumulada al mes 12</td><td class="num">-US$37</td><td class="num">US$7.536</td><td class="num">US$38.301</td></tr>
+      </tbody>
+    </table></div>
+    <div class="stack">
+      <p><strong>Lectura.</strong> La meta de más de 10 clientes en marzo se cumple en el escenario realista (16) y no en el pesimista (8). Casi todos los clientes de los primeros meses llegan por contacto directo y redes, porque el contenido recién rinde desde el mes 3 y los anuncios se prueban después. La publicidad solo se justifica en el escenario optimista, donde cada cliente vale 4,5 veces lo que cuesta.</p>
+      <p><strong>Lo que más mueve las cifras,</strong> en este orden: la conversión de la web a pago, el abandono y subir la mezcla hacia Creator y Commerce. Un punto menos de abandono mensual agrega más clientes en el año que duplicar el presupuesto de anuncios.</p>
+      <p class="small muted">Costos incluidos: US$150 fijos al mes, US$1,5 por cliente, US$60 únicos de pruebas antes de vender. No incluyen sueldo, impuestos, abogado, contador, reembolsos ni disputas.</p>
+    </div>
+  </section>
+
+  <section id="construir">
+    <div class="sec-head"><span class="eyebrow">12</span><h2>Hoja de ruta e ideas por construir</h2></div>
+    <p>El orden es el de las fechas, porque cada etapa depende de la anterior.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Etapa</th><th>Qué se hace</th><th>Condición para cerrarla</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td><strong>Hasta el 5 de diciembre</strong><br><span class="muted small">Producto listo para vender</span></td><td>Rediseño de la web a negro y rojo, empezando por el inicio. Datos legales del operador. Permisos de reventa de los motores por escrito. Prueba de pago real en Whop. Proyecto Supabase propio y nuevo. Primer motor activo con presupuesto aprobado y modelos reales para la web.</td><td>Un cliente puede registrarse, pagar, generar un modelo real, aprobarlo y descargarlo</td></tr>
+        <tr><td><strong>Diciembre a febrero</strong><br><span class="muted small">Primeros clientes</span></td><td>Lanzamiento suave a los contactos. Primer catálogo asistido para 5 a 10 productos por tienda. Videos de proceso. Medición de visitas, registros y pagos. Corregir costos con facturas reales.</td><td>10 clientes de pago y cifras propias de conversión</td></tr>
+        <tr><td><strong>Marzo a mayo</strong><br><span class="muted small">Ajuste y primer canal pagado</span></td><td>Shopify probado en una tienda real. Plugin de Blender y de Unity probados en el programa. Google Ads con US$300 al mes si las cifras lo justifican. Acuerdos con 2 o 3 agencias de Shopify.</td><td>Costo por cliente pagado menor que un tercio de su valor</td></tr>
+        <tr><td><strong>Junio a noviembre</strong><br><span class="muted small">Escala</span></td><td>Reembolsos y disputas automáticos. Historial de pagos para el cliente. Cuentas de agencia. Más motores según calidad medida.</td><td>Más de 50 clientes y abandono mensual bajo 7 %</td></tr>
+      </tbody>
+    </table></div>
+    <div class="grid2">
+      <div class="panel"><h3>Ideas por construir, con evidencia</h3><ul class="tight"><li>Plugin de Blender y de Unity ejecutados de verdad: los estudios lo piden.</li><li>Publicación en Shopify verificada con una tienda real.</li><li>Reembolsos y disputas que restan créditos solos, cuando se conozca el cuerpo real de Whop.</li><li>Historial de pagos para el cliente y tabla de eventos de pago para conciliar.</li><li>Marcado de archivos generados por IA, que exige el artículo 50 del Reglamento de IA de la UE si se vende allí.</li><li>Cuentas de agencia con lotes de productos.</li></ul></div>
+      <div class="panel"><h3>Ideas por validar antes de construir</h3><ul class="tight"><li>Retopología y animación, vía motores que ya las ofrecen, si los estudios las piden de verdad.</li><li>Un servicio de catálogo hecho por nosotros para tiendas que no quieren operar la herramienta.</li><li>Un preajuste por tipo de objeto (calzado, bolsos, muebles) basado en pruebas medidas, no en precio.</li><li>Una vitrina pública de resultados reales con permiso de cada cliente.</li><li>Recargas por volumen para agencias.</li></ul></div>
+    </div>
+    <p class="small muted">El rediseño ocupa el primer lugar por decisión del dueño: terminar los diseños y después las funcionalidades. El calendario de funciones y cobro depende de terceros (motores, Whop, Supabase) y es lo primero que puede atrasarse.</p>
+  </section>
+
+  <section id="riesgos">
+    <div class="sec-head"><span class="eyebrow">13</span><h2>Riesgos</h2></div>
+    <div class="scroll"><table>
+      <thead><tr><th>Riesgo</th><th>Efecto</th><th>Qué hacer</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td><strong>Permisos de reventa de los motores sin confirmar por escrito.</strong> Los términos de fal prohíben revender u operar como intermediario sin autorización.</td><td>No se puede vender de forma legal</td><td>Pedir los permisos por escrito ya y tener un motor alternativo</td></tr>
+        <tr><td>Calidad desigual del 3D generado, sobre todo en ropa, metal pulido y piezas finas</td><td>Reembolsos y mala fama</td><td>Mostrar resultados reales con sus límites, guía "qué esperar según tu producto", aprobación obligatoria</td></tr>
+        <tr><td>Los dueños de motor bajan precios</td><td>Nuestro precio por modelo queda caro</td><td>Vender flujo y servicio, no créditos</td></tr>
+        <tr><td>Cobro de Whop sin verificar con un pago real, y retiros a Chile sin confirmar</td><td>No se cobra en diciembre</td><td>Prueba de pago real antes del lanzamiento</td></tr>
+        <tr><td>Costos de motor sin facturas reales</td><td>El margen real puede diferir</td><td>Registrar el costo desde el primer render y repetir el cálculo</td></tr>
+        <tr><td>Dependencia del tiempo del fundador</td><td>El contacto directo se frena</td><td>Calendario fijo semanal y plantillas</td></tr>
+        <tr><td>Ley de datos de Chile (Ley 21.719) y reglas de IA de la UE</td><td>Multas o bloqueos</td><td>Revisión de un abogado. Los textos legales son borrador</td></tr>
+        <tr><td>Marca provisional sin registro</td><td>Cambio de nombre tardío</td><td>Verificar disponibilidad antes de gastar en marca</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="verificar">
+    <div class="sec-head"><span class="eyebrow">14</span><h2>Qué no está verificado</h2></div>
+    <p>Un informe para inversionistas debe decir con claridad lo que todavía es una hipótesis.</p>
+    <ul class="tight">
+      <li><strong>Ningún cliente, ingreso ni visita.</strong> Todas las cifras de proyección salen de supuestos.</li>
+      <li><strong>Ningún motor probado con dinero real.</strong> Calidad, costo por modelo y margen real son desconocidos. El presupuesto autorizado para motores es US$0 hasta que el dueño fije una cifra. Se propuso una primera ronda de US$20, sin respuesta aún.</li>
+      <li><strong>Cobro no verificado.</strong> Faltan el cuerpo real del aviso de Whop, su comisión y los retiros a Chile.</li>
+      <li><strong>Cifras de mercado de terceros.</strong> La mayoría viene de blogs, agregadores y datos que declaran las propias empresas. Tienen confianza baja a media y el estudio las clasifica una por una.</li>
+      <li><strong>Textos legales sin revisión de abogado.</strong> Y los datos del operador (razón social, domicilio, correo de soporte) todavía no están configurados.</li>
+      <li><strong>Infraestructura de producción solo probada en local.</strong> Postgres y almacenamiento privado funcionan en una base local, no en un proyecto real.</li>
+      <li><strong>Inicio de sesión por correo</strong> sin confirmar con un correo real.</li>
+      <li><strong>Equipo.</strong> Esta versión no describe al equipo ni su experiencia. Debe completarla el fundador.</li>
+    </ul>
+  </section>
+
+  <section id="capital">
+    <div class="sec-head"><span class="eyebrow">15</span><h2>Capital y próximos pasos</h2></div>
+    <div class="stack">
+      <p>El dueño todavía no ha decidido si busca inversión, ni cuánto, ni con qué valoración. Este informe no propone una cifra. Lo que sí se desprende de los números:</p>
+      <ul class="tight">
+        <li><strong>El negocio necesita poco capital para arrancar.</strong> Los costos de partida son unos US$60 de pruebas, US$150 fijos al mes y US$1,5 por cliente. En el escenario realista la ganancia acumulada al mes 12 es positiva, y el pesimista queda casi en equilibrio (-US$37).</li>
+        <li><strong>La restricción real es el tiempo y los permisos,</strong> no el dinero: licencias de motores, prueba de pago y revisión legal.</li>
+        <li><strong>El capital serviría para acelerar,</strong> no para sobrevivir: publicidad pagada una vez que la conversión esté medida, una primera persona de ventas o de contenido, y un abogado y un contador desde el comienzo. Cada uno de esos gastos debe estar atado a una cifra medida antes de comprometerlo.</li>
+      </ul>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h3>Decisiones que faltan del dueño</h3><ul class="tight"><li>Presupuesto de pruebas de motores (propuesta: US$20 en la primera ronda).</li><li>Aprobar las promesas de reembolso y vencimiento de créditos de los textos legales.</li><li>Datos legales del operador y dominio.</li><li>Nueva cuenta de Supabase.</li><li>Si busca inversión, cuánto y para qué.</li></ul></div>
+      <div class="panel"><h3>Lo que haría esta semana</h3><ul class="tight"><li>Rediseñar el inicio y aprobar el rumbo visual.</li><li>Pedir por escrito los permisos de reventa a los motores.</li><li>Lista de 50 tiendas objetivo y primeros 15 contactos.</li><li>Prueba de pago real con la recarga más barata.</li></ul></div>
+    </div>
+  </section>
+
+  <footer>
+    <p><strong>Fuentes.</strong> Estudio de mercado, proyección, simulación de planes, auditoría del estado actual, guía de Whop y decisiones legales del repositorio del proyecto (carpeta docs), con fecha 8 de noviembre de 2026. Cifras de competidores y canales: páginas públicas revisadas a mano, blogs de agencias y agregadores, con su nivel de confianza en el estudio de mercado. La proyección se regenera con el script del repositorio y sus supuestos se pueden cambiar.</p>
+    <p>Este documento no es asesoría legal ni financiera, ni una oferta de inversión.</p>
+  </footer>
+</main>

@@ -115,16 +115,24 @@
   left: -40%;
   right: -40%;
   bottom: 0;
-  height: 62%;
+  height: 70%;
   pointer-events: none;
   background-image:
-    linear-gradient(rgb(183 156 255 / 0.2) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(183 156 255 / 0.2) 1px, transparent 1px);
-  background-size: 64px 64px;
+    linear-gradient(rgb(183 156 255 / 0.42) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(183 156 255 / 0.42) 1px, transparent 1px);
+  background-size: 72px 72px;
   transform: perspective(560px) rotateX(64deg);
   transform-origin: bottom;
-  mask-image: linear-gradient(to top, transparent, #000 22%, transparent 82%), linear-gradient(90deg, transparent 12%, #000 34%, #000 66%, transparent 88%);
+  mask-image: linear-gradient(to top, #000 30%, transparent 92%), linear-gradient(90deg, transparent 6%, #000 30%, #000 70%, transparent 94%);
   mask-composite: intersect;
+}
+/* A faint horizon where the floor meets the dark, so the grid reads as a surface and not as wallpaper. */
+.studio-floor::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 100% 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(183 156 255 / 0.5), transparent);
 }
 
 /* ---------- Floating pill navbar ---------- */

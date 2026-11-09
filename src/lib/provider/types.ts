@@ -1,6 +1,6 @@
 import type { FalConfig, MeshyConfig, ProviderConfig } from "@/lib/env";
 import type { NormalizedImage } from "@/lib/image";
-import type { EngineLifecycle, ImageView, InputKind, PriceEvidence, TextureResolution } from "@/lib/types";
+import type { EngineLifecycle, EngineTier, ImageView, InputKind, PriceEvidence, TextureResolution } from "@/lib/types";
 
 export type ProviderId = "sloyd" | "fal" | "meshy";
 
@@ -43,6 +43,9 @@ export type EngineDefinition = {
   id: string;
   provider: ProviderId;
   label: string;
+  tier: EngineTier;
+  /** Left out of the model picker when false. Kept for engines we do not want to lead with (a rival's own consumer product, an estimated price). */
+  listed?: boolean;
   /** `disabled` engines are never offered. A disabled engine can only run after a deliberate pilot through ENGINES_ENABLED. */
   lifecycle: EngineLifecycle;
   modes: InputKind[];

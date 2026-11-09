@@ -23,11 +23,11 @@ export function FirstModelCard({ locale, progress, providerReady, balance }: { l
   const nothingYet = progress.steps.create !== "done";
 
   return (
-    <section aria-labelledby="first-model-h" className="space-y-4 rounded-[24px] border border-accent/30 bg-surface p-4 sm:p-5" data-testid="first-model-card">
+    <section aria-labelledby="first-model-h" className="space-y-3 rounded-[20px] border border-line bg-surface/70 p-3 sm:p-4" data-testid="first-model-card">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 id="first-model-h" className="font-display text-lg font-semibold">{c.title}</h2>
+            <h2 id="first-model-h" className="font-display text-base font-semibold">{c.title}</h2>
             <span className="rounded-full border border-line px-2.5 py-0.5 text-xs font-medium text-muted" data-testid="first-model-progress">
               {c.progress(progress.done, progress.total)}
             </span>

@@ -50,6 +50,7 @@ const ENGINES: EngineDefinition[] = [
     id: "sloyd",
     provider: "sloyd",
     label: "Sloyd",
+    tier: "normal",
     lifecycle: "pilot",
     modes: ["image", "multi-image", "text"],
     maxPhotos: 4,
@@ -65,6 +66,7 @@ const ENGINES: EngineDefinition[] = [
     id: "fal-hunyuan-3.1-pro",
     provider: "fal",
     label: "Hunyuan3D 3.1 Pro",
+    tier: "super",
     lifecycle: "disabled",
     modes: ["image", "multi-image"],
     maxPhotos: 4,
@@ -104,6 +106,7 @@ const ENGINES: EngineDefinition[] = [
     id: "fal-hunyuan-3.1-rapid",
     provider: "fal",
     label: "Hunyuan3D 3.1 Rapid",
+    tier: "normal",
     lifecycle: "disabled",
     modes: ["image"],
     maxPhotos: 1,
@@ -132,6 +135,7 @@ const ENGINES: EngineDefinition[] = [
     id: "fal-rodin-2.5",
     provider: "fal",
     label: "Rodin 2.5",
+    tier: "premium",
     lifecycle: "disabled",
     modes: ["image", "multi-image"],
     maxPhotos: 4, // the endpoint takes 5 unlabelled images; OrbitShelf collects 4 views
@@ -156,9 +160,43 @@ const ENGINES: EngineDefinition[] = [
     },
   },
   {
+    id: "fal-rodin-2.5-highpack",
+    provider: "fal",
+    label: "Rodin 2.5 HighPack",
+    tier: "super",
+    lifecycle: "disabled",
+    modes: ["image", "multi-image"],
+    maxPhotos: 4,
+    views: ["front", "left", "back", "right"],
+    geometryOnly: true,
+    exports: ["glb", "usdz", "fbx", "obj", "stl"],
+    priceSource: "https://fal.ai/models/fal-ai/hyper3d/rodin/v2.5",
+    priceVerifiedAt: "2026-11-08",
+    priceEvidence: "published",
+    // US$0.40 base plus US$0.80 for the HighPack add-on, as listed on the same fal page. What HighPack changes in the file (faces, texture size) is not on that page: check it in the paid test before saying it.
+    price: () => [
+      { code: "generation", usd: 0.4 },
+      { code: "detail", usd: 0.8 },
+    ],
+    fal: {
+      endpoint: "fal-ai/hyper3d/rodin/v2.5",
+      buildInput: (req) => {
+        const p = photosOf(req);
+        return {
+          image_urls: IMAGE_VIEWS.flatMap((v) => (p[v] ? [dataUri(p[v]!)] : [])),
+          geometry_file_format: "glb",
+          material: req.textureResolution === "none" ? "None" : "PBR",
+          addons: ["HighPack"],
+        };
+      },
+      glbUrl: (o) => fileUrl((o as { model_mesh?: unknown }).model_mesh),
+    },
+  },
+  {
     id: "fal-rodin-2.5-fast",
     provider: "fal",
     label: "Rodin 2.5 Fast",
+    tier: "low",
     lifecycle: "disabled",
     modes: ["image", "multi-image"],
     maxPhotos: 4,
@@ -186,6 +224,8 @@ const ENGINES: EngineDefinition[] = [
     id: "fal-tripo-h3.1",
     provider: "fal",
     label: "Tripo H3.1",
+    tier: "normal",
+    listed: false, // Tripo sells this model to its own customers, and its help pages bar building a competing generation service on its output
     lifecycle: "disabled",
     modes: ["image"],
     maxPhotos: 1,
@@ -218,6 +258,7 @@ const ENGINES: EngineDefinition[] = [
     id: "fal-trellis-2",
     provider: "fal",
     label: "TRELLIS.2",
+    tier: "normal",
     lifecycle: "disabled",
     modes: ["image"],
     maxPhotos: 1,
@@ -227,12 +268,14 @@ const ENGINES: EngineDefinition[] = [
     priceSource: "https://fal.ai/models/fal-ai/trellis-2",
     priceVerifiedAt: "2026-11-05",
     priceEvidence: "published",
-    price: () => [{ code: "generation", usd: 0.3 }],
+    // fal prices this model by its resolution tier (512 / 1024 / 1536), which is what the quality choice maps to here.
+    price: (q) => [{ code: "generation", usd: q.texture === "512" ? 0.25 : q.texture === "2k" ? 0.35 : 0.3 }],
     fal: {
       endpoint: "fal-ai/trellis-2",
       buildInput: (req) => {
         const p = photosOf(req);
-        return { image_url: p.front && dataUri(p.front), resolution: "1024", decimation_target: FACE_TARGET };
+        const resolution = req.textureResolution === "512" ? "512" : req.textureResolution === "2k" ? "1536" : "1024";
+        return { image_url: p.front && dataUri(p.front), resolution, decimation_target: FACE_TARGET };
       },
       glbUrl: (o) => fileUrl((o as { model_glb?: unknown }).model_glb),
     },
@@ -241,6 +284,7 @@ const ENGINES: EngineDefinition[] = [
     id: "fal-trellis-1",
     provider: "fal",
     label: "TRELLIS",
+    tier: "low",
     lifecycle: "disabled",
     modes: ["image"],
     maxPhotos: 1,
@@ -265,6 +309,8 @@ const ENGINES: EngineDefinition[] = [
     id: "meshy-7.1",
     provider: "meshy",
     label: "Meshy 7.1",
+    tier: "premium",
+    listed: false, // price per credit is an estimate, and Meshy sells the same model in its own plans
     lifecycle: "disabled",
     modes: ["image"],
     maxPhotos: 1,
@@ -317,10 +363,21 @@ export function billingConfigProblem(): "attempts_multiple_engines" | null {
 /** Offered to users: enabled and with credentials on the server. */
 export const availableEngines = (deps?: Deps): EngineDefinition[] => ENGINES.filter((e) => engineEnabled(e) && adapterFor(e).isConfigured(deps));
 
+const QUALITY_LEVELS: TextureResolution[] = ["none", "512", "1k", "2k"];
+
 export function toEngineDto(engine: EngineDefinition): EngineDto {
+  const mode = engine.modes[0];
+  const creditsByTexture: EngineDto["creditsByTexture"] = {};
+  for (const texture of QUALITY_LEVELS) {
+    if (texture === "none" && !engine.geometryOnly) continue;
+    creditsByTexture[texture] = creditsFor(priceOf(engine, { mode, photoCount: mode === "text" ? 0 : 1, texture }).usd);
+  }
   return {
     id: engine.id,
     label: engine.label,
+    tier: engine.tier,
+    listed: engine.listed !== false,
+    creditsByTexture,
     lifecycle: effectiveLifecycle(engine),
     modes: engine.modes,
     maxPhotos: engine.maxPhotos,

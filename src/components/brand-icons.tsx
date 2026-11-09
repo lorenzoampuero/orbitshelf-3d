@@ -1,5 +1,6 @@
 import { siBambulab, siBlender, siOctoprint, siShopify, siUnity } from "simple-icons";
 import { Code2, Share2, Webhook } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const BRANDS = { shopify: siShopify, blender: siBlender, unity: siUnity, octoprint: siOctoprint, bambulab: siBambulab } as const;
 const OWN = { embed: Share2, webhooks: Webhook, api: Code2 } as const;
@@ -9,7 +10,7 @@ const LETTERS = { woocommerce: "W", klipper: "K", prusa: "P" } as const;
 export type BrandId = keyof typeof BRANDS | keyof typeof OWN | keyof typeof LETTERS;
 
 /** One tile for every app, in a single colour, so no logo shouts louder than the others. */
-export function BrandTile({ id }: { id: BrandId }) {
+export function BrandTile({ id, connected = false }: { id: BrandId; connected?: boolean }) {
   let inner: React.ReactNode;
   if (id in BRANDS) {
     inner = (
@@ -27,5 +28,14 @@ export function BrandTile({ id }: { id: BrandId }) {
       </span>
     );
   }
-  return <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-surface-2 text-fg">{inner}</span>;
+  return (
+    <span
+      className={cn(
+        "flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border bg-gradient-to-b from-surface-2 to-surface text-fg",
+        connected ? "border-ok/60 ring-2 ring-ok/20" : "border-line",
+      )}
+    >
+      {inner}
+    </span>
+  );
 }

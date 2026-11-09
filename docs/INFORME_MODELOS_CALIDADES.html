@@ -1,0 +1,329 @@
+<title>Modelos y calidades</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: documento de una columna (máx. 880px) con portada compacta, índice, secciones con tablas y un gráfico de proyección. */
+  :root {
+    --bg: #f5f6f7;
+    --surface: #ffffff;
+    --fg: #14171c;
+    --muted: #56606c;
+    --line: #d9dee3;
+    --accent: #c93c06;
+    --accent-soft: #fbe9e1;
+    --teal: #0b7f74;
+    --slate: #5c6b7c;
+    --ok: #17703f;
+    --ok-soft: #e1f3e8;
+    --warn: #8a5a00;
+    --warn-soft: #fbefd2;
+    --off: #4b5563;
+    --off-soft: #e6e9ed;
+    --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1013; --surface: #161a1f; --fg: #eceef1; --muted: #a4adb8; --line: #2a3038;
+      --accent: #ff7a3d; --accent-soft: #34201a; --teal: #3cc6b5; --slate: #9aa8b8;
+      --ok: #6fd39a; --ok-soft: #17301f; --warn: #f2c15a; --warn-soft: #35290f; --off: #b4bcc6; --off-soft: #262b32;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1013; --surface: #161a1f; --fg: #eceef1; --muted: #a4adb8; --line: #2a3038;
+    --accent: #ff7a3d; --accent-soft: #34201a; --teal: #3cc6b5; --slate: #9aa8b8;
+    --ok: #6fd39a; --ok-soft: #17301f; --warn: #f2c15a; --warn-soft: #35290f; --off: #b4bcc6; --off-soft: #262b32;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--fg);
+    font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 32px 64px;
+  }
+  main { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+  h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.15; margin: 0; }
+  h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); font-weight: 700; letter-spacing: -0.02em; }
+  h2 { font-size: clamp(1.5rem, 3.4vw, 2rem); font-weight: 700; letter-spacing: -0.01em; }
+  h3 { font-size: 1.15rem; font-weight: 700; }
+  p { margin: 0; max-width: 68ch; }
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .eyebrow { font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .stack-lg { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+  .lede { font-size: 1.15rem; color: var(--fg); }
+  .muted { color: var(--muted); }
+  .small { font-size: 0.88rem; }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  header.cover { display: flex; flex-direction: column; gap: 24px; padding-bottom: 32px; border-bottom: 1px solid var(--line); }
+  .cover-meta { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+  .fact { padding: 16px 18px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 0 -1px -1px 0; min-width: 0; }
+  .fact dt { font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .fact dd { margin: 6px 0 0; font-weight: 600; line-height: 1.35; }
+
+  nav.toc ol { margin: 0; padding: 0; list-style: none; columns: 2 260px; column-gap: 32px; }
+  nav.toc li { break-inside: avoid; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  nav.toc a { color: var(--fg); text-decoration: none; display: flex; gap: 10px; }
+  nav.toc a:hover { color: var(--accent); }
+  nav.toc .n { font-family: var(--font-mono); color: var(--muted); min-width: 1.6em; }
+
+  section { display: flex; flex-direction: column; gap: 20px; scroll-margin-top: 24px; min-width: 0; }
+  .sec-head { display: flex; flex-direction: column; gap: 8px; }
+
+  .callout { background: var(--accent-soft); border-left: 4px solid var(--accent); padding: 16px 18px; border-radius: 0 8px 8px 0; max-width: 100%; }
+  .callout p { max-width: none; }
+  .callout.warn { background: var(--warn-soft); border-left-color: var(--warn); }
+
+  .flow { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; counter-reset: step; }
+  .flow li { counter-increment: step; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .flow li::before { content: counter(step); font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent); font-weight: 500; }
+  .flow strong { font-family: var(--font-display); font-size: 1.02rem; }
+  .flow span { font-size: 0.9rem; color: var(--muted); }
+
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .panel p { max-width: none; }
+  ul.tight { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 6px; }
+  ul.tight li { max-width: 68ch; }
+
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); max-width: 100%; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.93rem; min-width: 560px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); font-weight: 500; background: var(--bg); white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.num, th.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.hl td { background: var(--accent-soft); }
+
+  .badge { display: inline-block; font-family: var(--font-mono); font-size: 0.74rem; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .b-ok { background: var(--ok-soft); color: var(--ok); }
+  .b-warn { background: var(--warn-soft); color: var(--warn); }
+  .b-off { background: var(--off-soft); color: var(--off); }
+
+  figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  .chart-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 8px 4px; overflow-x: auto; }
+  .chart-wrap svg { display: block; width: 100%; min-width: 520px; height: auto; }
+  figcaption { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 0.9rem; }
+  .legend i { display: inline-block; width: 22px; height: 0; border-top: 3px solid; vertical-align: middle; margin-right: 8px; }
+
+  footer { border-top: 1px solid var(--line); padding-top: 24px; display: flex; flex-direction: column; gap: 10px; color: var(--muted); font-size: 0.9rem; }
+  @media (max-width: 520px) { body { padding-block: 20px 48px; } main { gap: 44px; } th, td { padding: 9px 11px; } }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<main>
+  <header class="cover">
+    <div class="cover-meta">
+      <span class="eyebrow">Informe de producto y precios</span>
+      <span class="eyebrow">8 de noviembre de 2026</span>
+      <span class="eyebrow">Para planificar créditos y planes</span>
+    </div>
+    <h1>Modelos, calidades y exportaciones</h1>
+    <p class="lede">Lo que se definió para el escaneo: un control «Automático» con 8 modelos en 4 niveles de costo, una calidad de textura que cuesta créditos y la lista de formatos que entrega cada motor.</p>
+    <dl class="facts">
+      <div class="fact"><dt>Modelos en el selector</dt><dd>8, en 4 niveles: bajo costo, normal, premium y súper premium</dd></div>
+      <div class="fact"><dt>Rango de costo</dt><dd>De 8 a 78 créditos por modelo (1K, una foto)</dd></div>
+      <div class="fact"><dt>Motores encendidos</dt><dd>Ninguno de pago. Gasto autorizado: US$0</dd></div>
+      <div class="fact"><dt>Licencias</dt><dd>Ninguna aprobada todavía. Marcadas como pendientes</dd></div>
+    </dl>
+    <p class="small muted">Todos los precios son los publicados por cada proveedor el 5 de noviembre de 2026 (HighPack, el 8). Ningún motor se probó con dinero, así que no son facturas. La sección 8 lista lo que no está verificado.</p>
+  </header>
+
+  <nav class="toc" aria-label="Contenido">
+    <ol>
+      <li><a href="#cambio"><span class="n">1</span>Qué cambió</a></li>
+      <li><a href="#modelos"><span class="n">2</span>Los 8 modelos</a></li>
+      <li><a href="#calidades"><span class="n">3</span>Calidades y créditos</a></li>
+      <li><a href="#exportaciones"><span class="n">4</span>Exportaciones</a></li>
+      <li><a href="#planes"><span class="n">5</span>Modelos por plan</a></li>
+      <li><a href="#margen"><span class="n">6</span>Margen y precio por crédito</a></li>
+      <li><a href="#licencias"><span class="n">7</span>Licencias y términos</a></li>
+      <li><a href="#pendiente"><span class="n">8</span>Qué falta y qué no está verificado</a></li>
+      <li><a href="#decisiones"><span class="n">9</span>Decisiones tuyas</a></li>
+    </ol>
+  </nav>
+
+  <section id="cambio">
+    <div class="sec-head"><span class="eyebrow">1</span><h2>Qué cambió</h2></div>
+    <p>Al lado del botón de crear aparece el control «Automático». Al tocarlo se abre una barra con tres cosas:</p>
+    <ul class="tight">
+      <li><strong>Automático</strong>: el sistema elige el motor más barato que sirva para la entrada (una foto, varias fotos o texto). Es la opción por defecto.</li>
+      <li><strong>Modelo</strong>: 8 modelos agrupados por nivel, cada uno con sus créditos. Si el modelo no admite la entrada (por ejemplo, varias fotos en TRELLIS), aparece desactivado y dice por qué.</li>
+      <li><strong>Calidad</strong>: 512, 1K o 2K de textura, con el costo en créditos de cada una cuando hay un modelo elegido.</li>
+    </ul>
+    <p>La elección pasa al asistente de creación en modo avanzado, así que el costo mostrado es el que se cobra. Mientras no haya un motor encendido, ninguno se puede elegir: dicen «Aún no disponible».</p>
+    <div class="callout"><p>Tripo H3.1 y Meshy 7.1 están en el catálogo pero <strong>no aparecen</strong> en el selector. Venden sus propios modelos a sus propios clientes y no tiene sentido empujar a los nuestros hacia ellos. Si más adelante se quieren ofrecer, es cambiar un campo.</p></div>
+  </section>
+
+  <section id="modelos">
+    <div class="sec-head"><span class="eyebrow">2</span><h2>Los 8 modelos</h2></div>
+    <p>Créditos con calidad 1K y una foto. «Costo efectivo» es el precio publicado más 20 % de reintentos, US$0,07 de conversión y almacenamiento y US$0,05 de margen de seguridad. Un crédito equivale a US$0,02 de costo.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Nivel</th><th>Modelo</th><th class="num">Precio publicado</th><th class="num">Costo efectivo</th><th class="num">Créditos</th><th>Entrada</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge b-ok">Bajo costo</span></td><td>TRELLIS 1</td><td class="num">US$0,02</td><td class="num">US$0,14</td><td class="num">8</td><td>1 foto</td></tr>
+        <tr><td><span class="badge b-ok">Bajo costo</span></td><td>Rodin 2.5 Fast</td><td class="num">US$0,10</td><td class="num">US$0,24</td><td class="num">12</td><td>Hasta 4 fotos</td></tr>
+        <tr><td><span class="badge b-warn">Normal</span></td><td>Sloyd</td><td class="num">US$0,27</td><td class="num">US$0,44</td><td class="num">23</td><td>Foto, varias fotos y texto</td></tr>
+        <tr><td><span class="badge b-warn">Normal</span></td><td>TRELLIS.2</td><td class="num">US$0,30</td><td class="num">US$0,48</td><td class="num">24</td><td>1 foto</td></tr>
+        <tr><td><span class="badge b-warn">Normal</span></td><td>Hunyuan 3.1 Rapid</td><td class="num">US$0,38</td><td class="num">US$0,57</td><td class="num">29</td><td>1 foto</td></tr>
+        <tr><td><span class="badge b-off">Premium</span></td><td>Rodin 2.5</td><td class="num">US$0,40</td><td class="num">US$0,60</td><td class="num">30</td><td>Hasta 4 fotos</td></tr>
+        <tr class="hl"><td><span class="badge b-off">Súper premium</span></td><td>Hunyuan 3.1 Pro</td><td class="num">US$0,68</td><td class="num">US$0,93</td><td class="num">47</td><td>Hasta 4 fotos (56 créditos con varias)</td></tr>
+        <tr class="hl"><td><span class="badge b-off">Súper premium</span></td><td>Rodin 2.5 HighPack</td><td class="num">US$1,20</td><td class="num">US$1,56</td><td class="num">78</td><td>Hasta 4 fotos</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small muted">HighPack es US$0,40 de generación más US$0,80 del paquete de detalle, según la lista del proveedor. Sloyd es el único que acepta texto hoy. La tabla usa una foto; con varias fotos algunos motores suben de precio.</p>
+    <p>El orden por precio, de menor a mayor, es el de la tabla. Una prueba automática lo vigila.</p>
+  </section>
+
+  <section id="calidades">
+    <div class="sec-head"><span class="eyebrow">3</span><h2>Calidades y créditos</h2></div>
+    <div class="callout warn"><p><strong>720p, 1080p o 4K no existen en 3D.</strong> Esas medidas son de video. En un modelo 3D hay dos perillas reales: la <strong>resolución de la textura</strong> (512, 1K, 2K, 4K píxeles por lado) y el <strong>detalle de la malla</strong> (cantidad de caras). El selector ya trae la primera; la segunda no está hecha.</p></div>
+    <p>La calidad solo cuesta distinto cuando el proveedor la cobra distinto. Hoy eso pasa con TRELLIS.2. En el resto el selector muestra el mismo precio en las tres calidades, porque inventar una diferencia sería cobrar por algo que no cuesta.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Modelo</th><th class="num">512</th><th class="num">1K</th><th class="num">2K</th><th>Nota</th></tr></thead>
+      <tbody>
+        <tr><td>TRELLIS.2</td><td class="num">21</td><td class="num">24</td><td class="num">27</td><td>Proveedor: US$0,25 / 0,30 / 0,35. Siempre texturiza</td></tr>
+        <tr><td>TRELLIS 1</td><td class="num">8</td><td class="num">8</td><td class="num">8</td><td>Precio único. Siempre texturiza</td></tr>
+        <tr><td>Rodin 2.5 Fast</td><td class="num">12</td><td class="num">12</td><td class="num">12</td><td>Precio único</td></tr>
+        <tr><td>Sloyd</td><td class="num">23</td><td class="num">23</td><td class="num">23</td><td>Precio único. Sin textura: 14</td></tr>
+        <tr><td>Hunyuan 3.1 Rapid</td><td class="num">29</td><td class="num">29</td><td class="num">29</td><td>Precio único. Sin textura: 20</td></tr>
+        <tr><td>Rodin 2.5</td><td class="num">30</td><td class="num">30</td><td class="num">30</td><td>Precio único</td></tr>
+        <tr><td>Hunyuan 3.1 Pro</td><td class="num">47</td><td class="num">47</td><td class="num">47</td><td>Precio único. Sin textura: 38</td></tr>
+        <tr><td>Rodin 2.5 HighPack</td><td class="num">78</td><td class="num">78</td><td class="num">78</td><td>Precio único</td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>«Sin textura» (solo geometría)</strong> existe en los motores que lo permiten y cuesta menos. TRELLIS 1 y TRELLIS.2 no lo ofrecen.</p>
+    <p><strong>4K</strong> no está en el sistema y no he verificado que ningún motor lo entregue. Para añadirlo hay que confirmar primero qué motor lo hace y a qué precio.</p>
+  </section>
+
+  <section id="exportaciones">
+    <div class="sec-head"><span class="eyebrow">4</span><h2>Exportaciones</h2></div>
+    <p>Formatos que entrega cada motor, según la ficha registrada de cada proveedor.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Modelo</th><th>GLB</th><th>OBJ</th><th>FBX</th><th>USDZ</th><th>STL</th></tr></thead>
+      <tbody>
+        <tr><td>TRELLIS 1</td><td>Sí</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>TRELLIS.2</td><td>Sí</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>Sloyd</td><td>Sí</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>Hunyuan 3.1 Rapid</td><td>Sí</td><td>Sí</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>Hunyuan 3.1 Pro</td><td>Sí</td><td>Sí</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>Rodin 2.5 Fast</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+        <tr><td>Rodin 2.5</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+        <tr><td>Rodin 2.5 HighPack</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td><td>Sí</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="tight">
+      <li><strong>Los motores baratos y normales entregan solo GLB</strong> (o GLB y OBJ). Para tiendas y visores web basta. Para impresión (STL) o Apple (USDZ) hoy hay que elegir un motor Rodin.</li>
+      <li>Se puede convertir después con herramientas propias, pero esa conversión y el paquete de impresión (STL o 3MF) <strong>no están construidos</strong>.</li>
+      <li>La lista de formatos se muestra hoy en la página Explorar. <strong>No verifiqué</strong> que cada formato se pueda descargar de punta a punta desde el estudio; el modelo se guarda y publica como GLB.</li>
+    </ul>
+  </section>
+
+  <section id="planes">
+    <div class="sec-head"><span class="eyebrow">5</span><h2>Modelos por plan</h2></div>
+    <p>Cuántos modelos entran al mes si el cliente gasta todos sus créditos en un solo modelo, calidad 1K, una foto. Planes de la simulación vigente; se recalculan con tu informe de precios.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Modelo</th><th class="num">Starter<br>US$19 · 200</th><th class="num">Creator<br>US$49 · 550</th><th class="num">Commerce<br>US$99 · 1100</th><th class="num">Studio<br>US$199 · 2300</th></tr></thead>
+      <tbody>
+        <tr><td>TRELLIS 1</td><td class="num">25</td><td class="num">68</td><td class="num">137</td><td class="num">287</td></tr>
+        <tr><td>Rodin 2.5 Fast</td><td class="num">16</td><td class="num">45</td><td class="num">91</td><td class="num">191</td></tr>
+        <tr><td>Sloyd</td><td class="num">8</td><td class="num">23</td><td class="num">47</td><td class="num">100</td></tr>
+        <tr><td>TRELLIS.2</td><td class="num">8</td><td class="num">22</td><td class="num">45</td><td class="num">95</td></tr>
+        <tr><td>Hunyuan 3.1 Rapid</td><td class="num">6</td><td class="num">18</td><td class="num">37</td><td class="num">79</td></tr>
+        <tr><td>Rodin 2.5</td><td class="num">6</td><td class="num">18</td><td class="num">36</td><td class="num">76</td></tr>
+        <tr><td>Hunyuan 3.1 Pro</td><td class="num">4</td><td class="num">11</td><td class="num">23</td><td class="num">48</td></tr>
+        <tr><td>Rodin 2.5 HighPack</td><td class="num">2</td><td class="num">7</td><td class="num">14</td><td class="num">29</td></tr>
+      </tbody>
+    </table></div>
+    <p>La web debe decir un rango («de 2 a 25 modelos al mes en Starter, según el modelo»), no un número único. Entre el más barato y el más caro hay unas 10 veces de diferencia.</p>
+  </section>
+
+  <section id="margen">
+    <div class="sec-head"><span class="eyebrow">6</span><h2>Margen y precio por crédito</h2></div>
+    <p>Mientras los créditos de cada modelo se calculen desde su costo real, <strong>el margen no depende del modelo que elija el cliente</strong>: un modelo de 78 créditos deja el mismo porcentaje que uno de 8. Por eso el selector permite variar el gasto sin romper el piso de 60 %.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Plan</th><th class="num">Precio por crédito</th><th class="num">Margen con el plan usado al 100 %</th></tr></thead>
+      <tbody>
+        <tr><td>Starter (US$19, 200 créditos)</td><td class="num">US$0,095</td><td class="num">71,7 %</td></tr>
+        <tr><td>Creator (US$49, 550)</td><td class="num">US$0,089</td><td class="num">70,6 %</td></tr>
+        <tr><td>Commerce (US$99, 1100)</td><td class="num">US$0,090</td><td class="num">71,1 %</td></tr>
+        <tr><td>Studio (US$199, 2300)</td><td class="num">US$0,087</td><td class="num">70,3 %</td></tr>
+      </tbody>
+    </table></div>
+    <p class="small muted">Margen de contribución: precio menos costo del proveedor menos comisión de pago supuesta (6,5 % + US$0,30). No incluye hosting, soporte, devoluciones ni impuestos. La comisión de Whop está pendiente de tarifas verificadas.</p>
+    <div class="callout"><p><strong>Decisión pendiente:</strong> cobrar los créditos por costo (como ahora) o por valor percibido. Con costo, el margen es parejo. Con valor, un modelo súper premium podría llevar un recargo y uno barato podría ser casi regalado para atraer clientes. Eso cambia la tabla de créditos y no la he tocado.</p></div>
+  </section>
+
+  <section id="licencias">
+    <div class="sec-head"><span class="eyebrow">7</span><h2>Licencias y términos</h2></div>
+    <p>En el registro de decisiones, <strong>todos los motores tienen la licencia en «PENDIENTE»</strong>. Lo que se sabe hoy:</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Tema</th><th>Qué se encontró</th><th>Estado</th></tr></thead>
+      <tbody>
+        <tr><td>fal.ai (plataforma)</td><td>Sus términos restringen la reventa como «service bureau» (§6e-xii), piden autorización escrita para integraciones (§6e-ix) y prohíben exponer sus APIs a usuarios finales (§4b-ii). Afecta a todos los motores que pasan por fal.</td><td><span class="badge b-warn">Pedir confirmación escrita</span></td></tr>
+        <tr><td>Hunyuan 3.1</td><td>Versiones anteriores excluían la UE, el Reino Unido y Corea del Sur. No encontré el texto de la licencia de la 3.1.</td><td><span class="badge b-warn">Sin verificar</span></td></tr>
+        <tr><td>Tripo</td><td>No pude leer sus términos (error 403).</td><td><span class="badge b-off">Sin leer</span></td></tr>
+        <tr><td>Meshy</td><td>No pude leer sus términos (error 404). El valor de US$0,02 por crédito es una estimación.</td><td><span class="badge b-off">Sin leer</span></td></tr>
+        <tr><td>TRELLIS y TRELLIS.2</td><td>Se publican con pesos abiertos, lo que permitiría alojarlos con GPU propia más adelante. El texto de la licencia no está aprobado.</td><td><span class="badge b-warn">Por aprobar</span></td></tr>
+        <tr><td>Rodin 2.5 y Sloyd</td><td>Sin revisión de uso comercial ni de reventa.</td><td><span class="badge b-warn">Por aprobar</span></td></tr>
+      </tbody>
+    </table></div>
+    <p><strong>Para revender hace falta el visto bueno por escrito de cada proveedor.</strong> Hasta tenerlo, ningún motor se enciende en producción. Puedo redactar el correo para fal; no lo he enviado.</p>
+  </section>
+
+  <section id="pendiente">
+    <div class="sec-head"><span class="eyebrow">8</span><h2>Qué falta y qué no está verificado</h2></div>
+    <div class="grid2">
+      <div class="panel">
+        <h3>Por construir</h3>
+        <ul class="tight">
+          <li><strong>Control de detalle</strong> (barra de caras de la malla). Hay que pasar un campo «detalle» por la cotización, los trabajos y los adaptadores, y confirmar qué motores lo admiten.</li>
+          <li><strong>Creación progresiva estilo Hyper3D</strong>: crear una primera versión y ofrecer variaciones y refinamientos. Necesito tus imágenes del proceso para diseñarlo.</li>
+          <li><strong>Textura 4K</strong>, solo si algún motor la entrega.</li>
+          <li><strong>Conversión de formatos</strong> y paquete de impresión (STL, 3MF).</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Sin verificar</h3>
+        <ul class="tight">
+          <li>Ningún motor se probó con dinero; los precios son publicados, no facturados.</li>
+          <li>Calidad real de cada motor con fotos de producto reales.</li>
+          <li>Si TRELLIS 1 entrega GLB; Hunyuan Rapid puede entregar OBJ.</li>
+          <li>Comisión de Whop (6,5 % + US$0,30 es un supuesto).</li>
+          <li>Que los clientes usen, de media, entre un cuarto y la mitad de sus créditos.</li>
+        </ul>
+      </div>
+    </div>
+    <h3>Ya probado</h3>
+    <ul class="tight">
+      <li><strong>API pública y MCP por URL</strong>: probados en vivo, con token. Funcionan. El listado de modelos sale vacío porque no hay motor encendido.</li>
+      <li><strong>Supabase</strong>: la cuenta conectada por MCP tiene un proyecto con el esquema de OrbitShelf y sin datos. No cambié nada. El proyecto anterior era de otra aplicación y no se usa.</li>
+      <li><strong>Pruebas</strong>: 336 unitarias y 21 de punta a punta (incluida la del selector), con tipos, lint y build limpios.</li>
+    </ul>
+  </section>
+
+  <section id="decisiones">
+    <div class="sec-head"><span class="eyebrow">9</span><h2>Decisiones tuyas</h2></div>
+    <ol class="tight">
+      <li>¿Créditos por <strong>costo</strong> (margen parejo) o por <strong>valor percibido</strong> (recargo en súper premium)?</li>
+      <li>¿Se queda la lista de 8 modelos o cambias alguno? Los más caros (HighPack, Hunyuan Pro) serían los primeros en salir si el margen o la licencia no cierran.</li>
+      <li>Tu <strong>informe de precios y créditos</strong>: con él se recalculan los planes y la tabla de la sección 5.</li>
+      <li>¿Autorizas un gasto de prueba? Una comparativa a ciegas de los 5 motores principales con fotos reales cuesta unos US$9 a precios publicados (US$17 con los 9). Hoy el gasto es US$0.</li>
+      <li>Las <strong>imágenes de Hyper3D</strong> para diseñar el refinamiento progresivo.</li>
+    </ol>
+  </section>
+
+  <footer>
+    <p>OrbitShelf 3D · Informe de modelos, calidades y exportaciones · 8 de noviembre de 2026.</p>
+    <p>Fuente de los números: <span class="mono">src/lib/provider/registry.ts</span>, <span class="mono">docs/SIMULACION_PLANES.md</span> y <span class="mono">docs/DECISIONES_MOTORES.csv</span>. Precios publicados por cada proveedor, sin facturas.</p>
+  </footer>
+</main>

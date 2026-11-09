@@ -12,7 +12,7 @@ import { examplePoster } from "@/content/examples";
 import { studioCopy } from "@/content/studio-copy";
 import { refreshEngineSwitches } from "@/lib/jobs";
 import { activeWorkspace, defaultPreset, SHORTCUTS, shortcutsFor } from "@/lib/profiles";
-import { availableEngines, toEngineDto } from "@/lib/provider/registry";
+import { allEngines, availableEngines, toEngineDto } from "@/lib/provider/registry";
 import { requireUser } from "@/lib/require-user";
 import { buildPageMetadata } from "@/lib/seo";
 import { store, toDto } from "@/lib/store";
@@ -64,7 +64,7 @@ export default async function DashboardOverviewPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
-      <StudioComposer locale={locale} engines={engines} preset={defaultPreset(workspace, profile.experience)} />
+      <StudioComposer locale={locale} engines={engines} catalog={allEngines().map(toEngineDto)} preset={defaultPreset(workspace, profile.experience)} />
 
       {!firstModel.complete && <FirstModelCard locale={locale} progress={firstModel} providerReady={engines.length > 0} balance={usage.balance} />}
 

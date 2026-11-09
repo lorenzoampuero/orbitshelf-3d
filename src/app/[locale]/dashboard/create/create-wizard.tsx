@@ -58,12 +58,13 @@ export function CreateWizard({
 
   // A mode that needs an engine is only opened when one exists: otherwise it would be a form that cannot be submitted.
   const [mode, setMode] = useState<Mode>(initialMode === "import" ? "import" : providerReady ? (initialMode ?? "photos") : "demo");
-  const [preset, setPreset] = useState<GenerationPreset>(initialPreset);
+  // A model picked by hand in the composer opens the wizard in its advanced mode, where the engine and the quality are the person's.
+  const [preset, setPreset] = useState<GenerationPreset>(handoff?.engineId ? "advanced" : initialPreset);
   const [title, setTitle] = useState(handoff?.title ?? (providerReady ? "" : c.demoObjects.vase));
   const [sku, setSku] = useState("");
   const [category, setCategory] = useState<Category>(providerReady ? "apparel" : "home-decor");
   const [demoAsset, setDemoAsset] = useState<WizardDemoAsset>("vase");
-  const [textureResolution, setTextureResolution] = useState<TextureResolution>("1k");
+  const [textureResolution, setTextureResolution] = useState<TextureResolution>(handoff?.texture ?? "1k");
   const [files, setFiles] = useState<Partial<Record<ImageView, File>>>(handoff?.files ?? {});
   const [resets, setResets] = useState<Partial<Record<ImageView, number>>>({});
   const [prompt, setPrompt] = useState(handoff?.prompt ?? "");
@@ -74,7 +75,7 @@ export function CreateWizard({
   const [error, setError] = useState<string | null>(null);
   const [failedModelId, setFailedModelId] = useState<string | null>(null);
 
-  const [chosenEngine, setChosenEngine] = useState<string | null>(null);
+  const [chosenEngine, setChosenEngine] = useState<string | null>(handoff?.engineId ?? null);
   const [quote, setQuote] = useState<QuoteDto | null>(null);
 
   // Only engines that really support this mode are offered. A photo engine with fewer slots hides the views it cannot use.

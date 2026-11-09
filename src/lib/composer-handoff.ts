@@ -1,4 +1,4 @@
-import type { ImageView } from "./types";
+import type { ImageView, TextureResolution } from "./types";
 
 /**
  * What the home composer hands to the create wizard. It lives in memory only: files cannot travel in a URL, and a
@@ -9,6 +9,9 @@ export type ComposerHandoff = {
   glb?: File;
   prompt?: string;
   title?: string;
+  /** A model and quality picked by hand in the composer. Without them the wizard's own preset chooses. */
+  engineId?: string;
+  texture?: TextureResolution;
 };
 
 let pending: ComposerHandoff | null = null;

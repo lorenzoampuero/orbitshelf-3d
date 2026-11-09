@@ -72,10 +72,19 @@ export type EngineLifecycle = "disabled" | "pilot" | "production";
 /** `published`: read from the provider's price page. `invoice`: confirmed against a real bill. */
 export type PriceEvidence = "published" | "invoice";
 
+/** Where an engine sits on price and fidelity. Set by us from the published price, so the picker can group models without making a quality claim. */
+export const ENGINE_TIERS = ["low", "normal", "premium", "super"] as const;
+export type EngineTier = (typeof ENGINE_TIERS)[number];
+
 /** Client-safe view of an engine: what it can really do, never how to call it. */
 export type EngineDto = {
   id: string;
   label: string;
+  tier: EngineTier;
+  /** False for engines kept in the registry but left out of the model picker (they stay reachable through ENGINES_ENABLED and the API). */
+  listed: boolean;
+  /** Credits one textured photo job takes at each quality, for the picker. Only levels the engine can really produce appear. */
+  creditsByTexture: Partial<Record<TextureResolution, number>>;
   lifecycle: EngineLifecycle;
   modes: InputKind[];
   maxPhotos: number;

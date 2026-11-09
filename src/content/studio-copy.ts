@@ -1,4 +1,4 @@
-import type { Locale } from "@/lib/types";
+import type { EngineTier, Locale, TextureResolution } from "@/lib/types";
 import type { ExampleGroup } from "./examples";
 
 export type StudioCopy = {
@@ -22,6 +22,22 @@ export type StudioCopy = {
   create: string;
   createSample: string;
   needsEngine: string;
+  picker: {
+    auto: string;
+    autoText: string;
+    modelTitle: string;
+    qualityTitle: string;
+    tiers: Record<EngineTier, string>;
+    qualities: Record<TextureResolution, string>;
+    credits: (n: number) => string;
+    unavailable: string;
+    photosUpTo: (n: number) => string;
+    onePhoto: string;
+    textOnly: string;
+    needsMore: string;
+    note: string;
+    close: string;
+  };
   stats: { models: string; toReview: string; approved: string; processing: string };
   gallery: {
     label: string;
@@ -70,6 +86,22 @@ export const studioCopy: Record<Locale, StudioCopy> = {
     create: "Crear",
     createSample: "Crear muestra",
     needsEngine: "La generación con IA se activa al conectar un motor. Mientras tanto puedes crear una muestra o importar un GLB.",
+    picker: {
+      auto: "Automático",
+      autoText: "Elegimos el modelo según tu foto y tu calidad.",
+      modelTitle: "Modelo",
+      qualityTitle: "Calidad de textura",
+      tiers: { low: "Bajo costo", normal: "Normal", premium: "Premium", super: "Súper premium" },
+      qualities: { none: "Sin textura", "512": "Borrador · 512", "1k": "Estándar · 1K", "2k": "Alta · 2K" },
+      credits: (n) => `${n} ${n === 1 ? "crédito" : "créditos"}`,
+      unavailable: "Aún no disponible",
+      photosUpTo: (n) => `Hasta ${n} fotos`,
+      onePhoto: "1 foto",
+      textOnly: "Texto",
+      needsMore: "No admite esta entrada",
+      note: "Los precios son los publicados por cada motor, aún sin probar con dinero real. 4K y el control de detalle llegan cuando un motor los admita y los verifiquemos.",
+      close: "Cerrar",
+    },
     stats: { models: "Modelos", toReview: "Por revisar", approved: "Aprobados", processing: "En proceso" },
     gallery: {
       label: "Galería de modelos",
@@ -116,6 +148,22 @@ export const studioCopy: Record<Locale, StudioCopy> = {
     create: "Create",
     createSample: "Create sample",
     needsEngine: "AI generation switches on when an engine is connected. Until then you can create a sample or import a GLB.",
+    picker: {
+      auto: "Automatic",
+      autoText: "We pick the model from your photo and your quality.",
+      modelTitle: "Model",
+      qualityTitle: "Texture quality",
+      tiers: { low: "Low cost", normal: "Normal", premium: "Premium", super: "Super premium" },
+      qualities: { none: "No texture", "512": "Draft · 512", "1k": "Standard · 1K", "2k": "High · 2K" },
+      credits: (n) => `${n} ${n === 1 ? "credit" : "credits"}`,
+      unavailable: "Not available yet",
+      photosUpTo: (n) => `Up to ${n} photos`,
+      onePhoto: "1 photo",
+      textOnly: "Text",
+      needsMore: "Does not take this input",
+      note: "Prices are the ones each engine publishes, not yet tested with real money. 4K and detail control arrive when an engine supports them and we have verified it.",
+      close: "Close",
+    },
     stats: { models: "Models", toReview: "To review", approved: "Approved", processing: "Processing" },
     gallery: {
       label: "Model gallery",

@@ -1061,6 +1061,8 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
   });
 
   test("8. Marketing pages: accessible (axe), no horizontal overflow at 375 px, and no sub-12px text", async ({ page }) => {
+    // Many pages, each with an axe scan at two widths: it runs close to the default limit on a slow machine.
+    test.setTimeout(120_000);
     const paths = [
       "/", "/examples", "/how-it-works", "/pricing", "/resources", "/resources/photograph-clothing-for-3d", "/compare/ai-3d-vs-manual", "/privacy", "/terms",
       "/legal", "/legal/refunds", "/legal/subprocessors", "/blog", "/blog/does-3d-increase-conversion", "/es/blog/first-3d-catalog-in-one-week", "/es/legal/security",
@@ -1249,6 +1251,32 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await expect(async () => {
       expect((await rpc("ping")).status()).toBe(401);
     }).toPass({ timeout: 5_000 });
+    await user.close();
+  });
+
+  test("11. Model picker: Automatic by default, a catalogue of eight models by tier with credits, and none of them can be chosen while no engine is on", async ({ browser }) => {
+    const user = await browser.newContext();
+    const page = await user.newPage();
+    expect((await user.request.post("/api/auth/login", { data: { email: "picker@merchant.test" } })).ok()).toBe(true);
+    await page.goto("/dashboard");
+    const toggle = page.getByTestId("model-picker-toggle");
+    await expect(toggle).toContainText("Automatic");
+    await expect(page.getByTestId("model-picker-panel")).toHaveCount(0);
+    await toggle.click();
+    await expect(page.getByTestId("model-picker-panel")).toBeVisible();
+    await expect(page.getByTestId("model-option-auto")).toHaveAttribute("aria-pressed", "true");
+    // Eight models listed; the two rival products are kept out.
+    await expect(page.locator('[data-testid^="model-option-"]:not([data-testid="model-option-auto"])')).toHaveCount(8);
+    await expect(page.getByTestId("model-option-fal-tripo-h3.1")).toHaveCount(0);
+    await expect(page.getByTestId("model-option-meshy-7.1")).toHaveCount(0);
+    // Every price is in credits and nobody can pick a model that is switched off.
+    await expect(page.getByTestId("model-option-fal-trellis-1")).toContainText(/\d+ credits/);
+    await expect(page.getByTestId("model-option-fal-trellis-1")).toBeDisabled();
+    await expect(page.getByTestId("model-option-fal-rodin-2.5-highpack")).toBeDisabled();
+    await expect(page.getByTestId("quality-option-512")).toBeVisible();
+    // It is the same page on a phone, with nothing wider than the screen.
+    await page.setViewportSize({ width: 375, height: 800 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
     await user.close();
   });
 });
