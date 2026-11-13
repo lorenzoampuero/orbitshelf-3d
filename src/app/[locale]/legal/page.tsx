@@ -30,7 +30,7 @@ export default async function LegalIndexPage({ params }: Props) {
 
   return (
     <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
-      <PageHero pill={c.eyebrow} title={c.title} text={c.intro} />
+      <PageHero calm pill={c.eyebrow} title={c.title} text={c.intro} />
       <Section>
         <p role="note" className="mb-6 max-w-3xl text-sm leading-relaxed text-muted">{c.draftNote}</p>
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-6">

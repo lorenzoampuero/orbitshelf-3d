@@ -1,0 +1,149 @@
+{
+  "dragon": {
+    "beauty": {
+      "src": "/landing/dragon/beauty-1600.webp",
+      "srcSmall": "/landing/dragon/beauty-800.webp",
+      "thumb": "/landing/dragon/beauty-240.webp",
+      "width": 1600,
+      "height": 1297
+    },
+    "clay": {
+      "src": "/landing/dragon/clay-1600.webp",
+      "srcSmall": "/landing/dragon/clay-800.webp",
+      "thumb": "/landing/dragon/clay-240.webp",
+      "width": 1600,
+      "height": 1297
+    },
+    "wire": {
+      "src": "/landing/dragon/wire-1600.webp",
+      "srcSmall": "/landing/dragon/wire-800.webp",
+      "thumb": "/landing/dragon/wire-240.webp",
+      "width": 1600,
+      "height": 1297
+    },
+    "alt": {
+      "src": "/landing/dragon/alt-1600.webp",
+      "srcSmall": "/landing/dragon/alt-800.webp",
+      "thumb": "/landing/dragon/alt-240.webp",
+      "width": 1556,
+      "height": 1355
+    },
+    "turn": {
+      "mp4": "/landing/dragon/turn.mp4",
+      "webm": "/landing/dragon/turn.webm",
+      "poster": "/landing/dragon/turn-poster.webp",
+      "size": 900
+    },
+    "glb": "/landing/dragon/dragon.glb"
+  },
+  "hoodie": {
+    "beauty": {
+      "src": "/landing/hoodie/beauty-1600.webp",
+      "srcSmall": "/landing/hoodie/beauty-800.webp",
+      "thumb": "/landing/hoodie/beauty-240.webp",
+      "width": 1600,
+      "height": 1457
+    },
+    "clay": {
+      "src": "/landing/hoodie/clay-1600.webp",
+      "srcSmall": "/landing/hoodie/clay-800.webp",
+      "thumb": "/landing/hoodie/clay-240.webp",
+      "width": 1600,
+      "height": 1457
+    },
+    "wire": {
+      "src": "/landing/hoodie/wire-1600.webp",
+      "srcSmall": "/landing/hoodie/wire-800.webp",
+      "thumb": "/landing/hoodie/wire-240.webp",
+      "width": 1600,
+      "height": 1457
+    },
+    "alt": {
+      "src": "/landing/hoodie/alt-1600.webp",
+      "srcSmall": "/landing/hoodie/alt-800.webp",
+      "thumb": "/landing/hoodie/alt-240.webp",
+      "width": 1600,
+      "height": 1460
+    },
+    "turn": {
+      "mp4": "/landing/hoodie/turn.mp4",
+      "webm": "/landing/hoodie/turn.webm",
+      "poster": "/landing/hoodie/turn-poster.webp",
+      "size": 900
+    },
+    "glb": "/landing/hoodie/hoodie.glb"
+  },
+  "kitchen": {
+    "beauty": {
+      "src": "/landing/kitchen/beauty-1600.webp",
+      "srcSmall": "/landing/kitchen/beauty-800.webp",
+      "thumb": "/landing/kitchen/beauty-240.webp",
+      "width": 1600,
+      "height": 1513
+    },
+    "clay": {
+      "src": "/landing/kitchen/clay-1600.webp",
+      "srcSmall": "/landing/kitchen/clay-800.webp",
+      "thumb": "/landing/kitchen/clay-240.webp",
+      "width": 1600,
+      "height": 1513
+    },
+    "wire": {
+      "src": "/landing/kitchen/wire-1600.webp",
+      "srcSmall": "/landing/kitchen/wire-800.webp",
+      "thumb": "/landing/kitchen/wire-240.webp",
+      "width": 1600,
+      "height": 1513
+    },
+    "alt": {
+      "src": "/landing/kitchen/alt-1600.webp",
+      "srcSmall": "/landing/kitchen/alt-800.webp",
+      "thumb": "/landing/kitchen/alt-240.webp",
+      "width": 1600,
+      "height": 1405
+    },
+    "turn": {
+      "mp4": "/landing/kitchen/turn.mp4",
+      "webm": "/landing/kitchen/turn.webm",
+      "poster": "/landing/kitchen/turn-poster.webp",
+      "size": 900
+    },
+    "glb": "/landing/kitchen/kitchen.glb"
+  },
+  "bust": {
+    "beauty": {
+      "src": "/landing/bust/beauty-1600.webp",
+      "srcSmall": "/landing/bust/beauty-800.webp",
+      "thumb": "/landing/bust/beauty-240.webp",
+      "width": 1600,
+      "height": 1476
+    }
+  },
+  "camera": {
+    "beauty": {
+      "src": "/landing/camera/beauty-1600.webp",
+      "srcSmall": "/landing/camera/beauty-800.webp",
+      "thumb": "/landing/camera/beauty-240.webp",
+      "width": 1600,
+      "height": 720
+    }
+  },
+  "lounge": {
+    "beauty": {
+      "src": "/landing/lounge/beauty-1600.webp",
+      "srcSmall": "/landing/lounge/beauty-800.webp",
+      "thumb": "/landing/lounge/beauty-240.webp",
+      "width": 1600,
+      "height": 1361
+    }
+  },
+  "lantern": {
+    "beauty": {
+      "src": "/landing/lantern/beauty-1600.webp",
+      "srcSmall": "/landing/lantern/beauty-800.webp",
+      "thumb": "/landing/lantern/beauty-240.webp",
+      "width": 1600,
+      "height": 1548
+    }
+  }
+}

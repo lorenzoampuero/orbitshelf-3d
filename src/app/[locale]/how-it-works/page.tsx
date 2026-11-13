@@ -1,13 +1,18 @@
 import { notFound } from "next/navigation";
-import { Activity, ArrowRight, ClipboardCheck, Coins, Download, ImagePlus, TriangleAlert } from "lucide-react";
+import { Activity, ClipboardCheck, Coins, Download, ImagePlus, TriangleAlert } from "lucide-react";
 import { isLocale, localePath } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { buildPageMetadata } from "@/lib/seo";
 import { currentUser } from "@/lib/api";
 import { innerPagesCopy, plainTitle } from "@/content/inner-pages";
 import { MarketingShell } from "@/components/marketing-shell";
-import { Checklist, ClosingBanner, PageHero, Section } from "@/components/marketing-kit";
+import { Checklist, ClosingBanner, PageHero, Section, SectionTitle } from "@/components/marketing-kit";
 import { ReadingSuggestions, TrustStrip, WorkflowVersus } from "@/components/landing-extra";
+import { ModelPile, ModelSpotlight } from "@/components/marketing/model-art";
+import { BuildSequence } from "@/components/marketing/build-sequence";
+import { PAGE_MODELS, pick, closingArt, SPOTLIGHT } from "@/content/page-models";
+import { art, artCopy } from "@/content/landing-art";
+import { homeCopy } from "@/content/home-copy";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -34,32 +39,34 @@ export default async function HowItWorksPage({ params }: Props) {
   const user = await currentUser();
   const copy = innerPagesCopy[locale];
   const create = localePath(locale, "/dashboard/create");
+  const seq = homeCopy[locale].sequence;
+  const kitchen = pick("kitchen-units");
+  const big = (n: number) => (n >= 9.5e5 ? `${(n / 1e6).toFixed(1)}M` : `${Math.round(n / 1e3)}K`);
 
   return (
-    <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
-      <PageHero
+    <MarketingShell tone="cyan" locale={locale} dict={dict} isSignedIn={Boolean(user)}>
+      <PageHero marquee={6}
         pill={dict.how.eyebrow}
         title={dict.how.title}
         text={dict.how.intro}
         primary={{ href: create, label: dict.how.cta }}
-        visual={
-          <div
-            aria-hidden="true"
-            className="card mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-2 p-4 sm:gap-4 sm:p-7"
-          >
-            {STEP_ICONS.map((Icon, i) => (
-              <span key={i} className="flex items-center gap-2 sm:gap-4">
-                <span
-                  className={`flex h-12 w-12 items-center justify-center rounded-2xl sm:h-14 sm:w-14 ${i === STEP_ICONS.length - 1 ? "bg-blood text-white" : "border border-line bg-surface-2 text-fg"}`}
-                >
-                  <Icon className="h-6 w-6" />
-                </span>
-                {i < STEP_ICONS.length - 1 ? <ArrowRight className="hidden h-4 w-4 text-accent sm:block" /> : null}
-              </span>
-            ))}
-          </div>
-        }
+        visual={<ModelPile models={PAGE_MODELS.howItWorks} locale={locale} />}
       />
+
+      {/* One model told in six steps while the page scrolls. */}
+      <Section>
+        <SectionTitle sub={seq.sub}>{seq.title}</SectionTitle>
+        <BuildSequence
+          copy={seq}
+          layers={{ wire: art.kitchen.wire, clay: art.kitchen.clay, beauty: art.kitchen.beauty }}
+          alt={artCopy[locale].alts.kitchen}
+          figures={{ original: big(kitchen.tris.original), web: big(kitchen.tris.web), size: `${(kitchen.bytes.web / (1024 * 1024)).toFixed(1)} MB` }}
+        />
+      </Section>
+
+      <Section>
+        <ModelSpotlight model={SPOTLIGHT["howItWorks"]} locale={locale} flip />
+      </Section>
 
       <Section>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
@@ -68,10 +75,10 @@ export default async function HowItWorksPage({ params }: Props) {
             return (
               <article key={s.title} className={`card reveal flex flex-col gap-6 p-7 md:p-8 ${STEP_SPANS[i] ?? "md:col-span-3"}`}>
                 <div className="flex items-center justify-between">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blood text-sm font-semibold tabular-nums text-white">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-fill text-sm font-semibold tabular-nums text-white">
                     {i + 1}
                   </span>
-                  <span aria-hidden="true" className="mesh-lines flex h-14 w-20 items-center justify-center rounded-xl bg-[#151230]">
+                  <span aria-hidden="true" className="mesh-lines flex h-14 w-20 items-center justify-center rounded-xl bg-surface-deep">
                     <Icon className="h-6 w-6 text-accent" />
                   </span>
                 </div>
@@ -106,7 +113,7 @@ export default async function HowItWorksPage({ params }: Props) {
       <WorkflowVersus locale={locale} />
       <TrustStrip locale={locale} />
       <ReadingSuggestions locale={locale} page="howItWorks" />
-      <ClosingBanner
+      <ClosingBanner art={closingArt(4)}
         titleA={copy.how.closing.titleA}
         titleB={copy.how.closing.titleB}
         cta={dict.how.cta}

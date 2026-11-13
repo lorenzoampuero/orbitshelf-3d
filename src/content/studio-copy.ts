@@ -2,11 +2,12 @@ import type { EngineTier, Locale, TextureResolution } from "@/lib/types";
 import type { ExampleGroup } from "./examples";
 
 export type StudioCopy = {
-  nav: { create: string; explore: string; connections: string; agents: string; account: string; menu: string };
+  nav: { create: string; explore: string; connections: string; agents: string; account: string; menu: string; search: string; searchPlaceholder: string; expand: string; collapse: string; main: string };
   title: string;
   subtitle: string;
   tabs: { photo: string; multi: string; text: string; import: string };
   exampleBadge: string;
+  watchLive: string;
   dropPhoto: string;
   dropPhotos: string;
   dropGlb: string;
@@ -66,11 +67,12 @@ export type StudioCopy = {
 
 export const studioCopy: Record<Locale, StudioCopy> = {
   es: {
-    nav: { create: "Crear", explore: "Explorar", connections: "Conexiones", agents: "Agentes y API", account: "Tu cuenta", menu: "Menú de la cuenta" },
+    nav: { create: "Crear", explore: "Explorar", connections: "Conexiones", agents: "Agentes y API", account: "Tu cuenta", menu: "Menú de la cuenta", search: "Buscar en tus modelos", searchPlaceholder: "Buscar modelos", expand: "Ampliar el menú lateral", collapse: "Reducir el menú lateral", main: "Navegación de la app" },
     title: "Crea en 3D",
     subtitle: "De una foto o una frase a un modelo revisado y listo para usar.",
     tabs: { photo: "Foto", multi: "Varias fotos", text: "Texto", import: "Importar GLB" },
     exampleBadge: "Ejemplo",
+    watchLive: "Ver en vivo",
     dropPhoto: "Suelta aquí la foto de tu producto",
     dropPhotos: "Suelta hasta 4 fotos: frente, izquierda, atrás y derecha",
     dropGlb: "Suelta aquí tu archivo GLB",
@@ -128,11 +130,12 @@ export const studioCopy: Record<Locale, StudioCopy> = {
     more: "Más herramientas",
   },
   en: {
-    nav: { create: "Create", explore: "Explore", connections: "Connections", agents: "Agents and API", account: "Your account", menu: "Account menu" },
+    nav: { create: "Create", explore: "Explore", connections: "Connections", agents: "Agents and API", account: "Your account", menu: "Account menu", search: "Search your models", searchPlaceholder: "Search models", expand: "Expand the side menu", collapse: "Collapse the side menu", main: "App navigation" },
     title: "Create in 3D",
     subtitle: "From a photo or a sentence to a reviewed model that is ready to use.",
     tabs: { photo: "Photo", multi: "Several photos", text: "Text", import: "Import GLB" },
     exampleBadge: "Example",
+    watchLive: "Watch live",
     dropPhoto: "Drop a photo of your product here",
     dropPhotos: "Drop up to 4 photos: front, left, back and right",
     dropGlb: "Drop your GLB file here",

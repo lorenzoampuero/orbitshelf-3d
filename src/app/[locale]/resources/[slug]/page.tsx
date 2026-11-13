@@ -1,3 +1,5 @@
+import { ModelCover } from "@/components/marketing/model-art";
+import { coverFor } from "@/content/page-models";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -50,7 +52,7 @@ export default async function ResourceArticlePage({ params }: Props) {
   const related = [...others.filter((a) => a.tag === article.tag), ...others.filter((a) => a.tag !== article.tag)].slice(0, 3);
 
   return (
-    <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
+    <MarketingShell tone="blue" locale={locale} dict={dict} isSignedIn={Boolean(user)}>
       <article>
         <header className="relative pb-10 pt-32 md:pt-40">
           <div className="container-page max-w-3xl space-y-5">
@@ -70,7 +72,8 @@ export default async function ResourceArticlePage({ params }: Props) {
           </div>
         </header>
 
-        <div className="container-page max-w-3xl pb-6">
+        <div className="container-page max-w-3xl space-y-6 pb-6">
+          <ModelCover model={coverFor(article.slug)} locale={locale} />
           <div className="card reveal space-y-9 p-7 md:p-10">
             {article.sections.map((s, i) => (
               <section key={s.h} className={`space-y-3.5 ${i > 0 ? "border-t border-line pt-9" : ""}`}>

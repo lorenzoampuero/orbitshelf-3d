@@ -1,0 +1,399 @@
+{
+ "0237e0b0": {
+  "src": "src/0237e0b0/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Blue puffer jacket",
+  "category": "apparel",
+  "tags": [
+   "jacket",
+   "puffer"
+  ],
+  "hue": "blue"
+ },
+ "224688df": {
+  "src": "src/224688df/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Robot dog",
+  "category": "product",
+  "tags": [
+   "robot",
+   "quadruped"
+  ],
+  "hue": "grey"
+ },
+ "26375c79": {
+  "src": "src/26375c79/base_basic_pbr.glb",
+  "status": "use",
+  "name": "White battle mech",
+  "category": "character",
+  "tags": [
+   "mech",
+   "robot",
+   "armed"
+  ],
+  "hue": "white",
+  "note": "Missile pods; similar to existing mech designs. Owner decision 2026-11-12: use"
+ },
+ "3155ce62": {
+  "src": "src/3155ce62/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Sci-fi blaster",
+  "category": "prop",
+  "tags": [
+   "gun",
+   "toy",
+   "sci-fi"
+  ],
+  "hue": "multicolor",
+  "note": "A weapon-shaped prop, even if toy-like. Owner decision 2026-11-12: use"
+ },
+ "322f0e31": {
+  "src": "src/322f0e31/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Purple dragon",
+  "category": "creature",
+  "tags": [
+   "dragon",
+   "low-poly"
+  ],
+  "hue": "purple"
+ },
+ "380eaea7": {
+  "src": "src/380eaea7/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Orange puffer vest",
+  "category": "apparel",
+  "tags": [
+   "vest",
+   "puffer"
+  ],
+  "hue": "orange"
+ },
+ "41676bd2": {
+  "src": "src/41676bd2/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Orange assault mech",
+  "category": "character",
+  "tags": [
+   "mech",
+   "robot",
+   "armed"
+  ],
+  "hue": "orange",
+  "note": "Reads as an existing anime mech and carries a rifle; same proportions as the excluded warrior. Owner decision 2026-11-12: use"
+ },
+ "4fbe56d9": {
+  "src": "src/4fbe56d9/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Gothic chapel",
+  "category": "architecture",
+  "tags": [
+   "building",
+   "church",
+   "stone"
+  ],
+  "hue": "grey"
+ },
+ "6028defa": {
+  "src": "src/6028defa/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Stone cottage",
+  "category": "architecture",
+  "tags": [
+   "house",
+   "cottage",
+   "low-poly"
+  ],
+  "hue": "grey"
+ },
+ "6200c066": {
+  "src": "src/6200c066/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Lizard creature",
+  "category": "creature",
+  "tags": [
+   "lizard",
+   "dragon"
+  ],
+  "hue": "red"
+ },
+ "64c5bdd7": {
+  "src": "src/64c5bdd7/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Dark frame block",
+  "category": "prop",
+  "tags": [
+   "geometric",
+   "frame"
+  ],
+  "hue": "graphite",
+  "note": "Owner decision 2026-11-12: shown only in the connections section, as a destination that reads the files",
+  "role": "integration",
+  "integration": "Unity"
+ },
+ "7088689d": {
+  "src": "src/7088689d/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Fantasy tower",
+  "category": "architecture",
+  "tags": [
+   "tower",
+   "fantasy",
+   "blue"
+  ],
+  "hue": "blue"
+ },
+ "7850adb8": {
+  "src": "src/7850adb8/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Fabric loveseat",
+  "category": "furniture",
+  "tags": [
+   "sofa",
+   "loveseat"
+  ],
+  "hue": "beige"
+ },
+ "824e0e1c": {
+  "src": "src/824e0e1c/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Orange walker mech",
+  "category": "character",
+  "tags": [
+   "mech",
+   "robot"
+  ],
+  "hue": "orange"
+ },
+ "842cbef6": {
+  "src": "src/842cbef6/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Grey sofa",
+  "category": "furniture",
+  "tags": [
+   "sofa"
+  ],
+  "hue": "grey"
+ },
+ "9a58e407": {
+  "src": "src/9a58e407/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Crystal golem",
+  "category": "character",
+  "tags": [
+   "golem",
+   "robot",
+   "crystal"
+  ],
+  "hue": "purple"
+ },
+ "9b749bdb": {
+  "src": "src/9b749bdb/base_basic_pbr.glb",
+  "status": "use",
+  "name": "T-rex",
+  "category": "creature",
+  "tags": [
+   "dinosaur",
+   "trex"
+  ],
+  "hue": "purple"
+ },
+ "9ba1b1f1": {
+  "src": "src/9ba1b1f1/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Monster head",
+  "category": "creature",
+  "tags": [
+   "monster",
+   "teeth"
+  ],
+  "hue": "blue"
+ },
+ "9d8b403c": {
+  "src": "src/9d8b403c/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Money bag",
+  "category": "prop",
+  "tags": [
+   "bag",
+   "money",
+   "toy"
+  ],
+  "hue": "orange"
+ },
+ "a60f2e3c": {
+  "src": "src/a60f2e3c/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Wooden toy figure",
+  "category": "character",
+  "tags": [
+   "toy",
+   "figure",
+   "wood"
+  ],
+  "hue": "wood",
+  "note": "Close to a known tree-character figure; check. Owner decision 2026-11-12: use"
+ },
+ "agentic": {
+  "src": "src/agentic/model.glb",
+  "status": "use",
+  "name": "Sci-fi device (230 parts)",
+  "category": "prop",
+  "tags": [
+   "device",
+   "hard-surface"
+  ],
+  "hue": "grey",
+  "note": "Part names mention accessory rails: may be a firearm. Owner decision 2026-11-12: use"
+ },
+ "bfda4d75": {
+  "src": "src/bfda4d75/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Tufted sofa",
+  "category": "furniture",
+  "tags": [
+   "sofa",
+   "tufted"
+  ],
+  "hue": "silver"
+ },
+ "c24ab0e5": {
+  "src": "src/c24ab0e5/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Zip hoodie",
+  "category": "apparel",
+  "tags": [
+   "hoodie",
+   "jacket",
+   "black"
+  ],
+  "hue": "navy"
+ },
+ "d3e53c56": {
+  "src": "src/d3e53c56/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Green shopping bag with logo",
+  "category": "product",
+  "tags": [
+   "bag",
+   "logo"
+  ],
+  "hue": "green",
+  "note": "Owner decision 2026-11-12: shown only in the connections section, as a destination that reads the files",
+  "role": "integration",
+  "integration": "Shopify"
+ },
+ "d99155df": {
+  "src": "src/d99155df/base_basic_pbr.glb",
+  "status": "exclude",
+  "name": "Warrior with sword",
+  "category": "character",
+  "tags": [
+   "warrior",
+   "sword"
+  ],
+  "hue": "grey",
+  "note": "Looks like a third-party video game character"
+ },
+ "ddd737fb": {
+  "src": "src/ddd737fb/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Blocky voxel character",
+  "category": "character",
+  "tags": [
+   "voxel",
+   "pixel",
+   "character"
+  ],
+  "hue": "blue",
+  "note": "Reads as the Minecraft player. Owner decision 2026-11-12: use"
+ },
+ "dfdd3521": {
+  "src": "src/dfdd3521/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Red dragon",
+  "category": "creature",
+  "tags": [
+   "dragon",
+   "fantasy",
+   "wings"
+  ],
+  "hue": "red",
+  "note": "Only 4096 px texture"
+ },
+ "f8ae7234": {
+  "src": "src/f8ae7234/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Baby dragon",
+  "category": "creature",
+  "tags": [
+   "dragon",
+   "toy",
+   "cute"
+  ],
+  "hue": "orange",
+  "note": "Already on the home"
+ },
+ "fb365098": {
+  "src": "src/fb365098/base_basic_pbr.glb",
+  "status": "use",
+  "name": "Blender logo",
+  "category": "product",
+  "tags": [
+   "logo"
+  ],
+  "hue": "orange",
+  "note": "Owner decision 2026-11-12: shown only in the connections section, as a destination that reads the files",
+  "role": "integration",
+  "integration": "Blender"
+ },
+ "fcebda7b": {
+  "src": "src/fcebda7b/base_basic_pbr.glb",
+  "status": "use",
+  "name": "White loveseat",
+  "category": "furniture",
+  "tags": [
+   "sofa"
+  ],
+  "hue": "white"
+ },
+ "sculpt": {
+  "src": "src/sculpt/model.glb",
+  "status": "use",
+  "name": "Geometry-only gadget",
+  "category": "prop",
+  "tags": [
+   "untextured",
+   "sculpture"
+  ],
+  "hue": "white",
+  "note": "4.79M triangles, no textures. Owner decision 2026-11-12: use"
+ },
+ "hoodie": {
+  "src": "hoodie/base.obj",
+  "tex": "hoodie",
+  "name": "Black hoodie",
+  "category": "apparel",
+  "tags": [
+   "hoodie",
+   "black"
+  ],
+  "hue": "black",
+  "status": "use",
+  "note": "Already on the home"
+ },
+ "kitchen": {
+  "src": "kitchen/base.obj",
+  "tex": "kitchen",
+  "name": "Kitchen units",
+  "category": "furniture",
+  "tags": [
+   "kitchen",
+   "wood",
+   "cabinet"
+  ],
+  "hue": "wood",
+  "status": "use",
+  "note": "Already on the home"
+ }
+}

@@ -41,22 +41,11 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     expect(hreflangEn).toBeTruthy();
     expect(hreflangEs).toContain("/es");
 
-    // Wait for Hero 3D viewer to validate GLB and reach ready state
-    const viewer = page.getByTestId("hero-model-viewer");
-    await expect(viewer).toHaveAttribute("data-status", "ready");
-
-    // Verify pointer drag updates camera orbit
-    const initialOrbit = await viewer.getAttribute("data-orbit");
-    const box = await viewer.boundingBox();
-    expect(box).not.toBeNull();
-    if (box) {
-      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-      await page.mouse.down();
-      await page.mouse.move(box.x + box.width / 2 + 80, box.y + box.height / 2 - 30, { steps: 5 });
-      await page.mouse.up();
-    }
-    const afterOrbit = await viewer.getAttribute("data-orbit");
-    expect(afterOrbit).not.toEqual(initialOrbit);
+    // The home is made of renders: the hero picture builds itself and there is no live 3D viewer on the page
+    const hero = page.getByTestId("hero-build");
+    await expect(hero).toBeVisible();
+    await expect(hero.locator("img").last()).toHaveJSProperty("complete", true);
+    await expect(page.locator("model-viewer")).toHaveCount(0);
 
     // Screenshot: Desktop Home
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, "01-home-desktop.png"), fullPage: false });
@@ -71,7 +60,7 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     // Mobile viewport screenshot & layout check
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/");
-    await expect(page.getByTestId("hero-model-viewer")).toHaveAttribute("data-status", "ready");
+    await expect(page.getByTestId("hero-build")).toBeVisible();
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, "02-home-mobile.png"), fullPage: false });
 
     // Check Spanish routes (/es, /es/pricing, /es/compare/ai-3d-vs-manual, /es/resources)
@@ -1254,6 +1243,32 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     await user.close();
   });
 
+  test("12. Home art: renders only with no live viewer, the renders are on the page, the comparison works from the keyboard, and the menus show images", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 840 });
+    await page.goto("/es");
+    await expect(page.getByTestId("hero-build")).toBeVisible();
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await expect(page.locator("model-viewer")).toHaveCount(0);
+
+    expect(await page.locator('main img[src*="/landing/"], main img[src*="/models/"]').count()).toBeGreaterThanOrEqual(8);
+
+    const range = page.getByTestId("compare-range");
+    const layer = page.getByTestId("compare-layer");
+    const before = await layer.getAttribute("style");
+    await range.focus();
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("ArrowRight");
+    await expect.poll(() => layer.getAttribute("style")).not.toEqual(before);
+    await page.getByTestId("compare-view-clay").click();
+    await expect(page.getByTestId("compare-view-clay")).toHaveAttribute("aria-pressed", "true");
+
+    // English is the main language at /, and Spanish is one click away.
+    await page.goto("/");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await page.getByRole("button", { name: "Product", exact: true }).click();
+    await expect(page.locator('#menu-product img[src*="/models/"]')).toHaveCount(4);
+  });
+
   test("11. Model picker: Automatic by default, a catalogue of eight models by tier with credits, and none of them can be chosen while no engine is on", async ({ browser }) => {
     const user = await browser.newContext();
     const page = await user.newPage();
@@ -1277,6 +1292,64 @@ test.describe("OrbitShelf 3D — Full E2E, API, Security, i18n, and Accessibilit
     // It is the same page on a phone, with nothing wider than the screen.
     await page.setViewportSize({ width: 375, height: 800 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+    await user.close();
+  });
+
+  test("13. Visual regression: every dashboard screen stays accessible, readable and free of overflow, broken requests or console errors", async ({ browser }) => {
+    test.setTimeout(120_000);
+    const user = await browser.newContext({ reducedMotion: "reduce" });
+    const page = await user.newPage();
+    const consoleErrors: string[] = [];
+    page.on("console", (msg) => { if (msg.type() === "error") consoleErrors.push(`[console, ${page.url()}] ${msg.text()}`); });
+    page.on("response", (res) => { if (res.status() === 404) consoleErrors.push(`[404, from ${page.url()}] ${res.request().method()} ${res.url()}`); });
+    page.on("pageerror", (err) => consoleErrors.push(String(err)));
+
+    expect((await user.request.post("/api/auth/login", { data: { email: "regression@merchant.test" } })).ok()).toBe(true);
+
+    // One real model, so the library, trash and studio render their non-empty state too.
+    await page.goto("/dashboard/create");
+    await page.fill("#create-title", "Regression Sample");
+    await page.getByTestId("source-demo-radio").check();
+    await page.getByTestId("create-submit-btn").click();
+    await page.waitForURL("**/dashboard/models/*");
+    const modelId = page.url().split("/").pop()!;
+
+    const screens = [
+      "/dashboard",
+      "/dashboard/create",
+      "/dashboard/models",
+      `/dashboard/models/${modelId}`,
+      "/dashboard/models/trash",
+      "/dashboard/explore",
+      "/dashboard/connections",
+      "/dashboard/embeds",
+      "/dashboard/api",
+      "/dashboard/billing",
+      "/dashboard/usage",
+      "/dashboard/settings",
+      "/dashboard/help",
+    ];
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const path of screens) {
+        await page.goto(path);
+        await expect(page.locator("h1")).toHaveCount(1);
+        const a11y = await new AxeBuilder({ page }).exclude("model-viewer").withTags(["wcag2a", "wcag2aa"]).analyze();
+        expect(a11y.violations, `axe violations on ${path} at ${width}px`).toEqual([]);
+        const metrics = await page.evaluate(() => ({
+          overflow: document.documentElement.scrollWidth - window.innerWidth,
+          liveViewers: document.querySelectorAll("model-viewer").length,
+          small: [...document.querySelectorAll("main p, main li, main span, main a, main h1, main h2, main h3, main th, main td, main summary, main dd, main dt")]
+            .filter((el) => el.children.length === 0 && (el.textContent ?? "").trim() && parseFloat(getComputedStyle(el).fontSize) < 12)
+            .map((el) => (el.textContent ?? "").trim().slice(0, 40)),
+        }));
+        expect(metrics.overflow, `horizontal overflow on ${path} at ${width}px`).toBeLessThanOrEqual(0);
+        expect(metrics.small, `text under 12px on ${path} at ${width}px`).toEqual([]);
+        // At most one live 3D viewer per screen, per the art direction (renders everywhere, one viewer at a time).
+        expect(metrics.liveViewers, `more than one live viewer on ${path} at ${width}px`).toBeLessThanOrEqual(1);
+      }
+    }
+    expect(consoleErrors, "browser console errors across the dashboard").toEqual([]);
     await user.close();
   });
 });

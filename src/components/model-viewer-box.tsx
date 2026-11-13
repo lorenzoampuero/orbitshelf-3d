@@ -129,15 +129,23 @@ export function ModelViewerBox({
     return () => observer.disconnect();
   }, []);
 
-  // Load the library only when the box is near the screen. A failed import is a failed preview.
+  // Load the library only when the box is near the screen. When it is visible on first paint (the
+  // dashboard's composer stage), the import still waits for the browser's idle time, so it never
+  // competes with the page's own hydration for the main thread. A failed import is a failed preview.
   useEffect(() => {
     if (!visible) return;
     let cancelled = false;
-    import("@google/model-viewer").catch(() => {
-      if (!cancelled) setFailedSrc(src);
-    });
+    const run = () => {
+      if (cancelled) return;
+      import("@google/model-viewer").catch(() => {
+        if (!cancelled) setFailedSrc(src);
+      });
+    };
+    const idle = typeof window.requestIdleCallback === "function" ? window.requestIdleCallback(run, { timeout: 800 }) : window.setTimeout(run, 0);
     return () => {
       cancelled = true;
+      if (typeof window.cancelIdleCallback === "function" && typeof window.requestIdleCallback === "function") window.cancelIdleCallback(idle as number);
+      else window.clearTimeout(idle as number);
     };
   }, [visible, src]);
 

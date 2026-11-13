@@ -56,7 +56,7 @@ export function EmbedsClient({ locale, dict, approved, initialEmbeds, origin }: 
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[16px] border border-line bg-surface p-5 space-y-4">
+      <section className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5 space-y-4">
         <h2 className="font-display text-base font-semibold text-fg">{c.createTitle}</h2>
         {approved.length === 0 ? (
           <div className="space-y-3 text-xs text-muted">

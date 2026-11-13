@@ -113,14 +113,14 @@ export function AssetTools({ model, t, onModelChange }: { model: ModelDto; t: Di
 
   if (loadFailed) {
     return (
-      <section className="rounded-[16px] border border-line bg-surface p-5 text-xs text-muted" data-testid="asset-tools">
+      <section className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5 text-xs text-muted" data-testid="asset-tools">
         {c.loadFailed}
       </section>
     );
   }
   if (!versions) {
     return (
-      <section className="rounded-[16px] border border-line bg-surface p-5 text-xs text-muted" data-testid="asset-tools">
+      <section className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5 text-xs text-muted" data-testid="asset-tools">
         {c.loading}
       </section>
     );
@@ -132,7 +132,7 @@ export function AssetTools({ model, t, onModelChange }: { model: ModelDto; t: Di
   const compared = versions.find((v) => v.id === comparing);
 
   return (
-    <section aria-labelledby="tools-heading" className="space-y-5 rounded-[16px] border border-line bg-surface p-5" data-testid="asset-tools">
+    <section aria-labelledby="tools-heading" className="space-y-5 rounded-[var(--radius-card)] border border-line bg-surface-1 p-5" data-testid="asset-tools">
       <div>
         <h2 id="tools-heading" className="font-display text-sm font-semibold text-fg">
           {c.title}

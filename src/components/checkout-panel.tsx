@@ -42,7 +42,7 @@ export function CheckoutPanel({ groups, copy }: { groups: CheckoutGroup[]; copy:
               {list.map((g) => {
                 const selected = g.options.find((o) => o.key === choice[g.id]) ?? g.options[0];
                 return (
-                  <li key={g.id} className="flex flex-col rounded-[16px] border border-line bg-surface p-4">
+                  <li key={g.id} className="flex flex-col rounded-[var(--radius-card)] border border-line bg-surface-1 p-4">
                     <p className="text-sm font-semibold text-fg">{g.name}</p>
                     <p className="mt-2 font-display text-2xl font-bold tabular-nums text-fg">
                       US${selected.priceUsd}

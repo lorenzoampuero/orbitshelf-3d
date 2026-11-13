@@ -8,7 +8,16 @@ import { currentUser } from "@/lib/api";
 import { MarketingShell } from "@/components/marketing-shell";
 import { ModelViewerBox } from "@/components/model-viewer-box";
 import { Card, CardBody, ClosingBanner, FaqList, PageHero, Section, SectionTitle, StatusBadge, Tag } from "@/components/marketing-kit";
-import { AsideCard, Chips, FlowDiagram, ModeLinkCard, SolutionsRow, TIP_SPANS, TipCard, demoKind } from "@/components/features/feature-parts";
+import { AsideCard, Chips, FlowDiagram, ModeLinkCard, SolutionsRow, TIP_SPANS, TipCard } from "@/components/features/feature-parts";
+import { ModelPile, ModelRail, ModelSpotlight } from "@/components/marketing/model-art";
+import { FEATURE_MODELS, RAIL_COPY, closingArt, SPOTLIGHT } from "@/content/page-models";
+import type { Tone } from "@/content/tones";
+
+const FEATURE_TONE: Record<string, { tone: Tone; seed: number; art: number }> = {
+  "image-to-3d": { tone: "blue", seed: 2, art: 6 },
+  "text-to-3d": { tone: "magenta", seed: 3, art: 7 },
+  "multi-image-to-3d": { tone: "amber", seed: 4, art: 5 },
+};
 import { FEATURES_COMMON, FEATURE_SLUGS, featureCopy, isFeatureSlug } from "@/content/features";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
@@ -38,6 +47,8 @@ export default async function FeatureModePage({ params }: Props) {
   const common = FEATURES_COMMON[locale];
   const create = localePath(locale, "/dashboard/create");
   const others = FEATURE_SLUGS.filter((s) => s !== slug);
+  const fm = FEATURE_MODELS[slug];
+  const rail = RAIL_COPY[locale];
 
   const faqJsonLd = {
     "@context": "https://schema.org",
@@ -58,16 +69,18 @@ export default async function FeatureModePage({ params }: Props) {
   };
 
   return (
-    <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
+    <MarketingShell tone={FEATURE_TONE[slug].tone} locale={locale} dict={dict} isSignedIn={Boolean(user)}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
       {/* 1. Hero */}
       <PageHero
+        marquee={FEATURE_TONE[slug].seed}
         pill={c.hero.pill}
         title={c.hero.title}
         text={c.hero.text}
         primary={{ href: create, label: common.closingCta, testId: "feature-cta-primary" }}
         secondary={{ href: localePath(locale, "/examples"), label: common.heroSecondary }}
+        visual={<ModelPile models={fm.pile} locale={locale} />}
       />
 
       {/* 2. What goes in, what comes out */}
@@ -80,10 +93,10 @@ export default async function FeatureModePage({ params }: Props) {
               <h3 className="max-w-md text-2xl font-semibold leading-tight">{c.inOut.title}</h3>
               <p className="max-w-md text-sm leading-relaxed text-muted">{c.inOut.text}</p>
             </div>
-            <FlowDiagram inputs={c.inOut.inputs} outputLabel={common.flowOutput} kind={demoKind(c.viewer.src)} />
+            <FlowDiagram inputs={c.inOut.inputs} outputLabel={common.flowOutput} model={fm.flow} />
           </Card>
 
-          <Card className="space-y-5 md:col-span-2">
+          <Card art={{ model: fm.rail[3] }} className="space-y-5 md:col-span-2">
             <Tag>{common.flowGet}</Tag>
             <ul className="space-y-3 text-sm leading-relaxed text-muted">
               {c.inOut.gets.map((g) => (
@@ -109,16 +122,20 @@ export default async function FeatureModePage({ params }: Props) {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
           <AsideCard aside={c.aside} />
           {c.tips.map((tip, i) => (
-            <TipCard key={tip.title} tip={tip} span={TIP_SPANS[i % TIP_SPANS.length]} />
+            <TipCard key={tip.title} tip={tip} span={TIP_SPANS[i % TIP_SPANS.length]} art={[...fm.rail, fm.pile[0]][i % 5]} />
           ))}
         </div>
       </Section>
 
       {/* 4. What you can do after generating */}
       <Section>
+        <ModelSpotlight model={SPOTLIGHT[slug]} locale={locale} flip />
+      </Section>
+
+      <Section>
         <SectionTitle sub={common.afterSub}>{common.afterTitle}</SectionTitle>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-          <Card tone="red" className="grid grid-cols-1 gap-6 overflow-hidden md:col-span-6 md:grid-cols-2 md:p-9">
+          <Card tone="feature" className="grid grid-cols-1 gap-6 overflow-hidden md:col-span-6 md:grid-cols-2 md:p-9">
             <div className="flex flex-col items-start justify-center space-y-4">
               <Tag>{common.mesh.tag}</Tag>
               <h3 className="text-2xl font-semibold leading-tight">{common.mesh.title}</h3>
@@ -148,7 +165,7 @@ export default async function FeatureModePage({ params }: Props) {
             <p className="max-w-lg text-sm leading-relaxed text-muted">{c.reviewText}</p>
             <div aria-hidden="true" className="flex gap-1.5 pt-1">
               {[0, 1, 2, 3, 4].map((i) => (
-                <span key={i} className="flex h-7 w-7 items-center justify-center rounded-lg bg-blood text-white">
+                <span key={i} className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-fill text-white">
                   <Check className="h-4 w-4" />
                 </span>
               ))}
@@ -179,6 +196,12 @@ export default async function FeatureModePage({ params }: Props) {
             </Link>
           </Card>
         </div>
+      </Section>
+
+      {/* Renders of finished models of this kind. */}
+      <Section>
+        <SectionTitle sub={rail.sub}>{rail.title}</SectionTitle>
+        <ModelRail models={fm.rail} locale={locale} label={rail.label} />
       </Section>
 
       {/* 5. Honest limits */}
@@ -237,7 +260,7 @@ export default async function FeatureModePage({ params }: Props) {
       </Section>
 
       {/* 8. Closing banner */}
-      <ClosingBanner titleA={c.closing.titleA} titleB={c.closing.titleB} cta={common.closingCta} href={create} note={common.closingNote} />
+      <ClosingBanner art={closingArt(FEATURE_TONE[slug].art)} titleA={c.closing.titleA} titleB={c.closing.titleB} cta={common.closingCta} href={create} note={common.closingNote} />
     </MarketingShell>
   );
 }

@@ -66,7 +66,7 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
 
       {live ? (
         <section className="space-y-4" aria-labelledby="buy-heading">
-          <div className="rounded-[16px] border border-line bg-surface p-6">
+          <div className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-6">
             <h2 id="buy-heading" className="font-display text-base font-semibold text-fg">{c.buyTitle}</h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{c.buyText}</p>
             <p className="mt-3 text-sm font-medium text-fg" data-testid="billing-balance">{c.balance.replace("{n}", String(usage.balance))}</p>
@@ -78,7 +78,7 @@ export default async function BillingPage({ params }: { params: Promise<{ locale
         </section>
       ) : (
         <>
-          <div className="rounded-[16px] border border-line bg-surface p-6">
+          <div className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-6">
             <span className="inline-flex rounded-full border border-line bg-surface-2 px-2.5 py-0.5 text-xs font-medium text-amber">{t.dash.settings.planned}</span>
             <h2 className="mt-3 font-display text-base font-semibold text-fg">{c.plannedTitle}</h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">{c.plannedText}</p>

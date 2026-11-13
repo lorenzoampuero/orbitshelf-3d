@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Check } from "lucide-react";
+import { ArtImage } from "@/components/home/art-image";
+import type { GalleryModel } from "@/lib/models";
+import { RenderMarquee } from "@/components/marketing/model-art";
 
 /**
  * Shared building blocks for every public page, so the home, the feature pages, the trade pages,
@@ -10,8 +13,8 @@ import { ArrowRight, ArrowUpRight, Check } from "lucide-react";
 /** Page width wrapper with the vertical rhythm every section uses. */
 export function Section({ children, className = "", id }: { children: React.ReactNode; className?: string; id?: string }) {
   return (
-    <section id={id} className={`py-16 md:py-24 ${className}`}>
-      <div className="container-page space-y-10">{children}</div>
+    <section id={id} className={`py-12 md:py-16 ${className}`}>
+      <div className="container-page space-y-8">{children}</div>
     </section>
   );
 }
@@ -52,11 +55,11 @@ export function Pill({ children }: { children: React.ReactNode }) {
 }
 
 /** A drawn tile for diagrams: an icon in a rounded square. Never a screenshot, never presented as a result. */
-export function Tile({ children, label, tone = "dark" }: { children: React.ReactNode; label?: string; tone?: "dark" | "blood" }) {
+export function Tile({ children, label, tone = "dark" }: { children: React.ReactNode; label?: string; tone?: "dark" | "accent-fill" }) {
   return (
     <span className="flex flex-col items-center gap-1.5">
       <span
-        className={`flex h-14 w-14 items-center justify-center rounded-2xl ${tone === "blood" ? "bg-blood text-white" : "border border-line bg-surface-2 text-fg"}`}
+        className={`flex h-14 w-14 items-center justify-center rounded-2xl ${tone === "accent-fill" ? "bg-accent-fill text-white" : "border border-line bg-surface-2 text-fg"}`}
       >
         {children}
       </span>
@@ -75,15 +78,15 @@ export function StatusBadge({ children, tone = "muted" }: { children: React.Reac
  * Card looks, so a page is not ten identical panels:
  *  - default: the solid surface card.
  *  - outline: no fill, a visible border. For secondary notes.
- *  - red: a deep red gradient. For the one card a section is built around.
+ *  - feature: a deep violet gradient. For the one card a section is built around.
  *  - planned: dashed and transparent. For things that do not exist yet, so live items lead.
  * All share the 24px radius.
  */
-export type CardTone = "default" | "outline" | "red" | "planned";
+export type CardTone = "default" | "outline" | "feature" | "planned";
 const CARD_TONE: Record<CardTone, string> = {
   default: "",
   outline: "bg-transparent border-white/20",
-  red: "bg-[linear-gradient(135deg,#2e0709_0%,#14090a_70%)] border-[#5a1618]",
+  feature: "bg-[linear-gradient(135deg,color-mix(in_srgb,var(--accent-fill)_30%,var(--surface-1))_0%,var(--surface-1)_70%)] border-accent-fill/50",
   planned: "bg-transparent border-dashed border-white/25",
 };
 /** Pass `lift` for the hover rise on cards that are links or invite a look. */
@@ -92,13 +95,25 @@ export function Card({
   className = "",
   lift = false,
   tone = "default",
+  art,
 }: {
   children: React.ReactNode;
   className?: string;
   lift?: boolean;
   tone?: CardTone;
+  /** A render that breaks out of the card's bottom corner, over its own coloured pool. Decorative. Keep the text column narrow beside it. */
+  art?: { model: GalleryModel; side?: "left" | "right" };
 }) {
-  return <article className={`card reveal p-7 md:p-8 ${lift ? "card-lift" : ""} ${CARD_TONE[tone]} ${className}`}>{children}</article>;
+  return (
+    <article className={`card reveal p-7 md:p-8 ${lift ? "card-lift" : ""} ${art ? "isolate overflow-hidden" : ""} ${CARD_TONE[tone]} ${className}`}>
+      {art ? (
+        <div aria-hidden="true" className={`card-art hidden md:block ${art.side === "left" ? "left-2" : "right-2"}`}>
+          <ArtImage image={art.model.beauty} alt="" small sizes="240px" className="art-float float-b relative h-auto w-full" />
+        </div>
+      ) : null}
+      {children}
+    </article>
+  );
 }
 
 /** Tone classes for cards that are not built with <Card> (list items). Same looks as <Card tone>. */
@@ -141,6 +156,8 @@ export function PageHero({
   primary,
   secondary,
   visual,
+  marquee,
+  calm = false,
 }: {
   pill?: string;
   title: string;
@@ -148,15 +165,36 @@ export function PageHero({
   primary?: { href: string; label: string; testId?: string };
   secondary?: { href: string; label: string };
   visual?: React.ReactNode;
+  /** Seed of the band of drifting renders under the visual; leave out for none. */
+  marquee?: number;
+  /** Sober pages (legal): no coloured light behind the title. */
+  calm?: boolean;
 }) {
   return (
-    <section className="relative overflow-hidden pb-10 pt-32 md:pt-40">
+    <section className="no-wash relative isolate overflow-hidden pb-10 pt-32 md:pt-40">
+      {calm ? null : (
+        <div aria-hidden="true" className="aurora">
+          <i className="b1" />
+          <i className="b2" />
+          <i className="b3" />
+        </div>
+      )}
       <div className="container-page flex flex-col items-center text-center">
-        {pill ? <Pill>{pill}</Pill> : null}
-        <h1 className="hero-title mt-6 max-w-4xl text-[clamp(2.2rem,5.2vw,4rem)]">{title}</h1>
-        {text ? <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted md:text-lg">{text}</p> : null}
+        {pill ? (
+          <div className="enter">
+            <Pill>{pill}</Pill>
+          </div>
+        ) : null}
+        <h1 className="hero-title enter mt-6 max-w-4xl text-[clamp(2.2rem,5.2vw,4rem)]" style={{ "--d": "0.08s" } as React.CSSProperties}>
+          {title}
+        </h1>
+        {text ? (
+          <p className="enter mt-5 max-w-2xl text-base leading-relaxed text-muted md:text-lg" style={{ "--d": "0.16s" } as React.CSSProperties}>
+            {text}
+          </p>
+        ) : null}
         {primary || secondary ? (
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <div className="enter mt-8 flex flex-wrap items-center justify-center gap-3" style={{ "--d": "0.24s" } as React.CSSProperties}>
             {primary ? (
               <Link href={primary.href} data-testid={primary.testId} className="btn-pill btn-solid py-3.5">
                 {primary.label}
@@ -172,6 +210,7 @@ export function PageHero({
         ) : null}
         {visual ? <div className="mt-12 w-full">{visual}</div> : null}
       </div>
+      {marquee !== undefined ? <RenderMarquee seed={marquee} /> : null}
     </section>
   );
 }
@@ -197,33 +236,44 @@ export function FaqList({ items }: { items: { q: string; a: string }[] }) {
 }
 
 /** Closing banner on a starfield: two-line title, the second in gradient, one button. */
-export function ClosingBanner({ titleA, titleB, cta, href, note }: { titleA: string; titleB: string; cta: string; href: string; note?: string }) {
+export function ClosingBanner({
+  titleA,
+  titleB,
+  cta,
+  href,
+  note,
+  visual,
+  art,
+}: {
+  titleA: string;
+  titleB: string;
+  cta: string;
+  href: string;
+  note?: string;
+  /** Goes above the title. */
+  visual?: React.ReactNode;
+  /** Two renders breaking out of the banner's bottom corners (from 768 px up). Decorative. */
+  art?: [GalleryModel, GalleryModel];
+}) {
   return (
-    <section className="pb-20 pt-8 md:pb-28">
+    <section className="no-wash pb-14 pt-4 md:pb-14">
       <div className="container-page">
-      <div
-        className="reveal relative flex w-full flex-col items-center gap-6 overflow-hidden rounded-[var(--radius-card)] px-6 py-20 text-center md:py-28"
-        style={{
-          backgroundColor: "#0f0c24",
-          backgroundImage: [
-            "radial-gradient(ellipse 70% 90% at 50% 120%, #4a2fe0 0%, rgb(74 47 224 / 0) 70%)",
-            "radial-gradient(1.5px 1.5px at 12% 24%, #fff, transparent)",
-            "radial-gradient(1px 1px at 27% 68%, #fff, transparent)",
-            "radial-gradient(1.5px 1.5px at 41% 15%, #fff, transparent)",
-            "radial-gradient(1px 1px at 58% 78%, #fff, transparent)",
-            "radial-gradient(2px 2px at 73% 30%, #fff, transparent)",
-            "radial-gradient(1px 1px at 86% 62%, #fff, transparent)",
-            "radial-gradient(1.5px 1.5px at 92% 14%, #fff, transparent)",
-            "radial-gradient(1px 1px at 6% 82%, #fff, transparent)",
-            "radial-gradient(1px 1px at 66% 10%, #fff, transparent)",
-            "radial-gradient(1.5px 1.5px at 34% 88%, #fff, transparent)",
-          ].join(","),
-        }}
-      >
-        <h2 className="text-[clamp(2rem,5vw,3.75rem)] font-semibold leading-[1.05]">
+      <div className="closing-field reveal relative flex w-full flex-col items-center gap-6 overflow-hidden rounded-[var(--radius-card)] px-6 py-12 text-center md:py-16">
+        {art ? (
+          <>
+            <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -left-2 hidden w-[24%] md:block">
+              <ArtImage image={art[0].beauty} alt="" small sizes="300px" className="art-float float-a h-auto w-full -rotate-6" />
+            </div>
+            <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-2 hidden w-[24%] md:block">
+              <ArtImage image={art[1].beauty} alt="" small sizes="300px" className="art-float float-c h-auto w-full rotate-6" />
+            </div>
+          </>
+        ) : null}
+        {visual}
+        <h2 className="relative font-display text-[clamp(2rem,5vw,3.75rem)] font-semibold leading-[1.05] tracking-tight">
           {titleA}
           <br />
-          <span className="bg-gradient-to-r from-white to-[#d9ccff] bg-clip-text text-transparent">{titleB}</span>
+          <span className="text-shimmer bg-clip-text text-transparent">{titleB}</span>
         </h2>
         <Link href={href} className="btn-pill btn-ink py-3.5">
           {cta}

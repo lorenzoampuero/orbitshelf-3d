@@ -1,3 +1,5 @@
+import { ModelPile, ModelRender } from "@/components/marketing/model-art";
+import { PAGE_MODELS, coverFor } from "@/content/page-models";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
@@ -30,8 +32,8 @@ export default async function BlogIndexPage({ params }: Props) {
   const dateFmt = new Intl.DateTimeFormat(locale, { dateStyle: "long", timeZone: "UTC" });
 
   return (
-    <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
-      <PageHero pill={c.eyebrow} title={c.title} text={c.intro} />
+    <MarketingShell tone="blue" locale={locale} dict={dict} isSignedIn={Boolean(user)}>
+      <PageHero marquee={12} pill={c.eyebrow} title={c.title} text={c.intro} visual={<ModelPile models={PAGE_MODELS.blog} locale={locale} />} />
       <Section>
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-6">
           {BLOG_POSTS.map((meta, i) => {
@@ -40,10 +42,13 @@ export default async function BlogIndexPage({ params }: Props) {
               <li key={meta.slug} className={`flex ${SPANS[i] ?? "md:col-span-2"}`}>
                 <Link href={localePath(locale, `/blog/${meta.slug}`)} className={`card card-lift reveal group flex w-full flex-col justify-between gap-8 p-7 md:p-8 ${i === 0 ? "md:min-h-[260px]" : ""}`}>
                   <div className="space-y-4">
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted">
-                      <Tag>{c.tags[meta.tag]}</Tag>
-                      <time dateTime={meta.date}>{dateFmt.format(new Date(meta.date))}</time>
-                      <span>{c.minutes.replace("{n}", String(meta.minutes))}</span>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-muted">
+                        <Tag>{c.tags[meta.tag]}</Tag>
+                        <time dateTime={meta.date}>{dateFmt.format(new Date(meta.date))}</time>
+                        <span>{c.minutes.replace("{n}", String(meta.minutes))}</span>
+                      </div>
+                      <ModelRender model={coverFor(meta.slug)} className="-mt-2 h-20 w-20 md:h-24 md:w-24" />
                     </div>
                     <h2 className={`font-semibold leading-tight transition-colors group-hover:text-accent group-focus-visible:text-accent ${i === 0 ? "text-2xl md:max-w-md" : "text-xl"}`}>{post.title}</h2>
                     <p className="max-w-xl text-sm leading-relaxed text-muted">{post.summary}</p>

@@ -42,7 +42,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         <p className="mt-1 text-sm text-muted">{t.dash.settings.subtitle}</p>
       </div>
 
-      <section className="rounded-[16px] border border-line bg-surface p-5">
+      <section className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5">
         <h2 className="font-display text-base font-semibold text-fg">{t.dash.settings.profile}</h2>
         <dl className="mt-4 grid gap-3 text-xs sm:grid-cols-2">
           <div className="rounded-xl bg-bg p-3">
@@ -60,7 +60,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         </div>
       </section>
 
-      <section className="rounded-[16px] border border-line bg-surface p-5 space-y-4">
+      <section className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5 space-y-4">
         <div>
           <h2 className="font-display text-base font-semibold text-fg">{t.dash.profile.settingsTitle}</h2>
           <p className="mt-1 text-xs text-muted">{t.dash.profile.settingsIntro}</p>
@@ -68,7 +68,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         <ProfileForm dict={t} profile={await store.getProfile(session.userId)} variant="settings" />
       </section>
 
-      <section className="rounded-[16px] border border-line bg-surface p-5">
+      <section className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5">
         <h2 className="font-display text-base font-semibold text-fg">{t.dash.settings.integrations}</h2>
         <div className="mt-4 space-y-3 text-xs">
           <div className="rounded-xl border border-line bg-bg p-4">
@@ -98,7 +98,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         </div>
       </section>
 
-      <section className="rounded-[16px] border border-line bg-surface p-5">
+      <section className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5">
         <h2 className="font-display text-base font-semibold text-fg">{t.dash.settings.session}</h2>
         <div className="mt-3">
           <SignOutButton locale={locale} label={t.dash.settings.signOut} />

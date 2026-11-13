@@ -7,6 +7,8 @@ import { currentUser } from "@/lib/api";
 import { authMode } from "@/lib/env";
 import { MarketingShell } from "@/components/marketing-shell";
 import { LoginForm } from "./login-form";
+import { ArtImage } from "@/components/home/art-image";
+import { PAGE_MODELS } from "@/content/page-models";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -40,9 +42,9 @@ export default async function LoginPage({ params, searchParams }: Props) {
   return (
     <MarketingShell locale={locale} dict={dict} isSignedIn={false}>
       <section className="relative overflow-hidden pb-20 pt-32 md:pb-28 md:pt-40">
-        <div aria-hidden="true" className="glow left-1/2 top-24 h-[420px] w-[420px] -translate-x-1/2 md:h-[560px] md:w-[560px]" />
-        <div className="container-page relative max-w-md">
-          <div className="card space-y-6 p-6 md:p-9">
+        <div aria-hidden="true" className="glow left-1/2 top-24 h-[420px] w-[420px] -translate-x-1/2 md:h-[560px] md:w-[560px] lg:left-[72%]" />
+        <div className="container-page relative grid max-w-5xl items-center gap-10 lg:grid-cols-[28rem_1fr] lg:gap-16">
+          <div className="card mx-auto w-full max-w-md space-y-6 p-6 md:p-9 lg:mx-0">
             <div className="space-y-2">
               <h1 className="text-2xl font-semibold leading-tight">{dict.login.title}</h1>
               <p className="text-sm leading-relaxed text-muted">{magicLink ? dict.login.introMagic : dict.login.intro}</p>
@@ -59,6 +61,10 @@ export default async function LoginPage({ params, searchParams }: Props) {
             )}
 
             <LoginForm locale={locale} dict={dict.login} nextPath={sp.next} magicLink={magicLink} />
+          </div>
+          <div aria-hidden="true" className="relative hidden lg:block">
+            <div className="hero-pool" />
+            <ArtImage image={PAGE_MODELS.login.beauty} alt="" priority sizes="520px" className="float-slow relative mx-auto h-auto w-full max-w-[460px]" />
           </div>
         </div>
       </section>

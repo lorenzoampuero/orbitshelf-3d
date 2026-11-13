@@ -42,27 +42,27 @@ export default async function AdminWorkspacePage({ params }: Props) {
       </div>
 
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-[20px] border border-line bg-surface p-4">
+        <div className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-4">
           <dt className="text-xs text-muted">{c.balance}</dt>
           <dd className="mt-1 font-display text-2xl font-bold text-accent" data-testid="admin-detail-balance">{usage.balance}</dd>
         </div>
-        <div className="rounded-[20px] border border-line bg-surface p-4">
+        <div className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-4">
           <dt className="text-xs text-muted">{c.models}</dt>
           <dd className="mt-1 font-display text-2xl font-bold">{row?.models ?? 0}</dd>
         </div>
-        <div className="col-span-2 min-w-0 rounded-[20px] border border-line bg-surface p-4">
+        <div className="col-span-2 min-w-0 rounded-[var(--radius-card)] border border-line bg-surface-1 p-4">
           <dt className="text-xs text-muted">{c.email}</dt>
           <dd className="mt-1 truncate text-sm font-medium">{row?.email ?? "—"}</dd>
           <dd className="mt-1 text-xs text-muted">{c.created}: {formatDate(org.createdAt, locale)}</dd>
         </div>
       </dl>
 
-      <section aria-labelledby="adjust-h" className="space-y-4 rounded-[24px] border border-line bg-surface p-5">
+      <section aria-labelledby="adjust-h" className="space-y-4 rounded-[var(--radius-card)] border border-line bg-surface-1 p-5">
         <h2 id="adjust-h" className="font-display text-lg font-semibold">{c.adjustTitle}</h2>
         <AdjustCreditsForm copy={copy.form} orgId={orgId} />
       </section>
 
-      <section aria-labelledby="ledger-h" className="space-y-3 rounded-[24px] border border-line bg-surface p-5">
+      <section aria-labelledby="ledger-h" className="space-y-3 rounded-[var(--radius-card)] border border-line bg-surface-1 p-5">
         <h2 id="ledger-h" className="font-display text-lg font-semibold">{c.ledgerTitle}</h2>
         {usage.ledger.length === 0 ? (
           <p className="text-sm text-muted">{c.ledgerEmpty}</p>

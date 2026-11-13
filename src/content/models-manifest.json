@@ -1,0 +1,1587 @@
+[
+ {
+  "id": "0237e0b0",
+  "slug": "blue-puffer-jacket",
+  "name": {
+   "en": "Blue puffer jacket",
+   "es": "Chaqueta acolchada azul"
+  },
+  "alt": {
+   "en": "Light blue puffer jacket.",
+   "es": "Chaqueta acolchada de color azul claro."
+  },
+  "category": "apparel",
+  "tags": [
+   "jacket",
+   "puffer"
+  ],
+  "colour": "#598bc6",
+  "tris": {
+   "original": 500000,
+   "web": 50000,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 998200,
+   "card": 256744,
+   "spin": 534020,
+   "beauty": 96034,
+   "poster": 20092
+  },
+  "beauty": {
+   "src": "/models/blue-puffer-jacket/beauty-1600.webp",
+   "srcSmall": "/models/blue-puffer-jacket/beauty-800.webp",
+   "thumb": "/models/blue-puffer-jacket/beauty-240.webp",
+   "width": 1343,
+   "height": 1285
+  },
+  "spin": {
+   "src": "/models/blue-puffer-jacket/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 453,
+   "frameHeight": 422
+  },
+  "poster": "/models/blue-puffer-jacket/poster.webp",
+  "glb": {
+   "web": "/models/blue-puffer-jacket/web.glb",
+   "card": "/models/blue-puffer-jacket/card.glb"
+  }
+ },
+ {
+  "id": "224688df",
+  "slug": "robot-dog",
+  "name": {
+   "en": "Robot dog",
+   "es": "Perro robot"
+  },
+  "alt": {
+   "en": "Grey four-legged robot dog.",
+   "es": "Perro robot gris de cuatro patas."
+  },
+  "category": "product",
+  "tags": [
+   "robot",
+   "quadruped"
+  ],
+  "colour": "#78778e",
+  "tris": {
+   "original": 499787,
+   "web": 49999,
+   "card": 11999
+  },
+  "bytes": {
+   "web": 1149744,
+   "card": 319364,
+   "spin": 752520,
+   "beauty": 103668,
+   "poster": 16778
+  },
+  "beauty": {
+   "src": "/models/robot-dog/beauty-1600.webp",
+   "srcSmall": "/models/robot-dog/beauty-800.webp",
+   "thumb": "/models/robot-dog/beauty-240.webp",
+   "width": 1377,
+   "height": 1166
+  },
+  "spin": {
+   "src": "/models/robot-dog/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 449,
+   "frameHeight": 369
+  },
+  "poster": "/models/robot-dog/poster.webp",
+  "glb": {
+   "web": "/models/robot-dog/web.glb",
+   "card": "/models/robot-dog/card.glb"
+  }
+ },
+ {
+  "id": "26375c79",
+  "slug": "white-battle-mech",
+  "name": {
+   "en": "White battle mech",
+   "es": "Mecha de combate blanco"
+  },
+  "alt": {
+   "en": "White battle mech with shoulder missile pods.",
+   "es": "Mecha de combate blanco con lanzamisiles en los hombros."
+  },
+  "category": "character",
+  "tags": [
+   "mech",
+   "robot",
+   "armed"
+  ],
+  "colour": "#777482",
+  "tris": {
+   "original": 348811,
+   "web": 49998,
+   "card": 5498
+  },
+  "bytes": {
+   "web": 1540060,
+   "card": 314444,
+   "spin": 801224,
+   "beauty": 129306,
+   "poster": 26328
+  },
+  "beauty": {
+   "src": "/models/white-battle-mech/beauty-1600.webp",
+   "srcSmall": "/models/white-battle-mech/beauty-800.webp",
+   "thumb": "/models/white-battle-mech/beauty-240.webp",
+   "width": 1412,
+   "height": 1437
+  },
+  "spin": {
+   "src": "/models/white-battle-mech/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 489,
+   "frameHeight": 454
+  },
+  "poster": "/models/white-battle-mech/poster.webp",
+  "glb": {
+   "web": "/models/white-battle-mech/web.glb",
+   "card": "/models/white-battle-mech/card.glb"
+  }
+ },
+ {
+  "id": "3155ce62",
+  "slug": "sci-fi-blaster",
+  "name": {
+   "en": "Sci-fi blaster",
+   "es": "Blaster de ciencia ficción"
+  },
+  "alt": {
+   "en": "Toy-like sci-fi blaster in bright colours.",
+   "es": "Blaster de ciencia ficción tipo juguete, de colores vivos."
+  },
+  "category": "prop",
+  "tags": [
+   "gun",
+   "toy",
+   "sci-fi"
+  ],
+  "colour": "#7e6b76",
+  "tris": {
+   "original": 18750,
+   "web": 18750,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 495996,
+   "card": 340596,
+   "spin": 616918,
+   "beauty": 68696,
+   "poster": 13048
+  },
+  "beauty": {
+   "src": "/models/sci-fi-blaster/beauty-1600.webp",
+   "srcSmall": "/models/sci-fi-blaster/beauty-800.webp",
+   "thumb": "/models/sci-fi-blaster/beauty-240.webp",
+   "width": 1377,
+   "height": 1147
+  },
+  "spin": {
+   "src": "/models/sci-fi-blaster/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 507,
+   "frameHeight": 393
+  },
+  "poster": "/models/sci-fi-blaster/poster.webp",
+  "glb": {
+   "web": "/models/sci-fi-blaster/web.glb",
+   "card": "/models/sci-fi-blaster/card.glb"
+  }
+ },
+ {
+  "id": "322f0e31",
+  "slug": "purple-dragon",
+  "name": {
+   "en": "Purple dragon",
+   "es": "Dragón morado"
+  },
+  "alt": {
+   "en": "Low-poly purple dragon with open wings.",
+   "es": "Dragón morado de pocos polígonos con las alas abiertas."
+  },
+  "category": "creature",
+  "tags": [
+   "dragon",
+   "low-poly"
+  ],
+  "colour": "#543955",
+  "tris": {
+   "original": 10320,
+   "web": 10319,
+   "card": 10319
+  },
+  "bytes": {
+   "web": 446196,
+   "card": 291536,
+   "spin": 816004,
+   "beauty": 107606,
+   "poster": 18722
+  },
+  "beauty": {
+   "src": "/models/purple-dragon/beauty-1600.webp",
+   "srcSmall": "/models/purple-dragon/beauty-800.webp",
+   "thumb": "/models/purple-dragon/beauty-240.webp",
+   "width": 1348,
+   "height": 1013
+  },
+  "spin": {
+   "src": "/models/purple-dragon/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 512,
+   "frameHeight": 336
+  },
+  "poster": "/models/purple-dragon/poster.webp",
+  "glb": {
+   "web": "/models/purple-dragon/web.glb",
+   "card": "/models/purple-dragon/card.glb"
+  }
+ },
+ {
+  "id": "380eaea7",
+  "slug": "orange-puffer-vest",
+  "name": {
+   "en": "Orange puffer vest",
+   "es": "Chaleco acolchado naranja"
+  },
+  "alt": {
+   "en": "Orange quilted puffer vest with a zip.",
+   "es": "Chaleco acolchado naranja con cierre."
+  },
+  "category": "apparel",
+  "tags": [
+   "vest",
+   "puffer"
+  ],
+  "colour": "#bd6d49",
+  "tris": {
+   "original": 499961,
+   "web": 49999,
+   "card": 11999
+  },
+  "bytes": {
+   "web": 936020,
+   "card": 242148,
+   "spin": 482514,
+   "beauty": 73878,
+   "poster": 14728
+  },
+  "beauty": {
+   "src": "/models/orange-puffer-vest/beauty-1600.webp",
+   "srcSmall": "/models/orange-puffer-vest/beauty-800.webp",
+   "thumb": "/models/orange-puffer-vest/beauty-240.webp",
+   "width": 1436,
+   "height": 1476
+  },
+  "spin": {
+   "src": "/models/orange-puffer-vest/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 455,
+   "frameHeight": 467
+  },
+  "poster": "/models/orange-puffer-vest/poster.webp",
+  "glb": {
+   "web": "/models/orange-puffer-vest/web.glb",
+   "card": "/models/orange-puffer-vest/card.glb"
+  }
+ },
+ {
+  "id": "41676bd2",
+  "slug": "orange-assault-mech",
+  "name": {
+   "en": "Orange assault mech",
+   "es": "Mecha naranja"
+  },
+  "alt": {
+   "en": "Orange and white armoured mech holding a rifle.",
+   "es": "Mecha blindado naranja y blanco con un rifle."
+  },
+  "category": "character",
+  "tags": [
+   "mech",
+   "robot",
+   "armed"
+  ],
+  "colour": "#5f4f50",
+  "tris": {
+   "original": 1999992,
+   "web": 49999,
+   "card": 11999
+  },
+  "bytes": {
+   "web": 1169624,
+   "card": 328576,
+   "spin": 784184,
+   "beauty": 154396,
+   "poster": 31410
+  },
+  "beauty": {
+   "src": "/models/orange-assault-mech/beauty-1600.webp",
+   "srcSmall": "/models/orange-assault-mech/beauty-800.webp",
+   "thumb": "/models/orange-assault-mech/beauty-240.webp",
+   "width": 1427,
+   "height": 1494
+  },
+  "spin": {
+   "src": "/models/orange-assault-mech/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 485,
+   "frameHeight": 471
+  },
+  "poster": "/models/orange-assault-mech/poster.webp",
+  "glb": {
+   "web": "/models/orange-assault-mech/web.glb",
+   "card": "/models/orange-assault-mech/card.glb"
+  }
+ },
+ {
+  "id": "4fbe56d9",
+  "slug": "gothic-chapel",
+  "name": {
+   "en": "Gothic chapel",
+   "es": "Capilla gótica"
+  },
+  "alt": {
+   "en": "Pale stone gothic chapel with pointed windows and spires.",
+   "es": "Capilla gótica de piedra clara con ventanas apuntadas y torrecillas."
+  },
+  "category": "architecture",
+  "tags": [
+   "building",
+   "church",
+   "stone"
+  ],
+  "colour": "#787384",
+  "tris": {
+   "original": 999990,
+   "web": 50000,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 1185564,
+   "card": 323136,
+   "spin": 605700,
+   "beauty": 89510,
+   "poster": 17896
+  },
+  "beauty": {
+   "src": "/models/gothic-chapel/beauty-1600.webp",
+   "srcSmall": "/models/gothic-chapel/beauty-800.webp",
+   "thumb": "/models/gothic-chapel/beauty-240.webp",
+   "width": 1530,
+   "height": 1075
+  },
+  "spin": {
+   "src": "/models/gothic-chapel/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 512,
+   "frameHeight": 363
+  },
+  "poster": "/models/gothic-chapel/poster.webp",
+  "glb": {
+   "web": "/models/gothic-chapel/web.glb",
+   "card": "/models/gothic-chapel/card.glb"
+  }
+ },
+ {
+  "id": "6028defa",
+  "slug": "stone-cottage",
+  "name": {
+   "en": "Stone cottage",
+   "es": "Cabaña de piedra"
+  },
+  "alt": {
+   "en": "Low-poly stone cottage with a slate roof.",
+   "es": "Cabaña de piedra de pocos polígonos con techo de pizarra."
+  },
+  "category": "architecture",
+  "tags": [
+   "house",
+   "cottage",
+   "low-poly"
+  ],
+  "colour": "#514f59",
+  "tris": {
+   "original": 10242,
+   "web": 10241,
+   "card": 10241
+  },
+  "bytes": {
+   "web": 469444,
+   "card": 357604,
+   "spin": 410690,
+   "beauty": 71234,
+   "poster": 18876
+  },
+  "beauty": {
+   "src": "/models/stone-cottage/beauty-1600.webp",
+   "srcSmall": "/models/stone-cottage/beauty-800.webp",
+   "thumb": "/models/stone-cottage/beauty-240.webp",
+   "width": 1324,
+   "height": 905
+  },
+  "spin": {
+   "src": "/models/stone-cottage/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 430,
+   "frameHeight": 282
+  },
+  "poster": "/models/stone-cottage/poster.webp",
+  "glb": {
+   "web": "/models/stone-cottage/web.glb",
+   "card": "/models/stone-cottage/card.glb"
+  }
+ },
+ {
+  "id": "6200c066",
+  "slug": "lizard-creature",
+  "name": {
+   "en": "Lizard creature",
+   "es": "Criatura reptil"
+  },
+  "alt": {
+   "en": "Upright red reptile creature with spines and claws.",
+   "es": "Criatura reptil roja erguida, con espinas y garras."
+  },
+  "category": "creature",
+  "tags": [
+   "lizard",
+   "dragon"
+  ],
+  "colour": "#7f5054",
+  "tris": {
+   "original": 500000,
+   "web": 50000,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 1082636,
+   "card": 301028,
+   "spin": 639910,
+   "beauty": 113494,
+   "poster": 30200
+  },
+  "beauty": {
+   "src": "/models/lizard-creature/beauty-1600.webp",
+   "srcSmall": "/models/lizard-creature/beauty-800.webp",
+   "thumb": "/models/lizard-creature/beauty-240.webp",
+   "width": 1046,
+   "height": 1215
+  },
+  "spin": {
+   "src": "/models/lizard-creature/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 391,
+   "frameHeight": 380
+  },
+  "poster": "/models/lizard-creature/poster.webp",
+  "glb": {
+   "web": "/models/lizard-creature/web.glb",
+   "card": "/models/lizard-creature/card.glb"
+  }
+ },
+ {
+  "id": "64c5bdd7",
+  "slug": "dark-frame-block",
+  "name": {
+   "en": "Dark frame block",
+   "es": "Bloque oscuro"
+  },
+  "alt": {
+   "en": "Dark geometric block with a square opening.",
+   "es": "Bloque geométrico oscuro con una abertura cuadrada."
+  },
+  "category": "prop",
+  "tags": [
+   "geometric",
+   "frame"
+  ],
+  "role": "integration",
+  "integration": "Unity",
+  "colour": "#55526f",
+  "tris": {
+   "original": 2000000,
+   "web": 49984,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 947880,
+   "card": 256984,
+   "spin": 671602,
+   "beauty": 86254,
+   "poster": 8124
+  },
+  "beauty": {
+   "src": "/models/dark-frame-block/beauty-1600.webp",
+   "srcSmall": "/models/dark-frame-block/beauty-800.webp",
+   "thumb": "/models/dark-frame-block/beauty-240.webp",
+   "width": 1574,
+   "height": 1363
+  },
+  "spin": {
+   "src": "/models/dark-frame-block/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 512,
+   "frameHeight": 429
+  },
+  "poster": "/models/dark-frame-block/poster.webp",
+  "glb": {
+   "web": "/models/dark-frame-block/web.glb",
+   "card": "/models/dark-frame-block/card.glb"
+  }
+ },
+ {
+  "id": "7088689d",
+  "slug": "fantasy-tower",
+  "name": {
+   "en": "Fantasy tower",
+   "es": "Torre de fantasía"
+  },
+  "alt": {
+   "en": "Tall blue and gold fantasy tower with crystals.",
+   "es": "Torre de fantasía alta, azul y dorada, con cristales."
+  },
+  "category": "architecture",
+  "tags": [
+   "tower",
+   "fantasy",
+   "blue"
+  ],
+  "colour": "#6d626d",
+  "tris": {
+   "original": 500000,
+   "web": 50000,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 1312640,
+   "card": 345248,
+   "spin": 712966,
+   "beauty": 132768,
+   "poster": 31306
+  },
+  "beauty": {
+   "src": "/models/fantasy-tower/beauty-1600.webp",
+   "srcSmall": "/models/fantasy-tower/beauty-800.webp",
+   "thumb": "/models/fantasy-tower/beauty-240.webp",
+   "width": 1457,
+   "height": 1544
+  },
+  "spin": {
+   "src": "/models/fantasy-tower/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 472,
+   "frameHeight": 485
+  },
+  "poster": "/models/fantasy-tower/poster.webp",
+  "glb": {
+   "web": "/models/fantasy-tower/web.glb",
+   "card": "/models/fantasy-tower/card.glb"
+  }
+ },
+ {
+  "id": "7850adb8",
+  "slug": "fabric-loveseat",
+  "name": {
+   "en": "Fabric loveseat",
+   "es": "Sofá de tela"
+  },
+  "alt": {
+   "en": "Beige fabric loveseat on thin black legs.",
+   "es": "Sofá de dos plazas de tela beige sobre patas negras finas."
+  },
+  "category": "furniture",
+  "tags": [
+   "sofa",
+   "loveseat"
+  ],
+  "colour": "#796f6b",
+  "tris": {
+   "original": 119934,
+   "web": 50000,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 967152,
+   "card": 257604,
+   "spin": 559222,
+   "beauty": 80986,
+   "poster": 9648
+  },
+  "beauty": {
+   "src": "/models/fabric-loveseat/beauty-1600.webp",
+   "srcSmall": "/models/fabric-loveseat/beauty-800.webp",
+   "thumb": "/models/fabric-loveseat/beauty-240.webp",
+   "width": 1515,
+   "height": 1043
+  },
+  "spin": {
+   "src": "/models/fabric-loveseat/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 494,
+   "frameHeight": 326
+  },
+  "poster": "/models/fabric-loveseat/poster.webp",
+  "glb": {
+   "web": "/models/fabric-loveseat/web.glb",
+   "card": "/models/fabric-loveseat/card.glb"
+  }
+ },
+ {
+  "id": "824e0e1c",
+  "slug": "orange-walker-mech",
+  "name": {
+   "en": "Orange walker mech",
+   "es": "Mecha caminante"
+  },
+  "alt": {
+   "en": "Orange and black four-legged walking robot.",
+   "es": "Robot caminante naranja y negro de cuatro patas."
+  },
+  "category": "character",
+  "tags": [
+   "mech",
+   "robot"
+  ],
+  "colour": "#593a3e",
+  "tris": {
+   "original": 999972,
+   "web": 50000,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 1190200,
+   "card": 338248,
+   "spin": 955370,
+   "beauty": 150276,
+   "poster": 25696
+  },
+  "beauty": {
+   "src": "/models/orange-walker-mech/beauty-1600.webp",
+   "srcSmall": "/models/orange-walker-mech/beauty-800.webp",
+   "thumb": "/models/orange-walker-mech/beauty-240.webp",
+   "width": 1542,
+   "height": 1426
+  },
+  "spin": {
+   "src": "/models/orange-walker-mech/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 505,
+   "frameHeight": 449
+  },
+  "poster": "/models/orange-walker-mech/poster.webp",
+  "glb": {
+   "web": "/models/orange-walker-mech/web.glb",
+   "card": "/models/orange-walker-mech/card.glb"
+  }
+ },
+ {
+  "id": "842cbef6",
+  "slug": "grey-sofa",
+  "name": {
+   "en": "Grey sofa",
+   "es": "Sofá gris"
+  },
+  "alt": {
+   "en": "Dark grey two-seat sofa.",
+   "es": "Sofá gris oscuro de dos plazas."
+  },
+  "category": "furniture",
+  "tags": [
+   "sofa"
+  ],
+  "colour": "#393845",
+  "tris": {
+   "original": 20596,
+   "web": 20596,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 776316,
+   "card": 250568,
+   "spin": 421002,
+   "beauty": 191674,
+   "poster": 33004
+  },
+  "beauty": {
+   "src": "/models/grey-sofa/beauty-1600.webp",
+   "srcSmall": "/models/grey-sofa/beauty-800.webp",
+   "thumb": "/models/grey-sofa/beauty-240.webp",
+   "width": 1600,
+   "height": 1002
+  },
+  "spin": {
+   "src": "/models/grey-sofa/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 512,
+   "frameHeight": 321
+  },
+  "poster": "/models/grey-sofa/poster.webp",
+  "glb": {
+   "web": "/models/grey-sofa/web.glb",
+   "card": "/models/grey-sofa/card.glb"
+  }
+ },
+ {
+  "id": "9a58e407",
+  "slug": "crystal-golem",
+  "name": {
+   "en": "Crystal golem",
+   "es": "Gólem de cristal"
+  },
+  "alt": {
+   "en": "Purple armoured golem with a glowing crystal core and drill.",
+   "es": "Gólem morado blindado con núcleo de cristal brillante y taladro."
+  },
+  "category": "character",
+  "tags": [
+   "golem",
+   "robot",
+   "crystal"
+  ],
+  "colour": "#41375d",
+  "tris": {
+   "original": 499998,
+   "web": 50000,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 1060464,
+   "card": 283916,
+   "spin": 831282,
+   "beauty": 120860,
+   "poster": 21216
+  },
+  "beauty": {
+   "src": "/models/crystal-golem/beauty-1600.webp",
+   "srcSmall": "/models/crystal-golem/beauty-800.webp",
+   "thumb": "/models/crystal-golem/beauty-240.webp",
+   "width": 1533,
+   "height": 1422
+  },
+  "spin": {
+   "src": "/models/crystal-golem/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 511,
+   "frameHeight": 447
+  },
+  "poster": "/models/crystal-golem/poster.webp",
+  "glb": {
+   "web": "/models/crystal-golem/web.glb",
+   "card": "/models/crystal-golem/card.glb"
+  }
+ },
+ {
+  "id": "9b749bdb",
+  "slug": "t-rex",
+  "name": {
+   "en": "T-rex",
+   "es": "Tiranosaurio"
+  },
+  "alt": {
+   "en": "Roaring tyrannosaurus with its mouth open.",
+   "es": "Tiranosaurio rugiendo con la boca abierta."
+  },
+  "category": "creature",
+  "tags": [
+   "dinosaur",
+   "trex"
+  ],
+  "colour": "#544158",
+  "tris": {
+   "original": 2000000,
+   "web": 49999,
+   "card": 11999
+  },
+  "bytes": {
+   "web": 1098912,
+   "card": 290292,
+   "spin": 454432,
+   "beauty": 64684,
+   "poster": 11068
+  },
+  "beauty": {
+   "src": "/models/t-rex/beauty-1600.webp",
+   "srcSmall": "/models/t-rex/beauty-800.webp",
+   "thumb": "/models/t-rex/beauty-240.webp",
+   "width": 1253,
+   "height": 787
+  },
+  "spin": {
+   "src": "/models/t-rex/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 492,
+   "frameHeight": 264
+  },
+  "poster": "/models/t-rex/poster.webp",
+  "glb": {
+   "web": "/models/t-rex/web.glb",
+   "card": "/models/t-rex/card.glb"
+  }
+ },
+ {
+  "id": "9ba1b1f1",
+  "slug": "monster-head",
+  "name": {
+   "en": "Monster head",
+   "es": "Cabeza de monstruo"
+  },
+  "alt": {
+   "en": "Monster head with sharp teeth and blue fins.",
+   "es": "Cabeza de monstruo con dientes afilados y aletas azules."
+  },
+  "category": "creature",
+  "tags": [
+   "monster",
+   "teeth"
+  ],
+  "colour": "#665c76",
+  "tris": {
+   "original": 19338,
+   "web": 19338,
+   "card": 11998
+  },
+  "bytes": {
+   "web": 595864,
+   "card": 344608,
+   "spin": 678038,
+   "beauty": 89606,
+   "poster": 17548
+  },
+  "beauty": {
+   "src": "/models/monster-head/beauty-1600.webp",
+   "srcSmall": "/models/monster-head/beauty-800.webp",
+   "thumb": "/models/monster-head/beauty-240.webp",
+   "width": 1361,
+   "height": 1113
+  },
+  "spin": {
+   "src": "/models/monster-head/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 485,
+   "frameHeight": 379
+  },
+  "poster": "/models/monster-head/poster.webp",
+  "glb": {
+   "web": "/models/monster-head/web.glb",
+   "card": "/models/monster-head/card.glb"
+  }
+ },
+ {
+  "id": "9d8b403c",
+  "slug": "money-bag",
+  "name": {
+   "en": "Money bag",
+   "es": "Bolsa de dinero"
+  },
+  "alt": {
+   "en": "Orange cloth money bag tied at the top, with a dollar sign.",
+   "es": "Bolsa de tela naranja atada arriba, con un signo de dólar."
+  },
+  "category": "prop",
+  "tags": [
+   "bag",
+   "money",
+   "toy"
+  ],
+  "colour": "#a67855",
+  "tris": {
+   "original": 2000000,
+   "web": 50000,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 954124,
+   "card": 243300,
+   "spin": 450910,
+   "beauty": 79998,
+   "poster": 16070
+  },
+  "beauty": {
+   "src": "/models/money-bag/beauty-1600.webp",
+   "srcSmall": "/models/money-bag/beauty-800.webp",
+   "thumb": "/models/money-bag/beauty-240.webp",
+   "width": 1303,
+   "height": 1241
+  },
+  "spin": {
+   "src": "/models/money-bag/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 412,
+   "frameHeight": 386
+  },
+  "poster": "/models/money-bag/poster.webp",
+  "glb": {
+   "web": "/models/money-bag/web.glb",
+   "card": "/models/money-bag/card.glb"
+  }
+ },
+ {
+  "id": "a60f2e3c",
+  "slug": "wooden-toy-figure",
+  "name": {
+   "en": "Wooden toy figure",
+   "es": "Figura de madera"
+  },
+  "alt": {
+   "en": "Smiling wooden toy figure with big dark eyes and a bat.",
+   "es": "Figura de juguete de madera sonriente, con ojos grandes y un bate."
+  },
+  "category": "character",
+  "tags": [
+   "toy",
+   "figure",
+   "wood"
+  ],
+  "colour": "#805149",
+  "tris": {
+   "original": 499918,
+   "web": 50000,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 967444,
+   "card": 252436,
+   "spin": 535248,
+   "beauty": 79862,
+   "poster": 11288
+  },
+  "beauty": {
+   "src": "/models/wooden-toy-figure/beauty-1600.webp",
+   "srcSmall": "/models/wooden-toy-figure/beauty-800.webp",
+   "thumb": "/models/wooden-toy-figure/beauty-240.webp",
+   "width": 1510,
+   "height": 1489
+  },
+  "spin": {
+   "src": "/models/wooden-toy-figure/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 500,
+   "frameHeight": 469
+  },
+  "poster": "/models/wooden-toy-figure/poster.webp",
+  "glb": {
+   "web": "/models/wooden-toy-figure/web.glb",
+   "card": "/models/wooden-toy-figure/card.glb"
+  }
+ },
+ {
+  "id": "agentic",
+  "slug": "sci-fi-device-230-parts",
+  "name": {
+   "en": "Sci-fi device (230 parts)",
+   "es": "Dispositivo de ciencia ficción"
+  },
+  "alt": {
+   "en": "Grey and blue sci-fi device made of many small parts.",
+   "es": "Dispositivo de ciencia ficción gris y azul hecho de muchas piezas pequeñas."
+  },
+  "category": "prop",
+  "tags": [
+   "device",
+   "hard-surface"
+  ],
+  "colour": "#51506f",
+  "tris": {
+   "original": 63024,
+   "web": 50000,
+   "card": 7964
+  },
+  "bytes": {
+   "web": 1535332,
+   "card": 355180,
+   "spin": 265640,
+   "beauty": 35372,
+   "poster": 8102
+  },
+  "beauty": {
+   "src": "/models/sci-fi-device-230-parts/beauty-1600.webp",
+   "srcSmall": "/models/sci-fi-device-230-parts/beauty-800.webp",
+   "thumb": "/models/sci-fi-device-230-parts/beauty-240.webp",
+   "width": 1135,
+   "height": 531
+  },
+  "spin": {
+   "src": "/models/sci-fi-device-230-parts/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 512,
+   "frameHeight": 172
+  },
+  "poster": "/models/sci-fi-device-230-parts/poster.webp",
+  "glb": {
+   "web": "/models/sci-fi-device-230-parts/web.glb",
+   "card": "/models/sci-fi-device-230-parts/card.glb"
+  }
+ },
+ {
+  "id": "bfda4d75",
+  "slug": "tufted-sofa",
+  "name": {
+   "en": "Tufted sofa",
+   "es": "Sofá capitoné"
+  },
+  "alt": {
+   "en": "Silver tufted sofa with gold trim.",
+   "es": "Sofá capitoné plateado con detalles dorados."
+  },
+  "category": "furniture",
+  "tags": [
+   "sofa",
+   "tufted"
+  ],
+  "colour": "#9d98a1",
+  "tris": {
+   "original": 20464,
+   "web": 20464,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 509228,
+   "card": 269960,
+   "spin": 442528,
+   "beauty": 80728,
+   "poster": 12620
+  },
+  "beauty": {
+   "src": "/models/tufted-sofa/beauty-1600.webp",
+   "srcSmall": "/models/tufted-sofa/beauty-800.webp",
+   "thumb": "/models/tufted-sofa/beauty-240.webp",
+   "width": 1600,
+   "height": 977
+  },
+  "spin": {
+   "src": "/models/tufted-sofa/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 512,
+   "frameHeight": 312
+  },
+  "poster": "/models/tufted-sofa/poster.webp",
+  "glb": {
+   "web": "/models/tufted-sofa/web.glb",
+   "card": "/models/tufted-sofa/card.glb"
+  }
+ },
+ {
+  "id": "c24ab0e5",
+  "slug": "zip-hoodie",
+  "name": {
+   "en": "Zip hoodie",
+   "es": "Sudadera con cierre"
+  },
+  "alt": {
+   "en": "Dark zip-up hoodie with a drawstring hood.",
+   "es": "Sudadera oscura con cierre y capucha con cordones."
+  },
+  "category": "apparel",
+  "tags": [
+   "hoodie",
+   "jacket",
+   "black"
+  ],
+  "colour": "#2b2a33",
+  "tris": {
+   "original": 2000000,
+   "web": 50000,
+   "card": 11998
+  },
+  "bytes": {
+   "web": 913676,
+   "card": 241252,
+   "spin": 485070,
+   "beauty": 69702,
+   "poster": 7374
+  },
+  "beauty": {
+   "src": "/models/zip-hoodie/beauty-1600.webp",
+   "srcSmall": "/models/zip-hoodie/beauty-800.webp",
+   "thumb": "/models/zip-hoodie/beauty-240.webp",
+   "width": 1583,
+   "height": 1446
+  },
+  "spin": {
+   "src": "/models/zip-hoodie/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 501,
+   "frameHeight": 457
+  },
+  "poster": "/models/zip-hoodie/poster.webp",
+  "glb": {
+   "web": "/models/zip-hoodie/web.glb",
+   "card": "/models/zip-hoodie/card.glb"
+  }
+ },
+ {
+  "id": "d3e53c56",
+  "slug": "green-shopping-bag-with-logo",
+  "name": {
+   "en": "Green shopping bag with logo",
+   "es": "Bolsa de compras verde"
+  },
+  "alt": {
+   "en": "Green shopping bag with a white letter S.",
+   "es": "Bolsa de compras verde con una letra S blanca."
+  },
+  "category": "product",
+  "tags": [
+   "bag",
+   "logo"
+  ],
+  "role": "integration",
+  "integration": "Shopify",
+  "colour": "#6c804e",
+  "tris": {
+   "original": 2000000,
+   "web": 50000,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 874996,
+   "card": 223468,
+   "spin": 482138,
+   "beauty": 60190,
+   "poster": 7710
+  },
+  "beauty": {
+   "src": "/models/green-shopping-bag-with-logo/beauty-1600.webp",
+   "srcSmall": "/models/green-shopping-bag-with-logo/beauty-800.webp",
+   "thumb": "/models/green-shopping-bag-with-logo/beauty-240.webp",
+   "width": 1600,
+   "height": 1427
+  },
+  "spin": {
+   "src": "/models/green-shopping-bag-with-logo/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 512,
+   "frameHeight": 448
+  },
+  "poster": "/models/green-shopping-bag-with-logo/poster.webp",
+  "glb": {
+   "web": "/models/green-shopping-bag-with-logo/web.glb",
+   "card": "/models/green-shopping-bag-with-logo/card.glb"
+  }
+ },
+ {
+  "id": "ddd737fb",
+  "slug": "blocky-voxel-character",
+  "name": {
+   "en": "Blocky voxel character",
+   "es": "Personaje de vóxeles"
+  },
+  "alt": {
+   "en": "Blocky voxel character in a blue shirt and jeans.",
+   "es": "Personaje de vóxeles con camisa azul y vaqueros."
+  },
+  "category": "character",
+  "tags": [
+   "voxel",
+   "pixel",
+   "character"
+  ],
+  "colour": "#5f4e56",
+  "tris": {
+   "original": 500000,
+   "web": 50000,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 1013832,
+   "card": 278800,
+   "spin": 552654,
+   "beauty": 85874,
+   "poster": 15592
+  },
+  "beauty": {
+   "src": "/models/blocky-voxel-character/beauty-1600.webp",
+   "srcSmall": "/models/blocky-voxel-character/beauty-800.webp",
+   "thumb": "/models/blocky-voxel-character/beauty-240.webp",
+   "width": 1449,
+   "height": 1534
+  },
+  "spin": {
+   "src": "/models/blocky-voxel-character/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 487,
+   "frameHeight": 482
+  },
+  "poster": "/models/blocky-voxel-character/poster.webp",
+  "glb": {
+   "web": "/models/blocky-voxel-character/web.glb",
+   "card": "/models/blocky-voxel-character/card.glb"
+  }
+ },
+ {
+  "id": "dfdd3521",
+  "slug": "red-dragon",
+  "name": {
+   "en": "Red dragon",
+   "es": "Dragón rojo"
+  },
+  "alt": {
+   "en": "Red winged dragon in a crouching pose.",
+   "es": "Dragón rojo con alas, en posición agazapada."
+  },
+  "category": "creature",
+  "tags": [
+   "dragon",
+   "fantasy",
+   "wings"
+  ],
+  "colour": "#652a34",
+  "tris": {
+   "original": 2000000,
+   "web": 49986,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 1095820,
+   "card": 303676,
+   "spin": 736148,
+   "beauty": 127502,
+   "poster": 29014
+  },
+  "beauty": {
+   "src": "/models/red-dragon/beauty-1600.webp",
+   "srcSmall": "/models/red-dragon/beauty-800.webp",
+   "thumb": "/models/red-dragon/beauty-240.webp",
+   "width": 1113,
+   "height": 1017
+  },
+  "spin": {
+   "src": "/models/red-dragon/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 396,
+   "frameHeight": 321
+  },
+  "poster": "/models/red-dragon/poster.webp",
+  "glb": {
+   "web": "/models/red-dragon/web.glb",
+   "card": "/models/red-dragon/card.glb"
+  }
+ },
+ {
+  "id": "f8ae7234",
+  "slug": "baby-dragon",
+  "name": {
+   "en": "Baby dragon",
+   "es": "Dragón bebé"
+  },
+  "alt": {
+   "en": "Round orange baby dragon with small wings.",
+   "es": "Dragón bebé naranja y redondo con alas pequeñas."
+  },
+  "category": "creature",
+  "tags": [
+   "dragon",
+   "toy",
+   "cute"
+  ],
+  "colour": "#a8614f",
+  "tris": {
+   "original": 1999994,
+   "web": 50000,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 960272,
+   "card": 256656,
+   "spin": 561460,
+   "beauty": 97790,
+   "poster": 21152
+  },
+  "beauty": {
+   "src": "/models/baby-dragon/beauty-1600.webp",
+   "srcSmall": "/models/baby-dragon/beauty-800.webp",
+   "thumb": "/models/baby-dragon/beauty-240.webp",
+   "width": 1325,
+   "height": 1105
+  },
+  "spin": {
+   "src": "/models/baby-dragon/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 429,
+   "frameHeight": 343
+  },
+  "poster": "/models/baby-dragon/poster.webp",
+  "glb": {
+   "web": "/models/baby-dragon/web.glb",
+   "card": "/models/baby-dragon/card.glb"
+  }
+ },
+ {
+  "id": "fb365098",
+  "slug": "blender-logo",
+  "name": {
+   "en": "Blender logo",
+   "es": "Logotipo de Blender"
+  },
+  "alt": {
+   "en": "Orange and blue three-dimensional logo.",
+   "es": "Logotipo tridimensional naranja y azul."
+  },
+  "category": "product",
+  "tags": [
+   "logo"
+  ],
+  "role": "integration",
+  "integration": "Blender",
+  "colour": "#b6674c",
+  "tris": {
+   "original": 34972,
+   "web": 34972,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 827260,
+   "card": 240436,
+   "spin": 518168,
+   "beauty": 45726,
+   "poster": 7074
+  },
+  "beauty": {
+   "src": "/models/blender-logo/beauty-1600.webp",
+   "srcSmall": "/models/blender-logo/beauty-800.webp",
+   "thumb": "/models/blender-logo/beauty-240.webp",
+   "width": 1266,
+   "height": 1187
+  },
+  "spin": {
+   "src": "/models/blender-logo/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 500,
+   "frameHeight": 421
+  },
+  "poster": "/models/blender-logo/poster.webp",
+  "glb": {
+   "web": "/models/blender-logo/web.glb",
+   "card": "/models/blender-logo/card.glb"
+  }
+ },
+ {
+  "id": "fcebda7b",
+  "slug": "white-loveseat",
+  "name": {
+   "en": "White loveseat",
+   "es": "Sofá blanco"
+  },
+  "alt": {
+   "en": "White two-seat sofa with wooden legs.",
+   "es": "Sofá blanco de dos plazas con patas de madera."
+  },
+  "category": "furniture",
+  "tags": [
+   "sofa"
+  ],
+  "colour": "#9f9aa1",
+  "tris": {
+   "original": 38232,
+   "web": 38232,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 836372,
+   "card": 242060,
+   "spin": 404242,
+   "beauty": 56216,
+   "poster": 6818
+  },
+  "beauty": {
+   "src": "/models/white-loveseat/beauty-1600.webp",
+   "srcSmall": "/models/white-loveseat/beauty-800.webp",
+   "thumb": "/models/white-loveseat/beauty-240.webp",
+   "width": 1600,
+   "height": 1055
+  },
+  "spin": {
+   "src": "/models/white-loveseat/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 512,
+   "frameHeight": 333
+  },
+  "poster": "/models/white-loveseat/poster.webp",
+  "glb": {
+   "web": "/models/white-loveseat/web.glb",
+   "card": "/models/white-loveseat/card.glb"
+  }
+ },
+ {
+  "id": "sculpt",
+  "slug": "geometry-only-gadget",
+  "name": {
+   "en": "Geometry-only gadget",
+   "es": "Aparato sin textura"
+  },
+  "alt": {
+   "en": "Untextured white gadget with a round head and a tube.",
+   "es": "Aparato blanco sin textura con una cabeza redonda y un tubo."
+  },
+  "category": "prop",
+  "tags": [
+   "untextured",
+   "sculpture"
+  ],
+  "colour": "#9491b3",
+  "tris": {
+   "original": 4788680,
+   "web": 60000,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 841156,
+   "card": 169152,
+   "spin": 473032,
+   "beauty": 37072,
+   "poster": 8334
+  },
+  "beauty": {
+   "src": "/models/geometry-only-gadget/beauty-1600.webp",
+   "srcSmall": "/models/geometry-only-gadget/beauty-800.webp",
+   "thumb": "/models/geometry-only-gadget/beauty-240.webp",
+   "width": 1131,
+   "height": 815
+  },
+  "spin": {
+   "src": "/models/geometry-only-gadget/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 512,
+   "frameHeight": 337
+  },
+  "poster": "/models/geometry-only-gadget/poster.webp",
+  "glb": {
+   "web": "/models/geometry-only-gadget/web.glb",
+   "card": "/models/geometry-only-gadget/card.glb"
+  }
+ },
+ {
+  "id": "hoodie",
+  "slug": "black-hoodie",
+  "name": {
+   "en": "Black hoodie",
+   "es": "Sudadera negra"
+  },
+  "alt": {
+   "en": "Black hoodie with a front pocket and drawstrings.",
+   "es": "Sudadera negra con bolsillo frontal y cordones."
+  },
+  "category": "apparel",
+  "tags": [
+   "hoodie",
+   "black"
+  ],
+  "colour": "#323138",
+  "tris": {
+   "original": 1999996,
+   "web": 50000,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 875844,
+   "card": 227004,
+   "spin": 485568,
+   "beauty": 67794,
+   "poster": 8814
+  },
+  "beauty": {
+   "src": "/models/black-hoodie/beauty-1600.webp",
+   "srcSmall": "/models/black-hoodie/beauty-800.webp",
+   "thumb": "/models/black-hoodie/beauty-240.webp",
+   "width": 1503,
+   "height": 1400
+  },
+  "spin": {
+   "src": "/models/black-hoodie/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 482,
+   "frameHeight": 444
+  },
+  "poster": "/models/black-hoodie/poster.webp",
+  "glb": {
+   "web": "/models/black-hoodie/web.glb",
+   "card": "/models/black-hoodie/card.glb"
+  }
+ },
+ {
+  "id": "kitchen",
+  "slug": "kitchen-units",
+  "name": {
+   "en": "Kitchen units",
+   "es": "Muebles de cocina"
+  },
+  "alt": {
+   "en": "Wooden kitchen units with wall cabinets, base cabinets and drawers.",
+   "es": "Muebles de cocina de madera con módulos altos, bajos y cajones."
+  },
+  "category": "furniture",
+  "tags": [
+   "kitchen",
+   "wood",
+   "cabinet"
+  ],
+  "colour": "#a66b52",
+  "tris": {
+   "original": 1600000,
+   "web": 50000,
+   "card": 12000
+  },
+  "bytes": {
+   "web": 1105124,
+   "card": 293836,
+   "spin": 571824,
+   "beauty": 111878,
+   "poster": 20874
+  },
+  "beauty": {
+   "src": "/models/kitchen-units/beauty-1600.webp",
+   "srcSmall": "/models/kitchen-units/beauty-800.webp",
+   "thumb": "/models/kitchen-units/beauty-240.webp",
+   "width": 1487,
+   "height": 1357
+  },
+  "spin": {
+   "src": "/models/kitchen-units/spin.webp",
+   "frames": 36,
+   "cols": 6,
+   "frameWidth": 501,
+   "frameHeight": 445
+  },
+  "poster": "/models/kitchen-units/poster.webp",
+  "glb": {
+   "web": "/models/kitchen-units/web.glb",
+   "card": "/models/kitchen-units/card.glb"
+  }
+ }
+]

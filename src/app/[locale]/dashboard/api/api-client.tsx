@@ -36,7 +36,7 @@ export function ApiClient({ dict, initial, locale }: { dict: Dictionary; initial
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[16px] border border-line bg-surface p-5 space-y-4 text-xs">
+      <section className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5 space-y-4 text-xs">
         <h2 className="font-display text-base font-semibold text-fg">{c.createTitle}</h2>
         <form onSubmit={create} className="space-y-3">
           <div>

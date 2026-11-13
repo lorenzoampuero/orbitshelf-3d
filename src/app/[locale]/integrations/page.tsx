@@ -7,6 +7,8 @@ import { buildPageMetadata } from "@/lib/seo";
 import { currentUser } from "@/lib/api";
 import { MarketingShell } from "@/components/marketing-shell";
 import { ModelViewerBox } from "@/components/model-viewer-box";
+import { ModelRender, ModelSpotlight } from "@/components/marketing/model-art";
+import { pick, closingArt, SPOTLIGHT } from "@/content/page-models";
 import { Card, ClosingBanner, FaqList, PageHero, Section, SectionTitle, StatusBadge, Tag, Tile, cardToneClass } from "@/components/marketing-kit";
 import { ReadingSuggestions } from "@/components/landing-extra";
 import {
@@ -56,7 +58,7 @@ function CodeChip({ children, accent = false }: { children: React.ReactNode; acc
   return (
     <code
       className={`inline-block max-w-full break-all rounded-lg border px-2.5 py-1 font-mono text-xs ${
-        accent ? "border-accent/50 bg-blood/15 text-fg" : "border-line bg-bg text-fg"
+        accent ? "border-accent/50 bg-accent-fill/15 text-fg" : "border-line bg-bg text-fg"
       }`}
     >
       {children}
@@ -153,10 +155,10 @@ export default async function IntegrationsPage({ params }: Props) {
   };
 
   return (
-    <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
+    <MarketingShell tone="emerald" locale={locale} dict={dict} isSignedIn={Boolean(user)}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
-      <PageHero
+      <PageHero marquee={10}
         pill={c.hero.pill}
         title={c.hero.title}
         text={c.hero.text}
@@ -167,11 +169,12 @@ export default async function IntegrationsPage({ params }: Props) {
             role="img"
             aria-label={c.hero.diagramLabel}
             data-testid="integrations-diagram"
-            className="mesh-lines mx-auto flex max-w-3xl flex-col items-center gap-6 rounded-[24px] border border-line bg-[#151230] px-5 py-8 md:flex-row md:justify-center md:gap-8"
+            className="mesh-lines mx-auto flex max-w-3xl flex-col items-center gap-6 rounded-[24px] border border-line bg-surface-deep px-5 py-8 md:flex-row md:justify-center md:gap-8"
           >
-            <Tile tone="blood" label={d.model}>
-              <Box className="h-6 w-6" />
-            </Tile>
+            <span className="flex flex-col items-center gap-1.5">
+              <ModelRender model={pick("robot-dog")} className="h-28 w-28" />
+              <span className="text-xs text-muted">{d.model}</span>
+            </span>
             <ArrowRight className="h-5 w-5 shrink-0 rotate-90 text-accent md:rotate-0" />
             <div className="flex flex-wrap items-start justify-center gap-4">
               {diagramItems.map((t) => (
@@ -188,7 +191,7 @@ export default async function IntegrationsPage({ params }: Props) {
         <SectionTitle sub={c.bento.sub}>{c.bento.title}</SectionTitle>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
           {/* 1. Web embed: large, with a demo viewer inside a drawn page. */}
-          <Card lift tone="red" className="min-w-0 space-y-8 md:col-span-6 md:grid md:grid-cols-2 md:gap-8 md:space-y-0 md:p-9">
+          <Card lift tone="feature" className="min-w-0 space-y-8 md:col-span-6 md:grid md:grid-cols-2 md:gap-8 md:space-y-0 md:p-9">
             <div className="flex min-w-0 flex-col justify-between gap-8">
               <div className="space-y-6">
                 {head("embed")}
@@ -220,7 +223,7 @@ export default async function IntegrationsPage({ params }: Props) {
                   <div aria-hidden="true" className="space-y-2">
                     <span className="block h-3 w-2/3 rounded-full bg-white/15" />
                     <span className="block h-3 w-1/3 rounded-full bg-white/10" />
-                    <span className="mt-3 block h-9 w-32 rounded-full bg-blood" />
+                    <span className="mt-3 block h-9 w-32 rounded-full bg-accent-fill" />
                   </div>
                 </div>
               </div>
@@ -233,9 +236,10 @@ export default async function IntegrationsPage({ params }: Props) {
             {head("shopify")}
             {body("shopify", true)}
             <div aria-hidden="true" className="flex flex-wrap items-center gap-3 sm:gap-4">
-              <Tile tone="blood" label={c.shopifyExtra.flow[0]}>
-                <Box className="h-6 w-6" />
-              </Tile>
+              <span className="flex flex-col items-center gap-1.5">
+                <ModelRender model={pick("green-shopping-bag-with-logo")} className="h-20 w-20" />
+                <span className="text-xs text-muted">{c.shopifyExtra.flow[0]}</span>
+              </span>
               <ArrowRight className="h-5 w-5 shrink-0 text-accent" />
               <Tile label={c.shopifyExtra.flow[1]}>
                 <Store className="h-6 w-6" />
@@ -254,6 +258,9 @@ export default async function IntegrationsPage({ params }: Props) {
           <Card lift className="min-w-0 space-y-8 md:col-span-2">
             {head("blender")}
             {body("blender")}
+            <div aria-hidden="true">
+              <ModelRender model={pick("blender-logo")} className="h-24 w-24" />
+            </div>
           </Card>
 
           {/* 4. API (narrow) and the signature recipe (wide). */}
@@ -340,6 +347,10 @@ export default async function IntegrationsPage({ params }: Props) {
 
       {/* How we keep it safe: one wide card, five short points. */}
       <Section>
+        <ModelSpotlight model={SPOTLIGHT["integrations"]} locale={locale} />
+      </Section>
+
+      <Section>
         <SectionTitle sub={c.safety.sub}>{c.safety.title}</SectionTitle>
         <Card className="md:p-9">
           <ul className="grid grid-cols-1 gap-x-8 gap-y-7 md:grid-cols-6">
@@ -347,7 +358,7 @@ export default async function IntegrationsPage({ params }: Props) {
               const Icon = safetyIcons[i] ?? ShieldCheck;
               return (
                 <li key={p.title} className={`flex items-start gap-4 ${i < 3 ? "md:col-span-2" : "md:col-span-3"}`}>
-                  <span aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blood text-white">
+                  <span aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-fill text-white">
                     <Icon className="h-5 w-5" />
                   </span>
                   <div className="space-y-1.5">
@@ -388,7 +399,7 @@ export default async function IntegrationsPage({ params }: Props) {
       </Section>
 
       <ReadingSuggestions locale={locale} page="integrations" />
-      <ClosingBanner titleA={c.closing.titleA} titleB={c.closing.titleB} cta={c.closing.cta} href={create} note={c.closing.note} />
+      <ClosingBanner art={closingArt(3)} titleA={c.closing.titleA} titleB={c.closing.titleB} cta={c.closing.cta} href={create} note={c.closing.note} />
     </MarketingShell>
   );
 }

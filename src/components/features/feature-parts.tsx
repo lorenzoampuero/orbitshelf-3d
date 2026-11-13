@@ -26,7 +26,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Card, Tag, Tile } from "@/components/marketing-kit";
-import { ModelSilhouette, type SilhouetteKind } from "@/components/model-silhouette";
+import { ModelRender } from "@/components/marketing/model-art";
+import type { GalleryModel } from "@/lib/models";
 import type { Aside, CommonCopy, FeatureCopy, IconKey } from "@/content/features";
 import { localePath } from "@/i18n/config";
 import type { Locale } from "@/lib/types";
@@ -65,20 +66,15 @@ export function FeatureIcon({ name, className = "h-6 w-6" }: { name: IconKey; cl
   return <Icon className={className} aria-hidden="true" />;
 }
 
-/** Which demo drawing stands for the result on a mode page, from the demo GLB that page shows. */
-export function demoKind(src: string): SilhouetteKind {
-  return src.includes("lamp") ? "lamp" : src.includes("chair") ? "chair" : "vase";
-}
-
-/** Inputs as tiles, an arrow, and the model as a flat drawing of a demo model. Wraps on narrow screens instead of overflowing. */
+/** Inputs as tiles, an arrow, and the model as a studio render. Wraps on narrow screens instead of overflowing. */
 export function FlowDiagram({
   inputs,
   outputLabel,
-  kind = "vase",
+  model,
 }: {
   inputs: { icon: IconKey; label: string }[];
   outputLabel: string;
-  kind?: SilhouetteKind;
+  model: GalleryModel;
 }) {
   return (
     <div aria-hidden="true" className="flex flex-wrap items-center gap-x-4 gap-y-5">
@@ -91,7 +87,7 @@ export function FlowDiagram({
       </div>
       <ArrowRight className="h-5 w-5 shrink-0 text-accent" />
       <span className="flex flex-col items-center gap-1.5">
-        <ModelSilhouette kind={kind} className="h-20 w-20 sm:h-24 sm:w-24" />
+        <ModelRender model={model} className="h-24 w-24 sm:h-28 sm:w-28" />
         <span className="text-xs text-muted">{outputLabel}</span>
       </span>
     </div>
@@ -175,9 +171,10 @@ export function AsideCard({ aside }: { aside: Aside }) {
 /** Column spans for six tips in a 6-column grid: 4+2, 2+4, 3+3. */
 export const TIP_SPANS = ["md:col-span-4", "md:col-span-2", "md:col-span-2", "md:col-span-4", "md:col-span-3", "md:col-span-3"];
 
-export function TipCard({ tip, span }: { tip: FeatureCopy["tips"][number]; span: string }) {
+export function TipCard({ tip, span, art }: { tip: FeatureCopy["tips"][number]; span: string; art?: GalleryModel }) {
+  const wide = span.includes("col-span-3") || span.includes("col-span-4");
   return (
-    <Card lift className={`space-y-4 ${span}`}>
+    <Card lift art={art && wide ? { model: art } : undefined} className={`space-y-4 ${span} ${art && wide ? "md:pr-[42%]" : ""}`}>
       <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-fg">
         <FeatureIcon name={tip.icon} className="h-5 w-5" />
       </span>

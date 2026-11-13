@@ -40,7 +40,7 @@ export default async function ApiPage({ params, searchParams }: Props) {
     <div className="space-y-6">
       <div className="space-y-4">
         <div>
-          <h1 className="font-display text-3xl font-bold sm:text-4xl">{c.title}</h1>
+          <h1 className="font-display text-2xl font-bold sm:text-3xl">{c.title}</h1>
           <p className="mt-1 max-w-3xl text-sm text-muted">{c.subtitle}</p>
         </div>
         <nav aria-label={c.tabsLabel} className="flex flex-wrap gap-2">

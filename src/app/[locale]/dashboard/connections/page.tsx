@@ -59,7 +59,7 @@ export default async function ConnectionsPage({ params }: Props) {
   return (
     <div className="space-y-8" data-testid="connections-page">
       <div>
-        <h1 className="font-display text-3xl font-bold sm:text-4xl">{c.title}</h1>
+        <h1 className="font-display text-2xl font-bold sm:text-3xl">{c.title}</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted">{c.subtitle}</p>
       </div>
 
@@ -73,7 +73,7 @@ export default async function ConnectionsPage({ params }: Props) {
             {items.map((id) => {
               const s = state[id];
               return (
-                <li key={id} data-testid={`connection-${id}`} data-state={s} className="flex flex-col gap-3 rounded-[24px] border border-line bg-surface p-5 transition-colors hover:border-accent/40">
+                <li key={id} data-testid={`connection-${id}`} data-state={s} className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-line bg-surface-1 p-5 transition-colors hover:border-accent/40">
                   <div className="flex items-start justify-between gap-2">
                     <BrandTile id={id} connected={s === "connected"} />
                     <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", STATE_CLASS[s])}>{c.states[s]}</span>

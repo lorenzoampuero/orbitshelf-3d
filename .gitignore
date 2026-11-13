@@ -5,6 +5,7 @@ out/
 .data-e2e/
 .data-dev-local/
 .benchmark/
+.art-cache/
 .env
 .env.*
 !.env.example

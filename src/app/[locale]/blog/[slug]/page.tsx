@@ -1,3 +1,5 @@
+import { ModelCover } from "@/components/marketing/model-art";
+import { coverFor } from "@/content/page-models";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -48,7 +50,7 @@ export default async function BlogPostPage({ params }: Props) {
   }).replace(/</g, "\\u003c");
 
   return (
-    <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
+    <MarketingShell tone="blue" locale={locale} dict={dict} isSignedIn={Boolean(user)}>
       <article>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
         <header className="relative pb-10 pt-32 md:pt-40">
@@ -69,7 +71,8 @@ export default async function BlogPostPage({ params }: Props) {
           </div>
         </header>
 
-        <div className="container-page max-w-3xl pb-6">
+        <div className="container-page max-w-3xl space-y-6 pb-6">
+          <ModelCover model={coverFor(meta.slug)} locale={locale} />
           <div className="card reveal space-y-9 p-7 md:p-10">
             {post.sections.map((s, i) => (
               <section key={s.h} className={`space-y-3.5 ${i > 0 ? "border-t border-line pt-9" : ""}`}>

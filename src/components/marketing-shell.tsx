@@ -8,14 +8,7 @@ import {
   BookOpen,
   Boxes,
   ChevronDown,
-  Gamepad2,
-  Images,
-  Image as ImageIcon,
   Menu,
-  PenTool,
-  ScanSearch,
-  Store,
-  Type,
   UserRound,
   X,
 } from "lucide-react";
@@ -24,31 +17,29 @@ import { LocaleSwitcher } from "./locale-switcher";
 import { localePath } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import type { Locale } from "@/lib/types";
+import { ArtImage } from "@/components/home/art-image";
 import { brand } from "@/config/brand";
+import { NAV_ART } from "@/content/nav-art";
+import type { Tone } from "@/content/tones";
 import { navCopy, type NavIcon } from "@/content/nav";
 import { legalFooter, legalRoute } from "@/content/legal/labels";
 
 type MenuId = "product" | "solutions" | "resources" | null;
 
-const ICONS: Record<NavIcon, React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>> = {
-  text: Type,
-  image: ImageIcon,
-  images: Images,
-  review: ScanSearch,
-  store: Store,
-  game: Gamepad2,
-  design: PenTool,
-};
+const MENU_ART_RESOURCES = NAV_ART.resources;
 
 export function MarketingShell({
   locale,
   dict,
   isSignedIn,
+  tone,
   children,
 }: {
   locale: Locale;
   dict: Dictionary;
   isSignedIn: boolean;
+  /** Colour pair for the page's glows and washes (see src/content/tones.ts). Without it the page keeps the default violet. */
+  tone?: Tone;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -152,7 +143,6 @@ export function MarketingShell({
     <>
       <ul className={`grid gap-2 ${cols}`}>
         {items.map((c) => {
-          const Icon = ICONS[c.icon];
           return (
             <li key={c.href}>
               <Link
@@ -160,9 +150,8 @@ export function MarketingShell({
                 onClick={() => setMenu(null)}
                 className="group flex h-full flex-col gap-3 rounded-2xl p-2 transition-colors hover:bg-white/[0.06]"
               >
-                {/* A drawn tile stands in for a screenshot: no real screenshots exist yet. */}
-                <span className="mesh-lines relative flex h-24 items-center justify-center overflow-hidden rounded-xl bg-[#151230]">
-                  <Icon className="h-8 w-8 text-accent" aria-hidden="true" />
+                <span className="relative flex h-32 items-center justify-center overflow-hidden rounded-xl bg-surface-deep p-2">
+                  <ArtImage image={NAV_ART[c.icon]} alt="" small sizes="220px" className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105" />
                 </span>
                 <span className="px-1 pb-1">
                   <span className="flex items-center justify-between text-sm font-semibold">
@@ -224,7 +213,7 @@ export function MarketingShell({
             {dropdown(
               "resources",
               dict.nav.resources,
-              <div id="menu-resources" className="mega-panel menu-in absolute left-1/2 top-full z-50 mt-2 w-[420px] max-w-[calc(100vw-1.5rem)] -translate-x-1/2 rounded-[20px] p-2">
+              <div id="menu-resources" className="mega-panel menu-in absolute left-1/2 top-full z-50 mt-2 grid w-[640px] max-w-[calc(100vw-1.5rem)] -translate-x-1/2 grid-cols-[1fr_200px] gap-2 rounded-[20px] p-2">
                 <ul>
                   {resourceLinks.map((l) => (
                     <li key={l.href}>
@@ -242,6 +231,9 @@ export function MarketingShell({
                     </li>
                   ))}
                 </ul>
+                <span aria-hidden="true" className="flex items-center justify-center overflow-hidden rounded-xl bg-surface-deep p-4">
+                  <ArtImage image={MENU_ART_RESOURCES} alt="" small sizes="180px" className="max-h-72 w-full object-contain" />
+                </span>
               </div>,
             )}
           </nav>
@@ -318,7 +310,7 @@ export function MarketingShell({
       )}
 
       {/* While the full-screen menu is open the page behind it is inert: no Tab, no screen reader, no clicks. */}
-      <main id="main-content" inert={mobileOpen} className="relative z-10 flex-1">
+      <main id="main-content" inert={mobileOpen} data-tone={tone} className={`relative z-10 flex-1 ${tone ? "tone-scope" : ""}`}>
         {children}
       </main>
 
@@ -386,6 +378,8 @@ export function MarketingShell({
             <span>© 2026 {brand.fullName}</span>
             <span>{dict.footer.rights}</span>
           </div>
+          {/* Decoration only: the word is drawn by CSS (content), so it is not text for assistive tech or contrast checks. */}
+          <div aria-hidden="true" className="footer-word" data-word={`${brand.wordmark.lead}${brand.wordmark.tail}`} />
         </div>
       </footer>
     </div>
@@ -411,12 +405,11 @@ function MobileGroup({
       </h2>
       <ul className="space-y-1">
         {items.map((i) => {
-          const Icon = ICONS[i.icon];
           return (
             <li key={i.href}>
               <Link onClick={onPick} href={localePath(locale, i.href)} className="flex items-center gap-3 rounded-2xl border border-line bg-surface p-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blood text-white">
-                  <Icon className="h-5 w-5" aria-hidden="true" />
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-surface-deep p-1">
+                  <ArtImage image={NAV_ART[i.icon]} alt="" small sizes="56px" className="h-full w-full object-contain" />
                 </span>
                 <span>
                   <span className="block text-base font-semibold">{i.title}</span>

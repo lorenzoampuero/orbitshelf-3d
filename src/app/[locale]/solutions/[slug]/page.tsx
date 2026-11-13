@@ -9,6 +9,15 @@ import { ClosingBanner, FaqList, PageHero, Section, SectionTitle } from "@/compo
 import { ExpectBlock, FeatureBento, HeroFlow, IntegrationsBlock, Workflow } from "@/components/solutions/solution-parts";
 import { SOLUTION_SLUGS, getSolution, getSolutionsCopy, isSolutionSlug, type SolutionSlug } from "@/content/solutions";
 import { showcaseFor } from "@/config/showcase";
+import { ModelPile, ModelRail, ModelSpotlight } from "@/components/marketing/model-art";
+import { RAIL_COPY, SOLUTION_MODELS, closingArt, SPOTLIGHT } from "@/content/page-models";
+import type { Tone } from "@/content/tones";
+
+const SOLUTION_TONE: Record<string, { tone: Tone; seed: number; art: number }> = {
+  stores: { tone: "amber", seed: 13, art: 6 },
+  games: { tone: "emerald", seed: 14, art: 3 },
+  design: { tone: "cyan", seed: 15, art: 4 },
+};
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
@@ -35,9 +44,6 @@ const DEMO_MODEL: Record<SolutionSlug, string> = {
   design: "/demo/lamp.glb",
 };
 
-/** The drawing that stands for the result in the diagrams, matching the demo GLB of the trade. */
-const DEMO_KIND: Record<SolutionSlug, "vase" | "lamp" | "chair"> = { stores: "vase", games: "chair", design: "lamp" };
-
 /** Mesh toggle is part of the story for games and design, not for stores. */
 const SHOWS_MESH: Record<SolutionSlug, boolean> = { stores: false, games: true, design: true };
 
@@ -49,6 +55,8 @@ export default async function SolutionPage({ params }: Props) {
   const copy = getSolutionsCopy(locale);
   const s = getSolution(locale, slug);
   const create = localePath(locale, "/dashboard/create");
+  const sm = SOLUTION_MODELS[slug];
+  const rail = RAIL_COPY[locale];
 
   // A real result only when one exists (config/showcase.ts is empty today).
   const real =
@@ -99,16 +107,22 @@ export default async function SolutionPage({ params }: Props) {
   };
 
   return (
-    <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
+    <MarketingShell tone={SOLUTION_TONE[slug].tone} locale={locale} dict={dict} isSignedIn={Boolean(user)}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c") }} />
 
       <PageHero
+        marquee={SOLUTION_TONE[slug].seed}
         pill={s.hero.pill}
         title={s.hero.title}
         text={s.hero.text}
         primary={{ href: create, label: copy.ui.primaryCta, testId: `solution-${slug}-cta` }}
         secondary={{ href: localePath(locale, "/how-it-works"), label: copy.ui.secondaryCta }}
-        visual={<HeroFlow items={s.flow} kind={DEMO_KIND[slug]} />}
+        visual={
+          <div className="space-y-10">
+            <ModelPile models={sm.pile} locale={locale} />
+            <HeroFlow items={s.flow} model={sm.flow} />
+          </div>
+        }
       />
 
       {/* 1. The workflow in four steps. */}
@@ -119,8 +133,17 @@ export default async function SolutionPage({ params }: Props) {
 
       {/* 2. The features that matter to this trade. */}
       <Section>
+        <ModelSpotlight model={SPOTLIGHT[slug]} locale={locale} flip />
+      </Section>
+
+      <Section>
         <SectionTitle sub={s.features.sub}>{s.features.title}</SectionTitle>
-        <FeatureBento items={s.features.items} viewer={viewer} labels={copy.visual} kind={DEMO_KIND[slug]} />
+        <FeatureBento items={s.features.items} viewer={viewer} labels={copy.visual} model={sm.flow} />
+      </Section>
+
+      <Section>
+        <SectionTitle sub={rail.sub}>{rail.title}</SectionTitle>
+        <ModelRail models={sm.rail} locale={locale} label={rail.label} />
       </Section>
 
       {/* 3. Honest limits. */}
@@ -146,7 +169,7 @@ export default async function SolutionPage({ params }: Props) {
         <FaqList items={s.faq.items} />
       </Section>
 
-      <ClosingBanner titleA={s.closing.titleA} titleB={s.closing.titleB} cta={s.closing.cta} href={create} note={s.closing.note} />
+      <ClosingBanner art={closingArt(SOLUTION_TONE[slug].art)} titleA={s.closing.titleA} titleB={s.closing.titleB} cta={s.closing.cta} href={create} note={s.closing.note} />
     </MarketingShell>
   );
 }

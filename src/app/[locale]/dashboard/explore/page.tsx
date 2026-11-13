@@ -45,7 +45,7 @@ export default async function ExplorePage({ params }: Props) {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-3xl font-bold sm:text-4xl">{c.title}</h1>
+        <h1 className="font-display text-2xl font-bold sm:text-3xl">{c.title}</h1>
         <p className="mt-1 text-sm text-muted">{c.subtitle}</p>
       </div>
 
@@ -59,7 +59,7 @@ export default async function ExplorePage({ params }: Props) {
                 <Link
                   href={localePath(locale, tool.href)}
                   data-testid={`explore-tool-${tool.id}`}
-                  className="card-lift group flex h-full flex-col overflow-hidden rounded-[24px] border border-line bg-surface p-3"
+                  className="card-lift group flex h-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface-1 p-3"
                 >
                   <span className="relative block min-h-[150px] flex-1">
                     <Image src={examplePoster(art.id, art.mesh)} alt="" fill sizes="(min-width: 768px) 25vw, 50vw" unoptimized className="object-contain p-2" />
@@ -78,7 +78,7 @@ export default async function ExplorePage({ params }: Props) {
       <section className="space-y-3">
         <h2 className="font-display text-lg font-semibold">{c.enginesTitle}</h2>
         <p className="max-w-3xl text-xs leading-relaxed text-muted">{c.enginesNote}</p>
-        <div className="overflow-x-auto" role="region" aria-label={c.enginesTitle} tabIndex={0}>
+        <div className="overflow-x-auto rounded-[var(--radius-card)] border border-line bg-surface-1 px-4 py-1" role="region" aria-label={c.enginesTitle} tabIndex={0}>
           <table className="w-full min-w-[640px] text-left text-xs">
             <thead className="border-b border-line text-muted">
               <tr>
@@ -113,7 +113,7 @@ export default async function ExplorePage({ params }: Props) {
       <section className="space-y-3">
         <h2 className="font-display text-lg font-semibold">{c.limitsTitle}</h2>
         <p className="max-w-3xl text-xs leading-relaxed text-muted">{dict.dash.tools.presetsNote}</p>
-        <ul className="divide-y divide-line border-y border-line text-xs">
+        <ul className="divide-y divide-line rounded-[var(--radius-card)] border border-line bg-surface-1 px-4 text-xs">
           {OPTIMIZE_PRESETS.map((p) => (
             <li key={p} className="flex flex-wrap justify-between gap-3 py-2.5">
               <span className="font-semibold text-fg">{dict.dash.tools.presets[p]}</span>

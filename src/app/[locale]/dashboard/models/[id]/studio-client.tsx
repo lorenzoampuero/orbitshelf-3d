@@ -305,9 +305,9 @@ export function StudioClient({
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-12">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px]">
         {/* Left column: 3D Viewer + Source Photo */}
-        <div className="space-y-6 lg:col-span-7">
+        <div className="min-w-0 space-y-6">
           {hasFile ? (
             <ModelViewerBox
               key={model.currentVersionId ?? "original"}
@@ -323,6 +323,7 @@ export function StudioClient({
               wireframeLabel={t.dash.detail.wireframe}
               surfaceLabel={t.dash.detail.surface}
               testId="studio-viewer"
+              heightClass="h-[360px] sm:h-[480px] lg:h-[calc(100dvh-230px)] lg:min-h-[520px]"
               onReady={async (capture) => {
                 // A real picture of this model for the library. If the browser cannot produce one, the card simply has no image.
                 if (model.hasThumbnail && !thumbnailStale.current) return;
@@ -339,7 +340,7 @@ export function StudioClient({
           )}
 
           {model.source === "ai" && model.sourceViews.length > 0 && (
-            <div className="rounded-[16px] border border-line bg-surface p-5">
+            <div className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5">
               <h2 className="font-display text-sm font-semibold text-fg">
                 {model.sourceViews.length > 1 ? t.dash.detail.sourcePhotosTitle : t.dash.detail.sourcePhoto}
               </h2>
@@ -364,7 +365,7 @@ export function StudioClient({
           )}
 
           {model.inputKind === "text" && model.prompt && (
-            <div className="rounded-[16px] border border-line bg-surface p-5">
+            <div className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5">
               <h2 className="font-display text-sm font-semibold text-fg">{t.dash.detail.promptTitle}</h2>
               <p className="mt-1 text-xs text-muted">{t.dash.detail.promptNote}</p>
               <blockquote data-testid="studio-prompt" className="mt-3 rounded-xl border border-line bg-bg p-3 text-sm leading-relaxed text-fg">
@@ -377,53 +378,53 @@ export function StudioClient({
           {hasFile && <ShopifyPublish model={model} t={t} />}
 
           {/* Details Card */}
-          <div className="rounded-[16px] border border-line bg-surface p-5">
+          <div className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5">
             <h2 className="font-display text-sm font-semibold text-fg">{t.dash.detail.details}</h2>
             <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
-              <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
+              <div className="flex min-w-0 flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                 <dt className="text-muted">{t.dash.detail.statusLabel}</dt>
                 <dd className="font-medium text-fg">
                   {model.status === "ready" && model.reviewState !== "pending" ? t.dash.review[model.reviewState] : t.dash.status[model.status]}
                 </dd>
               </div>
-              <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
+              <div className="flex min-w-0 flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                 <dt className="text-muted">{t.dash.detail.sourceLabel}</dt>
                 <dd className="font-medium text-fg">{model.inputKind ? t.dash.inputKind[model.inputKind] : t.dash.source[model.source]}</dd>
               </div>
               {engineLabel && (
-                <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
+                <div className="flex min-w-0 flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                   <dt className="text-muted">{t.dash.detail.engineLabel}</dt>
                   <dd className="font-medium text-fg" data-testid="studio-engine">{engineLabel}</dd>
                 </div>
               )}
-              <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
+              <div className="flex min-w-0 flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                 <dt className="text-muted">{t.dash.detail.provenanceLabel}</dt>
                 <dd className="font-medium text-fg">{t.dash.provenance[model.provenance]}</dd>
               </div>
-              <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
+              <div className="flex min-w-0 flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                 <dt className="text-muted">{t.dash.detail.createdLabel}</dt>
                 <dd className="font-medium text-fg">{formatDate(model.createdAt, locale)}</dd>
               </div>
               {model.fileSize !== null && (
-                <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
+                <div className="flex min-w-0 flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                   <dt className="text-muted">{t.dash.detail.sizeLabel}</dt>
                   <dd className="font-medium text-fg">{formatBytes(model.fileSize)}</dd>
                 </div>
               )}
               {model.textureResolution && (
-                <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
+                <div className="flex min-w-0 flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                   <dt className="text-muted">{t.dash.detail.textureLabel}</dt>
                   <dd className="font-medium text-fg">{model.textureResolution}</dd>
                 </div>
               )}
-              <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
+              <div className="flex min-w-0 flex-col gap-0.5 rounded-lg bg-bg px-3 py-2">
                 <dt className="text-muted">{t.dash.detail.attemptsLabel}</dt>
                 <dd className="font-medium text-fg">
                   {model.attemptsDebited} / {model.attemptsRefunded}
                 </dd>
               </div>
               {model.checksum && (
-                <div className="flex flex-col gap-0.5 rounded-lg bg-bg px-3 py-2 sm:col-span-2">
+                <div className="flex min-w-0 flex-col gap-0.5 rounded-lg bg-bg px-3 py-2 sm:col-span-2">
                   <dt className="text-muted">{t.dash.detail.checksumLabel}</dt>
                   <dd className="truncate font-mono text-xs text-fg">
                     {model.checksum}
@@ -448,11 +449,11 @@ export function StudioClient({
         </div>
 
         {/* Right column: Review Checklist + Product Metadata */}
-        <div className="space-y-6 lg:col-span-5">
+        <div className="min-w-0 space-y-6">
           {hasFile && (
             <section
               aria-labelledby="review-heading"
-              className="rounded-[16px] border border-line bg-surface p-5"
+              className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5"
             >
               <h2 id="review-heading" className="font-display text-sm font-semibold text-fg">
                 {t.dash.detail.reviewTitle}
@@ -565,7 +566,7 @@ export function StudioClient({
           {/* Product Metadata & User Dimensions */}
           <section
             aria-labelledby="meta-heading"
-            className="rounded-[16px] border border-line bg-surface p-5"
+            className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5"
           >
             <h2 id="meta-heading" className="font-display text-sm font-semibold text-fg">
               {t.dash.detail.metaTitle}
@@ -717,7 +718,7 @@ export function StudioClient({
           aria-labelledby="studio-del-title"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
         >
-          <div className="w-full max-w-md rounded-[16px] border border-line bg-surface p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-[var(--radius-card)] border border-line bg-surface-1 p-6 shadow-xl">
             <h2 id="studio-del-title" className="font-display text-base font-semibold text-fg">
               {t.dash.detail.deleteTitle}
             </h2>

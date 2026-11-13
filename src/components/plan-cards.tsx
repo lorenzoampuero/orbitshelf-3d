@@ -51,7 +51,7 @@ function PlanCard({ tier, plan, copy, locale, reference, cta, variant }: { tier:
 
   return (
     <div className={`card flex flex-col p-2 ${LAYOUT[variant].card}`} data-testid={`plan-${tier.id}`}>
-      <div className={`relative overflow-hidden rounded-2xl bg-[linear-gradient(135deg,var(--blood-hi),var(--blood))] text-white ${compact ? "p-4" : "p-5 md:p-6"}`}>
+      <div className={`relative overflow-hidden rounded-2xl bg-[linear-gradient(135deg,var(--accent-fill-hi),var(--accent-fill))] text-white ${compact ? "p-4" : "p-5 md:p-6"}`}>
         <span aria-hidden="true" className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full bg-white/[0.07]" />
         <div className="relative space-y-4">
           <div className="space-y-1.5">
@@ -96,7 +96,7 @@ function PlanCard({ tier, plan, copy, locale, reference, cta, variant }: { tier:
                   aria-pressed={i === index}
                   aria-label={`US$${s.priceUsd}, ${count(s.credits)} ${copy.credits}`}
                   className={`min-w-0 rounded-full py-1.5 text-center text-xs font-semibold tabular-nums transition-colors ${
-                    i === index ? "bg-blood text-white" : "border border-line text-muted hover:border-white/30 hover:text-fg"
+                    i === index ? "bg-accent-fill text-white" : "border border-line text-muted hover:border-white/30 hover:text-fg"
                   }`}
                 >
                   ${s.priceUsd}

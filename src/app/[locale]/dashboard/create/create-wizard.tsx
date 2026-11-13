@@ -276,8 +276,8 @@ export function CreateWizard({
   );
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
-      <form onSubmit={onSubmit} noValidate className="lg:col-span-7 rounded-[16px] border border-line bg-surface p-6 space-y-6">
+    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-8">
+      <form onSubmit={onSubmit} noValidate className="order-1 space-y-6 rounded-[var(--radius-card)] border border-line bg-surface-1 p-5 md:p-6 lg:order-2 lg:sticky lg:top-[72px] lg:max-h-[calc(100dvh-96px)] lg:overflow-y-auto">
         {/* 1. Product */}
         <fieldset className="space-y-4">
           <legend className="font-display text-lg font-semibold">{c.productTitle}</legend>
@@ -569,13 +569,18 @@ export function CreateWizard({
           type="submit"
           disabled={submitting}
           data-testid="create-submit-btn"
-          className="w-full rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-bg disabled:opacity-50"
+          className="sticky bottom-[76px] z-10 w-full rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-bg shadow-[0_-12px_24px_var(--surface-1)] disabled:opacity-50 lg:static lg:shadow-none"
         >
           {submitting ? c.submitting : mode === "demo" ? c.submitDemo : mode === "import" ? c.submitImport : c.submitAi}
         </button>
       </form>
 
-      <div className="lg:col-span-5 space-y-3">
+      <div className="relative isolate order-2 space-y-3 overflow-hidden rounded-[var(--radius-card)] border border-line bg-stage p-3 lg:order-1 lg:sticky lg:top-[72px]">
+        <div aria-hidden="true" className="aurora">
+          <i className="b1" />
+          <i className="b2" />
+          <i className="b3" />
+        </div>
         <ModelViewerBox
           src={`/demo/${demoAsset}.glb`}
           alt={c.demoObjects[demoAsset]}
@@ -586,7 +591,7 @@ export function CreateWizard({
           autoRotateOffLabel={dict.dash.detail.autoRotateOff}
           loadingLabel={dict.dash.detail.viewerLoading}
           errorLabel={dict.dash.detail.viewerError}
-          heightClass="h-[380px]"
+          heightClass="h-[340px] lg:h-[calc(100dvh-210px)] lg:min-h-[420px]"
           testId="create-preview-viewer"
         />
         <p className="text-xs text-muted px-1">{c.previewCaption}</p>

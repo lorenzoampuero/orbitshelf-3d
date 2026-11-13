@@ -6,6 +6,8 @@ import { localePath } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries/en";
 import type { Locale, ModelDto, ModelStatus, ModelSource, ProjectDto, ReviewState } from "@/lib/types";
 import { filterModels } from "@/lib/model-filter";
+import { Boxes } from "lucide-react";
+import { examplePoster } from "@/content/examples";
 import { formatBytes, formatDate } from "@/lib/utils";
 
 export function LibraryClient({
@@ -13,11 +15,14 @@ export function LibraryClient({
   t,
   initialModels,
   initialProjects,
+  initialQuery = "",
 }: {
   locale: Locale;
   t: Dictionary;
   initialModels: ModelDto[];
   initialProjects: ProjectDto[];
+  /** Pre-fills the search box (the top bar's search sends ?q=). */
+  initialQuery?: string;
 }) {
   const [projects, setProjects] = useState(initialProjects);
   const [project, setProject] = useState("");
@@ -25,7 +30,8 @@ export function LibraryClient({
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [newProject, setNewProject] = useState("");
   const [models, setModels] = useState<ModelDto[]>(initialModels);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
+  const [view, setView] = useState<"grid" | "list">("grid");
   const [status, setStatus] = useState<ModelStatus | "">("");
   const [source, setSource] = useState<ModelSource | "">("");
   const [review, setReview] = useState<ReviewState | "">("");
@@ -114,7 +120,7 @@ export function LibraryClient({
         </div>
       </div>
 
-      <div className="grid gap-3 rounded-[14px] border border-line bg-surface p-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-3 rounded-[var(--radius-card)] border border-line bg-surface-1 p-4 sm:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <label htmlFor="lib-search" className="block text-xs font-medium text-muted">
             {t.dash.library.search}
@@ -188,7 +194,7 @@ export function LibraryClient({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-end gap-3 text-xs">
+      <div className="flex flex-wrap items-end gap-3 rounded-[var(--radius-card)] border border-line bg-surface-1 px-4 py-3 text-xs">
         <div>
           <label htmlFor="lib-project" className="block font-medium text-muted">{t.dash.library.project}</label>
           <select id="lib-project" value={project} onChange={(e) => setProject(e.target.value)} data-testid="library-filter-project" className="mt-1 rounded-xl border border-line bg-bg px-3 py-2 text-sm text-fg">
@@ -224,7 +230,23 @@ export function LibraryClient({
       </div>
 
       <div className="flex items-center justify-between text-xs text-muted">
-        <span>{t.dash.library.count.replace("{n}", String(filtered.length))}</span>
+        <span className="flex items-center gap-3">
+          {t.dash.library.count.replace("{n}", String(filtered.length))}
+          <span role="group" aria-label={locale === "es" ? "Vista" : "View"} className="inline-flex overflow-hidden rounded-full border border-line">
+            {(["grid", "list"] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                aria-pressed={view === v}
+                onClick={() => setView(v)}
+                data-testid={`library-view-${v}`}
+                className={`px-3 py-1 font-medium ${view === v ? "bg-accent-fill text-white" : "text-muted hover:text-fg"}`}
+              >
+                {v === "grid" ? (locale === "es" ? "Cuadrícula" : "Grid") : locale === "es" ? "Lista" : "List"}
+              </button>
+            ))}
+          </span>
+        </span>
         {(query || status || source || review || project || tag || favoritesOnly) && (
           <button
             type="button"
@@ -260,17 +282,24 @@ export function LibraryClient({
           </button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="library-grid">
+        <div data-view={view} className={`group/lib grid gap-4 ${view === "list" ? "grid-cols-1" : "sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"}`} data-testid="library-grid">
           {filtered.map((m) => (
             <article
               key={m.id}
               data-testid={`model-card-${m.id}`}
-              className="flex flex-col justify-between rounded-[16px] border border-line bg-surface p-5"
+              className="group flex flex-col justify-between overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface-1 transition-[border-color,transform] duration-[var(--t-control)] hover:-translate-y-0.5 hover:border-line-strong"
             >
-              <div>
-                {m.hasThumbnail && (
+              <div className="p-4 pb-0">
+                {m.hasThumbnail ? (
                   // eslint-disable-next-line @next/next/no-img-element -- private, authenticated image: the optimizer cannot fetch it
-                  <img src={`/api/models/${encodeURIComponent(m.id)}/thumbnail`} alt="" loading="lazy" className="mb-3 aspect-square w-full rounded-xl bg-bg object-contain" data-testid={`model-thumb-${m.id}`} />
+                  <img src={`/api/models/${encodeURIComponent(m.id)}/thumbnail`} alt="" loading="lazy" className="group-data-[view=list]/lib:hidden mb-3 aspect-square w-full rounded-xl bg-stage object-contain transition-transform duration-[var(--t-panel)] group-hover:scale-[1.03]" data-testid={`model-thumb-${m.id}`} />
+                ) : m.demoAsset ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- small static poster of a bundled sample
+                  <img src={examplePoster(m.demoAsset)} alt="" loading="lazy" className="group-data-[view=list]/lib:hidden mb-3 aspect-square w-full rounded-xl bg-stage object-contain transition-transform duration-[var(--t-panel)] group-hover:scale-[1.03]" />
+                ) : (
+                  <div aria-hidden="true" className="group-data-[view=list]/lib:hidden mb-3 flex aspect-square w-full items-center justify-center rounded-xl bg-stage text-muted">
+                    <Boxes className="h-10 w-10 opacity-40" />
+                  </div>
                 )}
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="rounded-full border border-line bg-surface-2 px-2.5 py-0.5 text-xs font-medium text-accent">
@@ -311,7 +340,7 @@ export function LibraryClient({
                   )}
                 </dl>
               </div>
-              <div className="mt-5 flex items-center justify-between gap-2 border-t border-line pt-3">
+              <div className="mt-4 flex items-center justify-between gap-2 border-t border-line p-4">
                 <Link
                   href={localePath(locale, `/dashboard/models/${m.id}`)}
                   data-testid={`open-model-${m.id}`}
@@ -340,7 +369,7 @@ export function LibraryClient({
           aria-labelledby="del-modal-title"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
         >
-          <div className="w-full max-w-md rounded-[16px] border border-line bg-surface p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-[var(--radius-card)] border border-line bg-surface-1 p-6 shadow-xl">
             <h2 id="del-modal-title" className="font-display text-base font-semibold text-fg">
               {t.dash.library.deleteTitle}
             </h2>

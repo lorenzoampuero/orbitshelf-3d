@@ -11,6 +11,8 @@ import { PlanCards } from "@/components/plan-cards";
 import { Card, ClosingBanner, FaqList, PageHero, Pill, Section, SectionTitle, StatusBadge, Tile } from "@/components/marketing-kit";
 import { ReadingSuggestions, TrustStrip, WorkflowVersus } from "@/components/landing-extra";
 import { planReference } from "@/lib/provider/registry";
+import { ModelRail, ModelSpotlight } from "@/components/marketing/model-art";
+import { PAGE_MODELS, RAIL_COPY, pick, closingArt, SPOTLIGHT } from "@/content/page-models";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -31,7 +33,7 @@ function Flow({ steps, icons }: { steps: string[]; icons: React.ReactNode[] }) {
     <div className="flex flex-wrap items-start gap-x-3 gap-y-4">
       {steps.map((label, i) => (
         <div key={label} className="flex items-start gap-3">
-          <Tile label={label} tone={i === 1 ? "blood" : "dark"}>
+          <Tile label={label} tone={i === 1 ? "accent-fill" : "dark"}>
             {icons[i]}
           </Tile>
           {i < steps.length - 1 ? <ChevronRight className="mt-4 h-5 w-5 shrink-0 text-muted" aria-hidden="true" /> : null}
@@ -84,8 +86,8 @@ export default async function PricingPage({ params }: Props) {
   );
 
   return (
-    <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
-      <PageHero pill={dict.pricing.eyebrow} title={dict.pricing.title} text={dict.pricing.intro} />
+    <MarketingShell tone="violet" locale={locale} dict={dict} isSignedIn={Boolean(user)}>
+      <PageHero marquee={9} pill={dict.pricing.eyebrow} title={dict.pricing.title} text={dict.pricing.intro} />
 
       <section className="relative pb-8 md:pb-12">
         <div className="glow -top-24 left-1/2 h-72 w-[min(44rem,100%)] -translate-x-1/2 opacity-40" aria-hidden="true" />
@@ -119,7 +121,7 @@ export default async function PricingPage({ params }: Props) {
                 <h3 className="text-xl font-semibold leading-tight">{x.credits.refund.title}</h3>
                 <p className="text-sm leading-relaxed text-muted">{x.credits.refund.text}</p>
               </div>
-              <Tile tone="blood">
+              <Tile tone="accent-fill">
                 <Undo2 className="h-6 w-6" />
               </Tile>
             </div>
@@ -248,6 +250,15 @@ export default async function PricingPage({ params }: Props) {
       </Section>
 
       <Section>
+        <ModelSpotlight model={SPOTLIGHT["pricing"]} locale={locale} flip />
+      </Section>
+
+      <Section>
+        <SectionTitle sub={RAIL_COPY[locale].sub}>{RAIL_COPY[locale].title}</SectionTitle>
+        <ModelRail models={[...PAGE_MODELS.pricing, pick("money-bag")]} locale={locale} label={RAIL_COPY[locale].label} />
+      </Section>
+
+      <Section>
         <SectionTitle>{x.faqTitle}</SectionTitle>
         <FaqList items={x.faq} />
       </Section>
@@ -255,7 +266,7 @@ export default async function PricingPage({ params }: Props) {
       <WorkflowVersus locale={locale} />
       <TrustStrip locale={locale} />
       <ReadingSuggestions locale={locale} page="pricing" />
-      <ClosingBanner
+      <ClosingBanner art={closingArt(7)}
         titleA={x.closing.titleA}
         titleB={x.closing.titleB}
         cta={dict.pricing.cta}

@@ -11,6 +11,8 @@ import { currentUser } from "@/lib/api";
 import { innerPagesCopy, plainTitle } from "@/content/inner-pages";
 import { MarketingShell } from "@/components/marketing-shell";
 import { ClosingBanner, PageHero, Section, Tile } from "@/components/marketing-kit";
+import { ModelPile, ModelSpotlight } from "@/components/marketing/model-art";
+import { PAGE_MODELS, closingArt, SPOTLIGHT } from "@/content/page-models";
 import { ProductFit, ReadingSuggestions } from "@/components/landing-extra";
 import { ModelViewerBox } from "@/components/model-viewer-box";
 import { SampleGallery } from "./sample-gallery";
@@ -57,8 +59,12 @@ export default async function ExamplesPage({ params }: Props) {
   };
 
   return (
-    <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
-      <PageHero pill={dict.examples.eyebrow} title={dict.examples.title} text={dict.examples.intro} />
+    <MarketingShell tone="magenta" locale={locale} dict={dict} isSignedIn={Boolean(user)}>
+      <PageHero marquee={7} pill={dict.examples.eyebrow} title={dict.examples.title} text={dict.examples.intro} visual={<ModelPile models={PAGE_MODELS.examples} locale={locale} />} />
+
+      <Section>
+        <ModelSpotlight model={SPOTLIGHT["examples"]} locale={locale} />
+      </Section>
 
       <Section>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
@@ -119,7 +125,7 @@ export default async function ExamplesPage({ params }: Props) {
                   <ImageIcon className="h-6 w-6" />
                 </Tile>
                 <ArrowRight className="h-5 w-5 shrink-0 text-accent" />
-                <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-blood text-white sm:h-20 sm:w-20">
+                <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-accent-fill text-white sm:h-20 sm:w-20">
                   <Box className="h-8 w-8" />
                 </span>
               </div>
@@ -146,7 +152,7 @@ export default async function ExamplesPage({ params }: Props) {
 
       <ProductFit locale={locale} />
       <ReadingSuggestions locale={locale} page="examples" />
-      <ClosingBanner
+      <ClosingBanner art={closingArt(2)}
         titleA={copy.examples.closing.titleA}
         titleB={copy.examples.closing.titleB}
         cta={dict.how.cta}

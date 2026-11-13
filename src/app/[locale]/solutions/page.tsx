@@ -10,6 +10,8 @@ import { Card, Checklist, ClosingBanner, PageHero, Section, SectionTitle, Tag } 
 import { ReadingSuggestions, TrustStrip } from "@/components/landing-extra";
 import { IntegrationBadge, MiniFlow, SolutionIcon } from "@/components/solutions/solution-parts";
 import { SOLUTION_SLUGS, getSolutionsCopy } from "@/content/solutions";
+import { ModelPile, ModelTrio, ModelSpotlight } from "@/components/marketing/model-art";
+import { SOLUTION_MODELS, closingArt, SPOTLIGHT } from "@/content/page-models";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -25,9 +27,6 @@ export async function generateMetadata({ params }: Props) {
   });
 }
 
-/** Column layout of the three trade cards on desktop: wide, narrow, full. */
-const CARD_LAYOUT = ["md:col-span-3", "md:col-span-2", "md:col-span-5 md:flex-row md:items-end md:justify-between"] as const;
-
 export default async function SolutionsPage({ params }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
@@ -38,24 +37,26 @@ export default async function SolutionsPage({ params }: Props) {
   const create = localePath(locale, "/dashboard/create");
 
   return (
-    <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
-      <PageHero
+    <MarketingShell tone="magenta" locale={locale} dict={dict} isSignedIn={Boolean(user)}>
+      <PageHero marquee={5}
         pill={idx.pill}
         title={idx.title}
         text={idx.text}
         primary={{ href: create, label: copy.ui.primaryCta }}
         secondary={{ href: localePath(locale, "/how-it-works"), label: copy.ui.secondaryCta }}
+        visual={<ModelPile models={SOLUTION_MODELS.index.pile} locale={locale} />}
       />
 
       {/* The three trades as large cards. */}
       <Section>
         <SectionTitle>{idx.cardsTitle}</SectionTitle>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {SOLUTION_SLUGS.map((slug, i) => {
             const s = copy.solutions[slug];
             return (
-              <Card key={slug} lift tone={i === 2 ? "outline" : "default"} className={`flex flex-col justify-between gap-8 ${CARD_LAYOUT[i]}`}>
-                <div className="space-y-5">
+              <Card key={slug} lift tone={i === 2 ? "outline" : "default"} className="group/tile flex flex-col justify-between gap-8 overflow-hidden !p-0">
+                <ModelTrio models={SOLUTION_MODELS[slug].card} locale={locale} sizes="(min-width: 768px) 320px, 92vw" />
+                <div className="space-y-5 px-7 md:px-8">
                   <div className="flex items-start justify-between gap-3">
                     <Tag>{s.name}</Tag>
                     <span aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-fg">
@@ -66,7 +67,7 @@ export default async function SolutionsPage({ params }: Props) {
                   <p className="max-w-md text-sm leading-relaxed text-muted">{s.card.text}</p>
                   <Checklist items={s.card.points} />
                 </div>
-                <div className={`flex flex-col gap-6 ${i === 2 ? "md:items-end" : ""}`}>
+                <div className="flex flex-col gap-6 px-7 pb-7 md:px-8 md:pb-8">
                   <MiniFlow items={s.flow} />
                   <Link href={localePath(locale, `/solutions/${slug}`)} className="btn-pill btn-outline self-start md:shrink-0">
                     {s.card.cta}
@@ -81,9 +82,13 @@ export default async function SolutionsPage({ params }: Props) {
 
       {/* What every trade shares. */}
       <Section>
+        <ModelSpotlight model={SPOTLIGHT["solutions"]} locale={locale} flip />
+      </Section>
+
+      <Section>
         <SectionTitle sub={idx.sharedSub}>{idx.sharedTitle}</SectionTitle>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-          <Card lift tone="red" className="flex flex-col justify-between gap-8 md:col-span-4">
+          <Card lift tone="feature" className="flex flex-col justify-between gap-8 md:col-span-4">
             <div className="space-y-4">
               <Tag>{idx.shared.review.tag}</Tag>
               <h3 className="max-w-md text-2xl font-semibold leading-tight">{idx.shared.review.title}</h3>
@@ -91,7 +96,7 @@ export default async function SolutionsPage({ params }: Props) {
             </div>
             <div aria-hidden="true" className="flex gap-1.5">
               {[0, 1, 2, 3, 4].map((n) => (
-                <span key={n} className="flex h-8 w-8 items-center justify-center rounded-lg bg-blood text-white">
+                <span key={n} className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-fill text-white">
                   <Check className="h-4 w-4" />
                 </span>
               ))}
@@ -150,7 +155,7 @@ export default async function SolutionsPage({ params }: Props) {
 
       <TrustStrip locale={locale} />
       <ReadingSuggestions locale={locale} page="solutions" />
-      <ClosingBanner titleA={idx.closing.titleA} titleB={idx.closing.titleB} cta={idx.closing.cta} href={create} note={idx.closing.note} />
+      <ClosingBanner art={closingArt(1)} titleA={idx.closing.titleA} titleB={idx.closing.titleB} cta={idx.closing.cta} href={create} note={idx.closing.note} />
     </MarketingShell>
   );
 }

@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Play } from "lucide-react";
 import { ModelPicker } from "@/components/model-picker";
 import { ModelViewerBox } from "@/components/model-viewer-box";
-import { exampleGlb, STAGE_EXAMPLE } from "@/content/examples";
+import { exampleGlb, examplePoster, STAGE_EXAMPLE } from "@/content/examples";
 import { studioCopy } from "@/content/studio-copy";
 import { localePath } from "@/i18n/config";
 import { setComposerHandoff, titleFromFile } from "@/lib/composer-handoff";
@@ -27,6 +28,7 @@ export function StudioComposer({ locale, engines, catalog, preset }: { locale: L
   const [prompt, setPrompt] = useState("");
   const [dragging, setDragging] = useState(false);
   const [quote, setQuote] = useState<QuoteDto | null>(null);
+  const [liveExample, setLiveExample] = useState(false);
 
   const hasEngine = engines.length > 0;
   const needsEngine = tab !== "import" && !hasEngine;
@@ -157,11 +159,29 @@ export function StudioComposer({ locale, engines, catalog, preset }: { locale: L
                 </div>
               ) : tab === "import" && glb ? (
                 <div className="flex h-full items-center justify-center px-6 text-center font-mono text-sm">{glb.name}</div>
-              ) : (
+              ) : liveExample ? (
                 <>
                   <ModelViewerBox src={exampleGlb(STAGE_EXAMPLE)} alt="" bare spin wheelZoom={false} heightClass="h-full" loadingLabel="" errorLabel="" testId="composer-viewer" />
                   <span className="absolute left-3 top-3 rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium text-muted">{copy.exampleBadge}</span>
                 </>
+              ) : (
+                // A still render by default: the heavy 3D viewer only mounts once the visitor asks for it, so the dashboard's first paint never pays for it.
+                <button
+                  type="button"
+                  onClick={() => setLiveExample(true)}
+                  data-testid="composer-stage-poster"
+                  className="group relative block h-full w-full"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- a small static poster, not an optimizer candidate */}
+                  <img src={examplePoster(STAGE_EXAMPLE)} alt="" className="h-full w-full object-contain p-2" />
+                  <span className="absolute left-3 top-3 rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium text-muted">{copy.exampleBadge}</span>
+                  <span className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                    <span className="flex items-center gap-1.5 rounded-full bg-bg/90 px-3.5 py-1.5 text-xs font-semibold text-fg">
+                      <Play className="h-3.5 w-3.5" aria-hidden="true" />
+                      {copy.watchLive}
+                    </span>
+                  </span>
+                </button>
               )}
               {!needsEngine && (
               <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 p-3 text-center">

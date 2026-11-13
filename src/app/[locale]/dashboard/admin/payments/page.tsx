@@ -40,7 +40,7 @@ export default async function AdminPaymentsPage({ params, searchParams }: Props)
         <AdminTabs locale={locale} copy={copy.nav} current="payments" />
       </div>
 
-      <section aria-labelledby="tool-h" className="space-y-4 rounded-[24px] border border-line bg-surface p-5">
+      <section aria-labelledby="tool-h" className="space-y-4 rounded-[var(--radius-card)] border border-line bg-surface-1 p-5">
         <div>
           <h2 id="tool-h" className="font-display text-lg font-semibold">{c.toolTitle}</h2>
           <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted">{c.toolText}</p>
@@ -53,7 +53,7 @@ export default async function AdminPaymentsPage({ params, searchParams }: Props)
         <Link href={`${base}?pending=1`} aria-current={onlyPending ? "page" : undefined} className={chip(onlyPending)}>{c.filterPending}</Link>
       </div>
 
-      <div className="relative overflow-x-auto rounded-[24px] border border-line bg-surface" role="region" tabIndex={0} aria-label={c.title}>
+      <div className="relative overflow-x-auto rounded-[var(--radius-card)] border border-line bg-surface-1" role="region" tabIndex={0} aria-label={c.title}>
         {events.length === 0 ? (
           <p className="p-6 text-sm text-muted">{c.empty}</p>
         ) : (

@@ -90,7 +90,7 @@ export function ShopifyPublish({ model, t }: { model: ModelDto; t: Dictionary })
   if (!shop) return null;
 
   return (
-    <section aria-labelledby="shopify-heading" className="space-y-4 rounded-[16px] border border-line bg-surface p-5 text-xs" data-testid="shopify-publish">
+    <section aria-labelledby="shopify-heading" className="space-y-4 rounded-[var(--radius-card)] border border-line bg-surface-1 p-5 text-xs" data-testid="shopify-publish">
       <div>
         <h2 id="shopify-heading" className="font-display text-sm font-semibold text-fg">{c.publishTitle}</h2>
         <p className="mt-1 text-muted">{c.connectedTo.replace("{shop}", shop)}</p>

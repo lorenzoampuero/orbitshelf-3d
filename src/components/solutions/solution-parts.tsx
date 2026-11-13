@@ -1,5 +1,6 @@
 import { Fragment } from "react";
-import { ModelSilhouette, type SilhouetteKind } from "@/components/model-silhouette";
+import { ModelRender } from "@/components/marketing/model-art";
+import type { GalleryModel } from "@/lib/models";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -96,9 +97,9 @@ const SPAN: Record<2 | 3 | 4 | 6, string> = {
   6: "md:col-span-6",
 };
 
-/** A flat drawing of a demo model: what stands for "a 3D model" in the diagrams on these pages. */
-function ModelTile({ size = "lg", kind = "vase" }: { size?: "md" | "lg"; kind?: SilhouetteKind }) {
-  return <ModelSilhouette kind={kind} className={size === "lg" ? "h-20 w-20" : "h-14 w-14"} />;
+/** A studio render: what stands for "a 3D model" in the diagrams on these pages. */
+function ModelTile({ size = "lg", model }: { size?: "md" | "lg"; model: GalleryModel }) {
+  return <ModelRender model={model} className={size === "lg" ? "h-24 w-24" : "h-16 w-16"} />;
 }
 
 function Arrow({ className = "" }: { className?: string }) {
@@ -106,7 +107,7 @@ function Arrow({ className = "" }: { className?: string }) {
 }
 
 /** The drawn strip under the hero: what goes in, what you check, what comes out. */
-export function HeroFlow({ items, kind = "vase" }: { items: FlowItem[]; kind?: SilhouetteKind }) {
+export function HeroFlow({ items, model }: { items: FlowItem[]; model: GalleryModel }) {
   return (
     <div
       aria-hidden="true"
@@ -117,7 +118,7 @@ export function HeroFlow({ items, kind = "vase" }: { items: FlowItem[]; kind?: S
           {i > 0 ? <Arrow className="hidden sm:block" /> : null}
           {it.result ? (
             <span className="flex flex-col items-center gap-1.5">
-              <ModelTile kind={kind} />
+              <ModelTile model={model} />
               <span className="text-xs text-muted">{it.label}</span>
             </span>
           ) : (
@@ -139,7 +140,7 @@ export function MiniFlow({ items }: { items: FlowItem[] }) {
         <Fragment key={it.label}>
           {i > 0 ? <ArrowRight className="h-4 w-4 shrink-0 text-accent" /> : null}
           <span
-            className={`flex h-11 w-11 items-center justify-center rounded-xl ${it.result ? "bg-blood text-white" : "border border-line bg-surface-2 text-fg"}`}
+            className={`flex h-11 w-11 items-center justify-center rounded-xl ${it.result ? "bg-accent-fill text-white" : "border border-line bg-surface-2 text-fg"}`}
           >
             <SolutionIcon name={it.icon} className="h-5 w-5" />
           </span>
@@ -158,7 +159,7 @@ export function Workflow({ steps }: { steps: Step[] }) {
         return (
           <li key={s.title} className="flex flex-col gap-5">
             <div aria-hidden="true" className="flex items-center gap-3">
-              <Tile tone={last ? "blood" : "dark"}>
+              <Tile tone={last ? "accent-fill" : "dark"}>
                 <SolutionIcon name={s.icon} />
               </Tile>
               {last ? null : <span className="hidden h-px flex-1 border-t border-dashed border-white/25 md:block" />}
@@ -177,7 +178,7 @@ export function Workflow({ steps }: { steps: Step[] }) {
 
 type Visuals = SolutionsCopy["visual"];
 
-function FeatureVisual({ feature, labels, kind }: { feature: Feature; labels: Visuals; kind: SilhouetteKind }) {
+function FeatureVisual({ feature, labels, model }: { feature: Feature; labels: Visuals; model: GalleryModel }) {
   switch (feature.visual) {
     case "views":
       return (
@@ -189,7 +190,7 @@ function FeatureVisual({ feature, labels, kind }: { feature: Feature; labels: Vi
           ))}
           <Arrow className="hidden sm:block" />
           <span className="flex flex-col items-center gap-1.5">
-            <ModelTile size="md" kind={kind} />
+            <ModelTile size="md" model={model} />
             <span className="text-xs text-muted">{labels.model}</span>
           </span>
         </div>
@@ -202,7 +203,7 @@ function FeatureVisual({ feature, labels, kind }: { feature: Feature; labels: Vi
           </Tile>
           <Arrow />
           <span className="flex flex-col items-center gap-1.5">
-            <ModelTile size="md" kind={kind} />
+            <ModelTile size="md" model={model} />
             <span className="text-xs text-muted">{labels.model}</span>
           </span>
         </div>
@@ -211,7 +212,7 @@ function FeatureVisual({ feature, labels, kind }: { feature: Feature; labels: Vi
       return (
         <div aria-hidden="true" className="flex gap-1.5">
           {[0, 1, 2, 3, 4].map((i) => (
-            <span key={i} className="flex h-8 w-8 items-center justify-center rounded-lg bg-blood text-white">
+            <span key={i} className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-fill text-white">
               <Check className="h-4 w-4" />
             </span>
           ))}
@@ -224,7 +225,7 @@ function FeatureVisual({ feature, labels, kind }: { feature: Feature; labels: Vi
             <Box className="h-6 w-6" />
           </Tile>
           <Arrow />
-          <Tile tone="blood" label={labels.optimized}>
+          <Tile tone="accent-fill" label={labels.optimized}>
             <Layers className="h-6 w-6" />
           </Tile>
         </div>
@@ -273,7 +274,7 @@ function FeatureVisual({ feature, labels, kind }: { feature: Feature; labels: Vi
           {(feature.chain ?? []).map((c, i, all) => (
             <Fragment key={c.label}>
               {i > 0 ? <Arrow className="hidden sm:block" /> : null}
-              <Tile tone={i === all.length - 1 ? "blood" : "dark"} label={c.label}>
+              <Tile tone={i === all.length - 1 ? "accent-fill" : "dark"} label={c.label}>
                 <SolutionIcon name={c.icon} />
               </Tile>
             </Fragment>
@@ -285,7 +286,7 @@ function FeatureVisual({ feature, labels, kind }: { feature: Feature; labels: Vi
   }
 }
 
-function FeatureCard({ feature, viewer, labels, kind }: { feature: Feature; viewer?: React.ReactNode; labels: Visuals; kind: SilhouetteKind }) {
+function FeatureCard({ feature, viewer, labels, model }: { feature: Feature; viewer?: React.ReactNode; labels: Visuals; model: GalleryModel }) {
   const big = feature.span >= 4;
   const head = (
     <div className="space-y-4">
@@ -306,7 +307,7 @@ function FeatureCard({ feature, viewer, labels, kind }: { feature: Feature; view
 
   if (feature.visual === "viewer") {
     return (
-      <Card tone="red" className={`${SPAN[feature.span]} grid grid-cols-1 gap-6 overflow-hidden md:grid-cols-2`}>
+      <Card tone="feature" className={`${SPAN[feature.span]} grid grid-cols-1 gap-6 overflow-hidden md:grid-cols-2`}>
         {head}
         <div className="space-y-2 self-center">{viewer}</div>
       </Card>
@@ -319,7 +320,7 @@ function FeatureCard({ feature, viewer, labels, kind }: { feature: Feature; view
       className={`${SPAN[feature.span]} flex flex-col justify-between gap-8 overflow-hidden ${feature.span === 6 ? "md:flex-row md:items-center" : ""}`}
     >
       {head}
-      <FeatureVisual feature={feature} labels={labels} kind={kind} />
+      <FeatureVisual feature={feature} labels={labels} model={model} />
     </Card>
   );
 }
@@ -329,17 +330,17 @@ export function FeatureBento({
   items,
   viewer,
   labels,
-  kind = "vase",
+  model,
 }: {
   items: Feature[];
   viewer?: React.ReactNode;
   labels: Visuals;
-  kind?: SilhouetteKind;
+  model: GalleryModel;
 }) {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
       {items.map((f) => (
-        <FeatureCard key={f.tag} feature={f} viewer={viewer} labels={labels} kind={kind} />
+        <FeatureCard key={f.tag} feature={f} viewer={viewer} labels={labels} model={model} />
       ))}
     </div>
   );

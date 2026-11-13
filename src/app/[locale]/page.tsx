@@ -1,37 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  Armchair,
-  ArrowRight,
-  Box,
-  Check,
-  Code2,
-  Coins,
-  FileBox,
-  Footprints,
-  Gamepad2,
-  GitCompare,
-  Image as ImageIcon,
-  Lamp,
-  MapPinOff,
-  PenTool,
-  Plug,
-  Shirt,
-  ShoppingCart,
-  Store,
-  Type,
-  Webhook,
-} from "lucide-react";
+import { ArrowRight, Check, GitCompare, Image as ImageIcon, Type } from "lucide-react";
 import { isLocale, localePath } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { buildPageMetadata } from "@/lib/seo";
 import { currentUser } from "@/lib/api";
 import { MarketingShell } from "@/components/marketing-shell";
-import { ProductFit, ReadingSuggestions, TrustStrip, WorkflowVersus } from "@/components/landing-extra";
 import { ModelViewerBox } from "@/components/model-viewer-box";
-import { ModelSilhouette, type SilhouetteKind } from "@/components/model-silhouette";
-import { HeroShelf, type ShelfItem } from "@/components/home/hero-shelf";
+import { ArtFigure, ArtImage } from "@/components/home/art-image";
+import { CompareSlider } from "@/components/home/compare-slider";
+import { Marquee } from "@/components/home/marquee";
+import { TypedPrompt } from "@/components/home/typed-prompt";
 import {
   Card,
   CardBody,
@@ -41,11 +21,17 @@ import {
   Pill,
   Section,
   SectionTitle,
-  StatusBadge,
   Tile,
-  cardToneClass,
 } from "@/components/marketing-kit";
-import { showcase, showcaseBeforeAfter, showcaseHero } from "@/config/showcase";
+import { AudienceTiles, type AudienceTile } from "@/components/marketing/audience-tiles";
+import { HeroArt } from "@/components/marketing/hero-art";
+import { HowCards } from "@/components/marketing/how-cards";
+import { ConnectionsBand } from "@/components/marketing/connections-band";
+import { HeroComposer } from "@/components/marketing/hero-composer";
+import { showcase, showcaseBeforeAfter } from "@/config/showcase";
+import { art, artCopy, MARQUEE_ITEMS } from "@/content/landing-art";
+import { homeCopy } from "@/content/home-copy";
+import { getModel, type GalleryModel } from "@/lib/models";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -71,13 +57,13 @@ function TextLink({ href, children }: { href: string; children: React.ReactNode 
   );
 }
 
-/** The 3D result in a diagram: a flat drawing of a demo model, never a render. */
-function ResultModel({ kind, size = "md" }: { kind: SilhouetteKind; size?: "md" | "lg" }) {
-  return <ModelSilhouette kind={kind} className={size === "lg" ? "h-24 w-24 sm:h-28 sm:w-28" : "h-16 w-16"} />;
+/** Looks a gallery model up by slug and fails loudly in the build if the manifest and this page disagree. */
+function model(slug: string): GalleryModel {
+  const found = getModel(slug);
+  if (!found) throw new Error(`Home page: model "${slug}" is not in the manifest`);
+  return found;
 }
-
-/** Vase-like silhouette used by the "surface and mesh" drawing. */
-const VASE = "polygon(36% 0, 64% 0, 64% 16%, 86% 44%, 86% 80%, 70% 100%, 30% 100%, 14% 80%, 14% 44%, 36% 16%)";
+const bigNumber = (n: number) => (n >= 9.5e5 ? `${(n / 1e6).toFixed(1)}M` : `${Math.round(n / 1e3)}K`);
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
@@ -85,8 +71,9 @@ export default async function HomePage({ params }: Props) {
   const dict = getDictionary(locale);
   const user = await currentUser();
   const h = dict.home;
+  const a = artCopy[locale];
+  const c = homeCopy[locale];
 
-  const heroEntry = showcaseHero();
   const beforeAfter = showcaseBeforeAfter();
   const posters = showcase.filter((s) => !s.hero);
   const create = localePath(locale, "/dashboard/create");
@@ -110,153 +97,120 @@ export default async function HomePage({ params }: Props) {
     errorLabel: dict.dash.detail.viewerError,
   };
 
-  /** The shelf under the hero model. A real approved result leads when one exists; the three demo samples always follow. */
-  const shelfItems: ShelfItem[] = [
-    ...(heroEntry
-      ? [
-          {
-            id: "result",
-            src: heroEntry.glb,
-            alt: heroEntry.alt[locale],
-            label: heroEntry.title[locale],
-            icon: "vase" as const,
-            caption: heroEntry.kind === "text" ? h.generatedText : h.generatedPhotos.replace("{n}", String(heroEntry.photos.length)),
-          },
-        ]
-      : []),
-    ...(["vase", "lamp", "chair"] as const).map((k) => ({
-      id: k,
-      src: `/demo/${k}.glb`,
-      alt: h.shelfAlts[k],
-      label: h.shelfNames[k],
-      icon: k,
-      caption: h.viewerCaption,
-    })),
-  ];
+  // One model per job: nothing in this page shows the same piece twice, apart from the hero's build-up pair.
+  const photoModel = model("blue-puffer-jacket");
+  const textModel = model("lizard-creature");
+  const multiModel = model("fabric-loveseat");
+  const startModel = model("orange-puffer-vest");
+  const webModel = model("t-rex");
+  const voxel = model("blocky-voxel-character");
+  const heroMech = model("orange-assault-mech");
+  const golem = model("crystal-golem");
 
-  const intIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-    embed: Code2,
-    shopify: Store,
-    blender: Box,
-    api: Webhook,
-    mcp: Plug,
-    woo: ShoppingCart,
-    engines: Gamepad2,
-  };
-  const intSpan: Record<string, string> = {
-    embed: "md:col-span-4",
-    shopify: "md:col-span-2",
-    blender: "md:col-span-2",
-    api: "md:col-span-2",
-    mcp: "md:col-span-2",
-    woo: "md:col-span-3",
-    engines: "md:col-span-3",
-  };
-  const intTone = (status: string) => (status === "available" ? "ok" : status === "testing" ? "warn" : "muted");
-  const storeIcons = [Shirt, Armchair, Footprints, Lamp];
-  const stepIcons = [ImageIcon, Box, FileBox];
+  const tileModels = {
+    stores: ["zip-hoodie", "tufted-sofa", "money-bag"],
+    games: ["blocky-voxel-character", "stone-cottage", "purple-dragon"],
+    film: ["white-battle-mech", "orange-walker-mech", "red-dragon"],
+    design: ["geometry-only-gadget", "sci-fi-device-230-parts", "robot-dog"],
+  } as const;
+  const tileHref = { stores: "/solutions/stores", games: "/solutions/games", film: "/solutions/design", design: "/solutions/design" } as const;
+  const tiles: AudienceTile[] = c.uses.items.map((u) => ({
+    key: u.key,
+    tag: u.tag,
+    title: u.title,
+    text: u.text,
+    cta: u.cta,
+    href: localePath(locale, tileHref[u.key]),
+    models: tileModels[u.key].map(model) as AudienceTile["models"],
+  }));
 
   return (
     <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
-      {/* 1. Hero: text on the left, the model on a shelf on the right (stacked on small screens). */}
+      {/* 1. Hero: the title and a real composer on the left, the model on its stage on the right (stacked on small screens). */}
       <section className="relative overflow-hidden pb-6 pt-28 md:pt-36 lg:pt-32">
-        <div className="container-page relative grid grid-cols-1 items-center gap-8 lg:grid-cols-[1fr_1.05fr] lg:gap-4">
+        <div className="container-page relative grid grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-6">
           <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
             <Pill>{h.pill}</Pill>
             <h1 className="hero-title mt-6 max-w-3xl text-[clamp(2.4rem,4.6vw,4rem)]">{h.heroTitle}</h1>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-muted md:text-lg">{h.heroText}</p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-              <Link href={create} data-testid="hero-cta-primary" className="btn-pill btn-solid py-3.5">
-                {h.ctaPrimary}
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
-              <Link href={localePath(locale, "/examples")} className="btn-pill btn-outline py-3.5">
-                {h.ctaSecondary}
-              </Link>
+            <div className="mt-8 w-full max-w-xl text-left">
+              <HeroComposer locale={locale} copy={c.composer} examples={[a.prompt]} signedIn={Boolean(user)} />
             </div>
+            <Link href={localePath(locale, "/examples")} data-testid="hero-cta-secondary" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-muted transition-colors hover:text-fg">
+              {h.ctaSecondary}
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
           </div>
 
-          <HeroShelf items={shelfItems} shelfLabel={h.shelfLabel} ghostWord={h.ghostWord} viewerLabels={viewerLabels} />
+          <HeroArt
+            layers={{ wire: art.dragon.wire, clay: art.dragon.clay, beauty: art.dragon.beauty }}
+            alt={a.alts.dragon}
+            floats={[
+              { image: voxel.beauty, alt: voxel.alt[locale] },
+              { image: heroMech.beauty, alt: heroMech.alt[locale] },
+            ]}
+          />
         </div>
       </section>
 
-      {/* 2. Three ways in: image, text and several images, each with a drawn diagram and a link to its page. */}
+      <Marquee title={a.marqueeTitle} items={MARQUEE_ITEMS} />
+
+      {/* 3. Three ways in: image, text and several images. The renders break out of their cards. */}
       <Section>
         <SectionTitle sub={h.waysSub}>{h.waysTitle}</SectionTitle>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-          <Card lift className="flex flex-col justify-between gap-10 overflow-hidden md:col-span-4">
-            <CardBody tag={h.ways.image.tag} title={h.ways.image.title} text={h.ways.image.text} />
-            <div className="space-y-6">
-              <div className="flex items-center gap-4 sm:gap-6">
-                <span
-                  aria-hidden="true"
-                  className="mesh-lines flex h-24 w-28 shrink-0 items-center justify-center rounded-2xl border border-line bg-[#151230] sm:h-28 sm:w-36"
-                >
-                  <ImageIcon className="h-8 w-8 text-accent" />
-                </span>
-                <ArrowRight className="h-5 w-5 shrink-0 text-accent" aria-hidden="true" />
-                {beforeAfter ? (
-                  <ResultModel kind="vase" size="lg" />
-                ) : (
-                  // A live demo vase. Skipped when a real before/after viewer is shown below, to keep the page light.
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <ModelViewerBox
-                      bare
-                      src="/demo/vase.glb"
-                      alt={h.shelfAlts.vase}
-                      heightClass="h-[150px] sm:h-[180px]"
-                      testId="home-ways-viewer"
-                      wheelZoom={false}
-                      {...viewerLabels}
-                    />
-                    <p className="text-xs text-muted">{h.sampleNote}</p>
-                  </div>
-                )}
+          <Card lift className="relative flex flex-col gap-6 md:col-span-4">
+            <div className="flex h-full flex-col justify-between gap-8 lg:max-w-[46%]">
+              <CardBody tag={h.ways.image.tag} title={h.ways.image.title} text={h.ways.image.text} />
+              <div className="space-y-6">
+                <div aria-hidden="true" className="flex items-center gap-3">
+                  <Tile>
+                    <ImageIcon className="h-6 w-6" />
+                  </Tile>
+                  <ArrowRight className="h-5 w-5 shrink-0 text-accent" />
+                  <span className="flex h-14 items-center rounded-2xl bg-accent-fill px-4 text-sm font-semibold text-white">GLB</span>
+                </div>
+                <TextLink href={localePath(locale, "/features/image-to-3d")}>{h.ways.image.cta}</TextLink>
               </div>
-              <TextLink href={localePath(locale, "/features/image-to-3d")}>{h.ways.image.cta}</TextLink>
             </div>
+            <ArtFigure image={photoModel.beauty} alt={photoModel.alt[locale]} sizes="(min-width: 1024px) 340px, 90vw" className="mx-auto w-full max-w-sm lg:absolute lg:-right-6 lg:top-1/2 lg:w-[58%] lg:max-w-none lg:-translate-y-1/2" />
           </Card>
 
-          <Card lift className="flex flex-col justify-between gap-8 md:col-span-2">
+          <Card lift className="flex flex-col justify-between gap-6 md:col-span-2">
             <CardBody tag={h.ways.text.tag} title={h.ways.text.title} text={h.ways.text.text} />
-            <div className="space-y-6">
-              <div aria-hidden="true" className="space-y-4">
-                <div className="space-y-1.5 rounded-xl border border-line px-4 py-3">
-                  <span className="flex items-center gap-2 text-xs text-muted">
-                    <Type className="h-3.5 w-3.5 text-accent" />
-                    {h.ways.text.promptLabel}
-                  </span>
-                  <span className="block text-sm leading-snug text-fg">{h.ways.text.promptExample}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <ArrowRight className="h-5 w-5 shrink-0 text-accent" />
-                  <ResultModel kind="chair" />
-                </div>
+            <div className="space-y-5">
+              <div className="space-y-1.5 rounded-xl border border-line px-4 py-3">
+                <span className="flex items-center gap-2 text-xs text-muted">
+                  <Type className="h-3.5 w-3.5 text-accent" aria-hidden="true" />
+                  {h.ways.text.promptLabel}
+                </span>
+                <TypedPrompt text={c.textPrompt} />
               </div>
+              <ArtFigure image={textModel.beauty} alt={textModel.alt[locale]} sizes="(min-width: 768px) 240px, 80vw" className="mx-auto w-4/5" />
               <TextLink href={localePath(locale, "/features/text-to-3d")}>{h.ways.text.cta}</TextLink>
             </div>
           </Card>
 
-          <Card lift tone="outline" className="grid grid-cols-1 gap-8 overflow-hidden md:col-span-6 md:grid-cols-2 md:items-center">
+          <Card lift tone="outline" className="grid grid-cols-1 gap-8 md:col-span-6 md:grid-cols-2 md:items-center">
             <div className="flex flex-col items-start gap-6">
               <CardBody tag={h.ways.multi.tag} title={h.ways.multi.title} text={h.ways.multi.text} />
               <TextLink href={localePath(locale, "/features/multi-image-to-3d")}>{h.ways.multi.cta}</TextLink>
             </div>
-            <div aria-hidden="true" className="space-y-3">
-              <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5">
-                <div className="grid grid-cols-4 gap-2 sm:gap-3">
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:gap-5">
+              <div aria-hidden="true" className="shrink-0 space-y-2">
+                <div className="grid grid-cols-4 gap-2 sm:grid-cols-2">
                   {[0, 1, 2, 3].map((i) => (
                     <Tile key={i}>
                       <ImageIcon className="h-6 w-6" />
                     </Tile>
                   ))}
                 </div>
-                <ArrowRight className="h-5 w-5 shrink-0 rotate-90 text-accent sm:rotate-0" />
-                <ResultModel kind="lamp" size="lg" />
+                <p className="max-w-32 text-xs text-muted">{[views.front, views.left, views.back, views.right].join(", ")}</p>
               </div>
-              <p className="text-xs text-muted">{[views.front, views.left, views.back, views.right].join(", ")}</p>
+              <ArrowRight className="h-5 w-5 shrink-0 rotate-90 text-accent sm:rotate-0" aria-hidden="true" />
+              <ArtFigure image={multiModel.beauty} alt={multiModel.alt[locale]} sizes="(min-width: 768px) 320px, 80vw" className="w-full min-w-0 max-w-xs md:-mt-10" />
             </div>
           </Card>
 
@@ -292,71 +246,54 @@ export default async function HomePage({ params }: Props) {
             </Card>
           )}
 
-          <Card lift className="space-y-4 md:col-span-2">
-            <span aria-hidden="true" className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-fg">
-              <MapPinOff className="h-5 w-5" />
-            </span>
-            <CardBody tag={h.ways.privacy.tag} title={h.ways.privacy.title} text={h.ways.privacy.text} />
-          </Card>
-
-          <Card lift className="flex flex-col justify-between gap-8 md:col-span-4">
-            <CardBody tag={h.ways.status.tag} title={h.ways.status.title} text={h.ways.status.text} />
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div aria-hidden="true" className="flex items-center gap-3">
-                <span className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 text-xs text-fg">
-                  <Coins className="h-4 w-4 text-accent" />
-                  {h.ways.status.costLabel}
-                </span>
-                <ArrowRight className="h-4 w-4 text-accent" />
-                <ResultModel kind="vase" />
-              </div>
-              <TextLink href={localePath(locale, "/pricing")}>{h.ways.status.link}</TextLink>
-            </div>
-          </Card>
         </div>
       </Section>
 
-      {/* 3. Control: the one red card of the page is a large model with the mesh toggle (viewer on the left on desktop). */}
+      {/* 4. How it works: three cards, each with a picture made of renders. */}
+      <Section>
+        <SectionTitle sub={`${c.sequence.sub} ${h.stepsNote}`}>{c.sequence.title}</SectionTitle>
+        <HowCards
+          copy={c.sequence}
+          layers={{ wire: art.kitchen.wire, clay: art.kitchen.clay, beauty: art.kitchen.beauty }}
+          alt={a.alts.kitchen}
+          start={startModel.beauty}
+          web={{ image: webModel.beauty, alt: webModel.alt[locale] }}
+          views={{ textured: a.compare.textured, clay: a.compare.clay, wire: a.compare.wire }}
+          figures={{ original: bigNumber(webModel.tris.original), web: bigNumber(webModel.tris.web), size: `${(webModel.bytes.web / (1024 * 1024)).toFixed(1)} MB` }}
+        />
+      </Section>
+
+      {/* 5. Control: the one highlighted card of the page, the same model as texture, clay and mesh. */}
       <Section>
         <SectionTitle sub={h.controlSub}>{h.controlTitle}</SectionTitle>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-          <Card tone="red" className="grid grid-cols-1 items-center gap-6 overflow-hidden md:col-span-6 md:grid-cols-2 md:gap-10 md:p-9">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-6 lg:grid-cols-4">
+          <Card tone="feature" className="grid grid-cols-1 items-center gap-6 md:col-span-6 md:grid-cols-2 md:gap-10 md:p-7 lg:col-span-4">
             <div className="md:order-2">
               <CardBody tag={h.control.mesh.tag} title={h.control.mesh.title} text={h.control.mesh.text}>
-                <p className="text-xs text-muted">{h.sampleNote}</p>
+                <p className="text-sm leading-relaxed text-muted">{h.twinText}</p>
               </CardBody>
             </div>
-            <div className="md:order-1">
-              <ModelViewerBox
-                src="/demo/chair.glb"
-                alt={h.meshAlt}
-                heightClass="h-[320px] md:h-[440px]"
-                provenanceBadge={h.sampleNote}
-                testId="home-mesh-viewer"
-                wheelZoom={false}
-                wireframeLabel={dict.dash.detail.wireframe}
-                surfaceLabel={dict.dash.detail.surface}
-                {...viewerLabels}
-              />
+            <div className="mx-auto w-full max-w-sm md:order-1">
+              <CompareSlider model={art.hoodie} alt={a.alts.hoodie} copy={a.compare} />
             </div>
           </Card>
 
-          <Card lift className="flex flex-col justify-between gap-8 md:col-span-2">
+          <Card lift className="flex flex-col justify-between gap-6 md:col-span-3 lg:col-span-1">
             <CardBody tag={h.control.review.tag} title={h.control.review.title} text={h.control.review.text} />
             <div aria-hidden="true" className="flex gap-1.5">
               {[0, 1, 2, 3, 4].map((i) => (
-                <span key={i} className="flex h-8 w-8 items-center justify-center rounded-lg bg-blood text-white">
+                <span key={i} className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-fill text-white">
                   <Check className="h-4 w-4" />
                 </span>
               ))}
             </div>
           </Card>
 
-          <Card lift className="flex flex-col justify-between gap-8 md:col-span-4">
+          <Card lift className="flex flex-col justify-between gap-6 md:col-span-3 lg:col-span-1">
             <CardBody tag={h.control.diag.tag} title={h.control.diag.title} text={h.control.diag.text} />
-            <ul aria-label={h.control.diag.title} className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {h.control.diag.labels.map((label) => (
-                <li key={label} className="space-y-2.5 rounded-xl border border-line px-3 py-3">
+            <ul aria-label={h.control.diag.title} className="grid grid-cols-2 gap-2">
+              {h.control.diag.labels.slice(0, 4).map((label) => (
+                <li key={label} className="space-y-2 rounded-xl border border-line px-3 py-2.5">
                   <span className="block text-xs text-muted">{label}</span>
                   <span aria-hidden="true" className="block h-1.5 w-2/3 rounded-full bg-white/15" />
                 </li>
@@ -364,24 +301,24 @@ export default async function HomePage({ params }: Props) {
             </ul>
           </Card>
 
-          <Card lift tone="outline" className="flex flex-col justify-between gap-8 md:col-span-4 md:flex-row md:items-center">
+          <Card lift tone="outline" className="flex flex-col justify-between gap-6 md:col-span-3 lg:col-span-1">
             <CardBody tag={h.control.versions.tag} title={h.control.versions.title} text={h.control.versions.text} />
             <div aria-hidden="true" className="flex shrink-0 items-center gap-3">
               <span className="flex flex-col items-center gap-1.5">
-                <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-line text-sm font-semibold">v1</span>
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-line text-sm font-semibold">v1</span>
                 <span className="text-xs text-muted">{h.control.versions.original}</span>
               </span>
               <GitCompare className="h-5 w-5 text-accent" />
               <span className="flex flex-col items-center gap-1.5">
-                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blood text-sm font-semibold text-white">v2</span>
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-fill text-sm font-semibold text-white">v2</span>
                 <span className="text-xs text-muted">{h.control.versions.optimized}</span>
               </span>
             </div>
           </Card>
 
-          <Card lift className="space-y-5 md:col-span-2">
+          <Card lift className="space-y-4 md:col-span-3 lg:col-span-1">
             <CardBody tag={h.control.export.tag} title={h.control.export.title} text={h.control.export.text} />
-            <ul className="space-y-2.5">
+            <ul className="space-y-2">
               {(
                 [
                   ["GLB", h.control.export.glb],
@@ -404,122 +341,10 @@ export default async function HomePage({ params }: Props) {
         </div>
       </Section>
 
-      {/* 4. Three steps in one outlined card, split by lines. */}
+      {/* 6. Who it is for: one tab each, with the model and the text changing together. */}
       <Section>
-        <SectionTitle sub={h.stepsNote}>{h.stepsTitle}</SectionTitle>
-        <Card tone="outline" className="!p-0">
-          <ol className="grid grid-cols-1 divide-y divide-line md:grid-cols-3 md:divide-x md:divide-y-0">
-            {h.steps.map((s, i) => {
-              const Icon = stepIcons[i] ?? Box;
-              return (
-                <li key={s.title} className="flex flex-col gap-6 p-7 md:p-8">
-                  <div className="flex items-center justify-between">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-sm font-semibold tabular-nums" aria-hidden="true">
-                      {i + 1}
-                    </span>
-                    <span aria-hidden="true" className="mesh-lines flex h-16 w-24 items-center justify-center rounded-xl bg-[#151230]">
-                      <Icon className="h-7 w-7 text-accent" />
-                    </span>
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-semibold">{s.title}</h3>
-                    <p className="text-sm leading-relaxed text-muted">{s.text}</p>
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        </Card>
-      </Section>
-
-      {/* 5. Who we help: stores as a full-width band with a demo lamp, then games and design side by side. */}
-      <Section>
-        <SectionTitle sub={h.whoSub}>{h.whoTitle}</SectionTitle>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-          <Card lift className="grid grid-cols-1 gap-8 overflow-hidden md:col-span-6 md:grid-cols-2 md:gap-10 md:p-9">
-            <div className="space-y-6">
-              <CardBody tag={h.who.stores.tag} title={h.who.stores.title} text={h.who.stores.text} />
-              <div className="flex flex-wrap gap-x-5 gap-y-3">
-                {h.who.stores.categories.map((c, i) => {
-                  const Icon = storeIcons[i] ?? Box;
-                  return (
-                    <Tile key={c} label={c}>
-                      <Icon className="h-6 w-6" />
-                    </Tile>
-                  );
-                })}
-              </div>
-              <Checklist items={h.who.stores.points} />
-            </div>
-            <div className="self-center">
-              <ModelViewerBox
-                src="/demo/lamp.glb"
-                alt={h.shelfAlts.lamp}
-                heightClass="h-[300px] md:h-[400px]"
-                provenanceBadge={h.sampleNote}
-                testId="home-stores-viewer"
-                wheelZoom={false}
-                {...viewerLabels}
-              />
-            </div>
-            <div className="flex flex-col gap-5 border-t border-line pt-6 md:col-span-2 md:flex-row md:items-center md:justify-between md:gap-8">
-              <div className="flex items-start gap-3">
-                <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blood text-white">
-                  <Shirt className="h-4 w-4" />
-                </span>
-                <div className="max-w-2xl space-y-1">
-                  <p className="text-sm font-semibold leading-snug">{h.who.stores.apparelTitle}</p>
-                  <p className="text-sm leading-relaxed text-muted">{h.who.stores.apparelText}</p>
-                </div>
-              </div>
-              <TextLink href={localePath(locale, "/solutions/stores")}>{h.who.stores.cta}</TextLink>
-            </div>
-          </Card>
-
-          <Card lift className="flex flex-col justify-between gap-8 md:col-span-3">
-            <div className="space-y-5">
-              <span aria-hidden="true" className="mesh-lines flex h-16 w-24 items-center justify-center rounded-xl bg-[#151230]">
-                <Gamepad2 className="h-7 w-7 text-accent" />
-              </span>
-              <CardBody tag={h.who.games.tag} title={h.who.games.title} text={h.who.games.text} />
-              <Checklist items={h.who.games.points} />
-            </div>
-            <TextLink href={localePath(locale, "/solutions/games")}>{h.who.games.cta}</TextLink>
-          </Card>
-
-          <Card lift tone="outline" className="flex flex-col justify-between gap-8 md:col-span-3">
-            <div className="space-y-5">
-              <span aria-hidden="true" className="mesh-lines flex h-16 w-24 items-center justify-center rounded-xl bg-[#151230]">
-                <PenTool className="h-7 w-7 text-accent" />
-              </span>
-              <CardBody tag={h.who.design.tag} title={h.who.design.title} text={h.who.design.text} />
-              <Checklist items={h.who.design.points} />
-            </div>
-            <TextLink href={localePath(locale, "/solutions/design")}>{h.who.design.cta}</TextLink>
-          </Card>
-        </div>
-      </Section>
-
-      <ProductFit locale={locale} />
-
-      {/* 6. The same model, solid and mesh: a flat drawing (CSS shapes), labelled as an illustration. */}
-      <Section>
-        <SectionTitle sub={h.twinText}>{h.twinTitle}</SectionTitle>
-        <Card tone="outline" className="mx-auto max-w-3xl space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <figure className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-bg px-4 py-6">
-              <span aria-hidden="true" className="block h-40 w-28 bg-blood sm:h-52 sm:w-36" style={{ clipPath: VASE }} />
-              <figcaption className="text-sm font-medium text-fg">{h.twinSolid}</figcaption>
-            </figure>
-            <figure className="flex flex-col items-center gap-3 rounded-2xl border border-line bg-bg px-4 py-6">
-              <span aria-hidden="true" className="relative block h-40 w-28 bg-accent sm:h-52 sm:w-36" style={{ clipPath: VASE }}>
-                <span className="mesh-lines absolute inset-[2px] block bg-[#151230]" style={{ clipPath: VASE }} />
-              </span>
-              <figcaption className="text-sm font-medium text-fg">{h.twinMesh}</figcaption>
-            </figure>
-          </div>
-          <p className="text-center text-xs text-muted">{h.twinNote}</p>
-        </Card>
+        <SectionTitle sub={c.uses.sub}>{c.uses.title}</SectionTitle>
+        <AudienceTiles tiles={tiles} locale={locale} />
       </Section>
 
       {/* 7. Gallery: only when real, approved results exist. */}
@@ -535,62 +360,50 @@ export default async function HomePage({ params }: Props) {
         </Section>
       )}
 
-      <WorkflowVersus locale={locale} />
-
-      {/* 8. Integrations: the six first, with the status each one really has. Planned ones are dashed so live ones lead. */}
+      {/* 8. Connections: the three connection models, each with the status it really has. */}
       <Section>
-        <SectionTitle sub={h.intSub}>{h.intTitle}</SectionTitle>
-        <ul className="grid grid-cols-1 gap-4 md:grid-cols-6">
-          {h.ints.map((it) => {
-            const Icon = intIcons[it.key] ?? Box;
-            const quiet = it.status === "planned" || it.status === "later";
-            return (
-              <li
-                key={it.key}
-                className={`card card-lift reveal flex flex-col gap-5 p-7 ${cardToneClass(quiet ? "planned" : "default")} ${intSpan[it.key] ?? "md:col-span-2"}`}
-              >
-                <span aria-hidden="true" className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-fg">
-                  <Icon className="h-5 w-5" />
-                </span>
-                <div className="space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-lg font-semibold leading-tight">{it.name}</h3>
-                    <StatusBadge tone={intTone(it.status)}>{h.intStatus[it.status as keyof typeof h.intStatus]}</StatusBadge>
-                  </div>
-                  <p className="text-sm leading-relaxed text-muted">{it.text}</p>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-        <div className="flex justify-center">
-          <Link href={localePath(locale, "/integrations")} className="btn-pill btn-outline">
-            {h.intCta}
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
+        <SectionTitle sub={c.connections.sub}>{c.connections.title}</SectionTitle>
+        <ConnectionsBand
+          ints={h.ints}
+          statusLabels={h.intStatus}
+          copy={c.connections}
+          models={{ shopify: model("green-shopping-bag-with-logo"), blender: model("blender-logo"), engines: model("dark-frame-block") }}
+          locale={locale}
+          allHref={localePath(locale, "/integrations")}
+          allLabel={h.intCta}
+        />
+      </Section>
+
+      {/* 9. What to expect and the questions, side by side. */}
+      <Section>
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
+          <div className="space-y-6 lg:sticky lg:top-28 lg:self-start">
+            <h2 className="text-[clamp(1.75rem,3.4vw,2.45rem)] font-semibold leading-tight">{c.expect.title}</h2>
+            <Card tone="outline" className="space-y-6">
+              <Checklist items={h.expectItems} />
+              <TextLink href={localePath(locale, "/compare/ai-3d-vs-manual")}>{h.expectLink}</TextLink>
+            </Card>
+          </div>
+          <div className="space-y-6">
+            <h2 className="text-[clamp(1.75rem,3.4vw,2.45rem)] font-semibold leading-tight">{h.faqTitle}</h2>
+            <FaqList items={h.faqs} />
+          </div>
         </div>
       </Section>
 
-      {/* 9. What to expect: the honest limits. */}
-      <Section>
-        <SectionTitle sub={h.expectSub}>{h.expectTitle}</SectionTitle>
-        <Card tone="outline" className="mx-auto max-w-3xl space-y-6">
-          <Checklist items={h.expectItems} />
-          <TextLink href={localePath(locale, "/compare/ai-3d-vs-manual")}>{h.expectLink}</TextLink>
-        </Card>
-      </Section>
-
-      <TrustStrip locale={locale} />
-      <ReadingSuggestions locale={locale} page="home" />
-
-      {/* 10. FAQ. */}
-      <Section>
-        <SectionTitle>{h.faqTitle}</SectionTitle>
-        <FaqList items={h.faqs} />
-      </Section>
-
-      {/* 11. Closing banner. */}
-      <ClosingBanner titleA={h.finalTitleA} titleB={h.finalTitleB} cta={h.finalCta} href={create} note={h.finalNote} />
+      {/* 10. Closing: an emissive model turning on its stage. */}
+      <ClosingBanner
+        titleA={h.finalTitleA}
+        titleB={h.finalTitleB}
+        cta={h.finalCta}
+        href={create}
+        note={h.finalNote}
+        visual={
+          <figure className="flex w-full flex-col items-center" data-testid="art-figure" aria-label={c.closing.stageLabel}>
+            <ArtImage image={golem.beauty} alt={golem.alt[locale]} sizes="(min-width: 768px) 320px, 70vw" className="art-float h-auto w-56 md:w-72" />
+          </figure>
+        }
+      />
     </MarketingShell>
   );
 }

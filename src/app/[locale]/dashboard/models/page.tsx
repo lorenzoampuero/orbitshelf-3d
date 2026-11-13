@@ -19,8 +19,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   });
 }
 
-export default async function ModelsPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function ModelsPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ q?: string }> }) {
   const { locale } = await params;
+  const q = ((await searchParams).q ?? "").slice(0, 120);
   if (!isLocale(locale)) notFound();
   const t = getDictionary(locale);
   const session = await currentUser();
@@ -29,5 +30,5 @@ export default async function ModelsPage({ params }: { params: Promise<{ locale:
   const rows = await store.listModels(session.orgId);
   const models = rows.map(toDto);
 
-  return <LibraryClient initialProjects={(await store.listProjects(session.orgId)).map(({ id, name, createdAt }) => ({ id, name, createdAt }))} locale={locale} t={t} initialModels={models} />;
+  return <LibraryClient initialProjects={(await store.listProjects(session.orgId)).map(({ id, name, createdAt }) => ({ id, name, createdAt }))} locale={locale} t={t} initialModels={models} initialQuery={q} />;
 }

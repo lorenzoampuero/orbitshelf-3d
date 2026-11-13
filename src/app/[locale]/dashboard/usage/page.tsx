@@ -50,25 +50,25 @@ export default async function UsagePage({ params }: { params: Promise<{ locale: 
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <div className="rounded-[14px] border border-line bg-surface p-4">
+        <div className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-4">
           <div className="text-xs font-medium text-muted">{t.dash.usage.balance}</div>
           <div className="mt-2 font-display text-2xl font-bold text-accent" data-testid="usage-balance">
             {usage.balance}
           </div>
         </div>
-        <div className="rounded-[14px] border border-line bg-surface p-4">
+        <div className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-4">
           <div className="text-xs font-medium text-muted">{t.dash.usage.granted}</div>
           <div className="mt-2 font-display text-2xl font-bold text-fg">{usage.granted}</div>
         </div>
-        <div className="rounded-[14px] border border-line bg-surface p-4">
+        <div className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-4">
           <div className="text-xs font-medium text-muted">{t.dash.usage.debited}</div>
           <div className="mt-2 font-display text-2xl font-bold text-fg">{usage.debited}</div>
         </div>
-        <div className="rounded-[14px] border border-line bg-surface p-4">
+        <div className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-4">
           <div className="text-xs font-medium text-muted">{t.dash.usage.refunded}</div>
           <div className="mt-2 font-display text-2xl font-bold text-fg">{usage.refunded}</div>
         </div>
-        <div className="rounded-[14px] border border-line bg-surface p-4">
+        <div className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-4">
           <div className="text-xs font-medium text-muted">{t.dash.usage.active}</div>
           <div className="mt-2 font-display text-xl font-bold text-fg">
             {t.dash.usage.activeOf
@@ -81,7 +81,7 @@ export default async function UsagePage({ params }: { params: Promise<{ locale: 
       <p className="text-xs text-muted">{t.dash.usage.capNote}</p>
 
       {/* Job History Table */}
-      <section className="rounded-[16px] border border-line bg-surface p-5">
+      <section className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5">
         <h2 className="font-display text-base font-semibold text-fg">{t.dash.usage.jobsTitle}</h2>
         {models.length === 0 ? (
           <p className="mt-4 text-sm text-muted">{t.dash.usage.noJobs}</p>
@@ -116,7 +116,7 @@ export default async function UsagePage({ params }: { params: Promise<{ locale: 
       </section>
 
       {/* Attempt Ledger Table */}
-      <section className="rounded-[16px] border border-line bg-surface p-5">
+      <section className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5">
         <h2 className="font-display text-base font-semibold text-fg">{t.dash.usage.ledgerTitle}</h2>
         {usage.ledger.length === 0 ? (
           <p className="mt-4 text-sm text-muted">{t.dash.usage.noLedger}</p>

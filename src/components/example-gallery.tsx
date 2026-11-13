@@ -102,7 +102,7 @@ export function ExampleGallery({ locale, copy, models }: { locale: Locale; copy:
                     onPointerEnter={(ev) => ev.pointerType === "mouse" && hover(e.id)}
                     onPointerLeave={() => hover(null)}
                     data-testid={`example-card-${e.id}`}
-                    className="card-lift group flex aspect-square w-full flex-col overflow-hidden rounded-[24px] border border-line bg-surface text-left"
+                    className="card-lift group flex aspect-square w-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface-1 text-left"
                   >
                     {/* The model gets its own area; the name and numbers sit in a bar under it, never on top of it. */}
                     <span className="relative min-h-0 flex-1 bg-gradient-to-b from-surface to-bg/60">
@@ -135,7 +135,7 @@ export function ExampleGallery({ locale, copy, models }: { locale: Locale; copy:
           <p className="text-xs text-muted">{copy.exampleNote}</p>
         </>
       ) : models.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-[24px] border border-line bg-surface p-10 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface-1 p-10 text-center">
           <h3 className="font-display text-lg font-semibold">{copy.mineEmptyTitle}</h3>
           <p className="max-w-md text-sm text-muted">{copy.mineEmptyText}</p>
           <TryExampleButton locale={locale} example={exampleById(FIRST_EXAMPLE)!} label={copy.tryIt} busyLabel={copy.trying} errorText={copy.tryError} />
@@ -144,7 +144,7 @@ export function ExampleGallery({ locale, copy, models }: { locale: Locale; copy:
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {models.map((m) => (
             <li key={m.id}>
-              <Link href={localePath(locale, `/dashboard/models/${m.id}`)} data-testid={`overview-model-${m.id}`} className="card-lift group relative block aspect-square overflow-hidden rounded-[24px] border border-line bg-surface">
+              <Link href={localePath(locale, `/dashboard/models/${m.id}`)} data-testid={`overview-model-${m.id}`} className="card-lift group relative block aspect-square overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface-1">
                 {m.poster ? (
                   <Image src={m.poster} alt="" width={640} height={640} unoptimized loading="lazy" className="absolute inset-0 h-full w-full object-contain p-4" />
                 ) : (
@@ -170,7 +170,7 @@ export function ExampleGallery({ locale, copy, models }: { locale: Locale; copy:
           onClick={(e) => e.target === dialogRef.current && dialogRef.current?.close()}
           aria-labelledby="example-dialog-title"
           data-testid="example-dialog"
-          className="m-auto w-[min(960px,calc(100vw-2rem))] rounded-[24px] border border-line bg-surface p-0 text-fg backdrop:bg-black/70"
+          className="m-auto w-[min(960px,calc(100vw-2rem))] rounded-[var(--radius-card)] border border-line bg-surface-1 p-0 text-fg backdrop:bg-black/70"
         >
           <div className="grid gap-0 md:grid-cols-[minmax(0,1fr)_300px]">
             <ModelViewerBox

@@ -33,14 +33,14 @@ export default async function HelpPage({ params }: { params: Promise<{ locale: s
 
       <div className="space-y-3">
         {t.dash.help.items.map((item) => (
-          <div key={item.q} className="rounded-[16px] border border-line bg-surface p-5">
+          <div key={item.q} className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5">
             <h2 className="font-display text-sm font-semibold text-fg">{item.q}</h2>
             <p className="mt-1.5 text-sm leading-relaxed text-muted">{item.a}</p>
           </div>
         ))}
       </div>
 
-      <div className="rounded-[16px] border border-line bg-surface p-5">
+      <div className="rounded-[var(--radius-card)] border border-line bg-surface-1 p-5">
         <h2 className="font-display text-sm font-semibold text-fg">{t.dash.help.moreTitle}</h2>
         <Link
           href={localePath(locale, "/resources")}

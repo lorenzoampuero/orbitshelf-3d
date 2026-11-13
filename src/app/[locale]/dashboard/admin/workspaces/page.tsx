@@ -35,7 +35,7 @@ export default async function AdminWorkspacesPage({ params }: Props) {
         <AdminTabs locale={locale} copy={copy.nav} current="workspaces" />
       </div>
 
-      <div className="relative overflow-x-auto rounded-[24px] border border-line bg-surface" role="region" tabIndex={0} aria-label={c.title}>
+      <div className="relative overflow-x-auto rounded-[var(--radius-card)] border border-line bg-surface-1" role="region" tabIndex={0} aria-label={c.title}>
         {rows.length === 0 ? (
           <p className="p-6 text-sm text-muted">{c.empty}</p>
         ) : (

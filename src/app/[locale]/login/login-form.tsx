@@ -70,7 +70,7 @@ export function LoginForm({
     return (
       <div role="status" className="space-y-4 rounded-2xl border border-accent/40 bg-accent/10 p-5" data-testid="login-check-email">
         <div className="flex items-center gap-3 text-base font-semibold text-fg">
-          <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blood text-white">
+          <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-fill text-white">
             <MailCheck className="h-5 w-5" />
           </span>
           {dict.checkEmailTitle}

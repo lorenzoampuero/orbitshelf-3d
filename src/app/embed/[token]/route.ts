@@ -49,9 +49,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
   return page(
     200,
     `<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>
-<style>html,body{margin:0;height:100%;background:transparent;font:12px system-ui;color:#555}model-viewer{width:100%;height:calc(100% - 28px);--poster-color:transparent}p{margin:0;height:28px;line-height:28px;text-align:center;overflow:hidden;white-space:nowrap}</style>
+<style>html,body{margin:0;height:100%;background:transparent;font:12px/1.4 system-ui,sans-serif;color:#6b6b76}model-viewer{width:100%;height:calc(100% - 32px);--poster-color:transparent;outline:none}p{margin:0;height:32px;line-height:32px;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 12px;letter-spacing:.01em}.orbit{position:absolute;left:50%;top:50%;width:84px;height:36px;margin:-18px 0 0 -42px;border:1px solid rgba(139,108,255,.55);border-radius:50%;opacity:.9}.orbit i{position:absolute;left:50%;top:-4px;width:7px;height:7px;margin-left:-3.5px;border-radius:50%;background:#8f6bff;transform-origin:50% 22px;animation:spin 1.4s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.orbit i{animation:none}}</style>
 <script type="module" src="/vendor/model-viewer.min.js"></script></head>
-<body><model-viewer src="${src}" alt="${title}" camera-controls touch-action="pan-y" loading="lazy" reveal="auto" shadow-intensity="0.7"></model-viewer><p>${escapeHtml(NOTICE[found.model.provenance])}</p></body></html>`,
+<body><model-viewer src="${src}" alt="${title}" camera-controls touch-action="pan-y" loading="lazy" reveal="auto" shadow-intensity="0.7"><div slot="progress-bar" class="orbit" aria-hidden="true"><i></i></div></model-viewer><p>${escapeHtml(NOTICE[found.model.provenance])}</p></body></html>`,
     frameAncestors(found.embed.allowedDomains),
   );
 }

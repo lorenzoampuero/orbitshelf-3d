@@ -51,14 +51,14 @@ export default async function AdminOverviewPage({ params }: Props) {
 
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {stats.map((s) => (
-          <div key={s.label} className={s.tone === "attention" ? "rounded-[20px] border border-warn/50 bg-surface p-4" : "rounded-[20px] border border-line bg-surface p-4"}>
+          <div key={s.label} className={s.tone === "attention" ? "rounded-[20px] border border-warn/50 bg-surface p-4" : "rounded-[var(--radius-card)] border border-line bg-surface-1 p-4"}>
             <dt className="text-xs text-muted">{s.label}</dt>
             <dd className={s.tone === "attention" ? "mt-1 font-display text-2xl font-bold text-warn" : "mt-1 font-display text-2xl font-bold"}>{num.format(s.value)}</dd>
           </div>
         ))}
       </dl>
 
-      <section aria-labelledby="attention-h" className="space-y-3 rounded-[24px] border border-line bg-surface p-5">
+      <section aria-labelledby="attention-h" className="space-y-3 rounded-[var(--radius-card)] border border-line bg-surface-1 p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
           <h2 id="attention-h" className="font-display text-lg font-semibold">{c.attentionTitle}</h2>
           <Link href={localePath(locale, "/dashboard/admin/payments")} className="text-xs font-medium text-accent hover:underline">{c.attentionAll} →</Link>
@@ -79,7 +79,7 @@ export default async function AdminOverviewPage({ params }: Props) {
         )}
       </section>
 
-      <section aria-labelledby="engines-h" className="space-y-3 rounded-[24px] border border-line bg-surface p-5">
+      <section aria-labelledby="engines-h" className="space-y-3 rounded-[var(--radius-card)] border border-line bg-surface-1 p-5">
         <h2 id="engines-h" className="font-display text-lg font-semibold">{c.enginesTitle}</h2>
         {engines.length === 0 ? (
           <p className="text-sm text-muted">{c.enginesEmpty}</p>

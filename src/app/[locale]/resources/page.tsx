@@ -1,3 +1,5 @@
+import { ModelPile, ModelRender, ModelSpotlight } from "@/components/marketing/model-art";
+import { PAGE_MODELS, coverFor, SPOTLIGHT } from "@/content/page-models";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
@@ -53,8 +55,12 @@ export default async function ResourcesIndexPage({ params }: Props) {
   ];
 
   return (
-    <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
-      <PageHero pill={dict.resources.eyebrow} title={dict.resources.title} text={dict.resources.intro} />
+    <MarketingShell tone="blue" locale={locale} dict={dict} isSignedIn={Boolean(user)}>
+      <PageHero marquee={11} pill={dict.resources.eyebrow} title={dict.resources.title} text={dict.resources.intro} visual={<ModelPile models={PAGE_MODELS.resources} locale={locale} />} />
+
+      <Section>
+        <ModelSpotlight model={SPOTLIGHT["resources"]} locale={locale} flip />
+      </Section>
 
       <Section>
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-6">
@@ -65,7 +71,10 @@ export default async function ResourcesIndexPage({ params }: Props) {
                 className={`card card-lift reveal group flex w-full flex-col justify-between gap-8 p-7 md:p-8 ${i === 0 ? "md:min-h-[260px]" : ""}`}
               >
                 <div className="space-y-4">
-                  <Tag>{it.tag}</Tag>
+                  <div className="flex items-start justify-between gap-4">
+                    <Tag>{it.tag}</Tag>
+                    <ModelRender model={coverFor(it.key)} className="-mt-2 h-20 w-20 md:h-24 md:w-24" />
+                  </div>
                   <h2 className={`font-semibold leading-tight transition-colors group-hover:text-accent group-focus-visible:text-accent ${i === 0 ? "text-2xl md:max-w-md" : "text-xl"}`}>
                     {it.title}
                   </h2>

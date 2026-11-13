@@ -58,7 +58,7 @@ export function WebhooksClient({ dict, locale, available, initialEndpoints, init
   const hostOf = (id: string) => endpoints.find((e) => e.id === id)?.url ?? "";
 
   return (
-    <section className="space-y-4 rounded-[16px] border border-line bg-surface p-5 text-xs" data-testid="webhooks">
+    <section className="space-y-4 rounded-[var(--radius-card)] border border-line bg-surface-1 p-5 text-xs" data-testid="webhooks">
       <div>
         <h2 className="font-display text-base font-semibold text-fg">{c.title}</h2>
         <p className="mt-1 text-muted">{c.intro}</p>

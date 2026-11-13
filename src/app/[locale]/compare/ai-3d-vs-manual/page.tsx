@@ -6,6 +6,8 @@ import { currentUser } from "@/lib/api";
 import { innerPagesCopy, plainTitle } from "@/content/inner-pages";
 import { MarketingShell } from "@/components/marketing-shell";
 import { Card, Checklist, ClosingBanner, PageHero, Section } from "@/components/marketing-kit";
+import { ModelPile, ModelSpotlight } from "@/components/marketing/model-art";
+import { PAGE_MODELS, closingArt, SPOTLIGHT } from "@/content/page-models";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -30,8 +32,12 @@ export default async function ComparePage({ params }: Props) {
   const c = dict.compare;
 
   return (
-    <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
-      <PageHero pill={c.eyebrow} title={c.title} text={c.intro} />
+    <MarketingShell tone="amber" locale={locale} dict={dict} isSignedIn={Boolean(user)}>
+      <PageHero marquee={8} pill={c.eyebrow} title={c.title} text={c.intro} visual={<ModelPile models={PAGE_MODELS.compare} locale={locale} />} />
+
+      <Section>
+        <ModelSpotlight model={SPOTLIGHT["compare"]} locale={locale} flip />
+      </Section>
 
       <Section>
         <div className="card reveal overflow-hidden">
@@ -77,7 +83,7 @@ export default async function ComparePage({ params }: Props) {
         </div>
       </Section>
 
-      <ClosingBanner
+      <ClosingBanner art={closingArt(5)}
         titleA={copy.compare.closing.titleA}
         titleB={copy.compare.closing.titleB}
         cta={dict.how.cta}

@@ -79,7 +79,7 @@ export function McpClient({ locale, tools, generationEnabled }: { locale: Locale
 
   return (
     <div className="grid gap-6 lg:grid-cols-5" data-testid="mcp-panel">
-      <section aria-labelledby="mcp-server-h" className="min-w-0 space-y-5 rounded-[28px] border border-line bg-surface p-5 sm:p-6 lg:col-span-3">
+      <section aria-labelledby="mcp-server-h" className="min-w-0 space-y-5 rounded-[var(--radius-card)] border border-line bg-surface-1 p-5 sm:p-6 lg:col-span-3">
         <div>
           <h2 id="mcp-server-h" className="font-display text-xl font-semibold">{c.serverTitle}</h2>
           <p className="mt-1 text-sm text-muted">{c.serverText}</p>
@@ -148,7 +148,7 @@ export function McpClient({ locale, tools, generationEnabled }: { locale: Locale
       </section>
 
       <div className="min-w-0 space-y-6 lg:col-span-2">
-        <section aria-labelledby="mcp-tools-h" className="space-y-3 rounded-[28px] border border-line bg-surface p-5 sm:p-6">
+        <section aria-labelledby="mcp-tools-h" className="space-y-3 rounded-[var(--radius-card)] border border-line bg-surface-1 p-5 sm:p-6">
           <div>
             <h2 id="mcp-tools-h" className="font-display text-lg font-semibold">{c.toolsTitle}</h2>
             <p className="mt-1 text-xs text-muted">{c.toolsText}</p>
@@ -172,7 +172,7 @@ export function McpClient({ locale, tools, generationEnabled }: { locale: Locale
           </ul>
         </section>
 
-        <section aria-labelledby="mcp-prompts-h" className="space-y-3 rounded-[28px] border border-line bg-surface p-5 sm:p-6">
+        <section aria-labelledby="mcp-prompts-h" className="space-y-3 rounded-[var(--radius-card)] border border-line bg-surface-1 p-5 sm:p-6">
           <div>
             <h2 id="mcp-prompts-h" className="font-display text-lg font-semibold">{c.promptsTitle}</h2>
             <p className="mt-1 text-xs text-muted">{c.promptsText}</p>

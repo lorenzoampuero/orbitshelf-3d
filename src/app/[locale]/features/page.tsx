@@ -9,10 +9,12 @@ import { MarketingShell } from "@/components/marketing-shell";
 import { ModelViewerBox } from "@/components/model-viewer-box";
 import { Card, CardBody, Checklist, ClosingBanner, FaqList, PageHero, Section, SectionTitle, StatusBadge, Tag } from "@/components/marketing-kit";
 import { ProductFit, ReadingSuggestions } from "@/components/landing-extra";
-import { Chips, FlowDiagram, SolutionsRow, demoKind } from "@/components/features/feature-parts";
+import { Chips, FlowDiagram, SolutionsRow } from "@/components/features/feature-parts";
 import { FEATURES_COMMON, FEATURES_INDEX, featureCopy } from "@/content/features";
 import type { FeatureSlug } from "@/content/features";
 import type { Locale } from "@/lib/types";
+import { ModelPile, ModelSpotlight } from "@/components/marketing/model-art";
+import { FEATURE_MODELS, closingArt, SPOTLIGHT } from "@/content/page-models";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -54,7 +56,7 @@ function CompareCard({ locale, slug, span, row }: { locale: Locale; slug: Featur
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </div>
-      <FlowDiagram inputs={c.inOut.inputs} outputLabel={common.flowOutput} kind={demoKind(c.viewer.src)} />
+      <FlowDiagram inputs={c.inOut.inputs} outputLabel={common.flowOutput} model={FEATURE_MODELS.index.flows[slug]} />
     </Card>
   );
 }
@@ -87,11 +89,12 @@ export default async function FeaturesIndexPage({ params }: Props) {
   };
 
   return (
-    <MarketingShell locale={locale} dict={dict} isSignedIn={Boolean(user)}>
+    <MarketingShell tone="violet" locale={locale} dict={dict} isSignedIn={Boolean(user)}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
 
       {/* 1. Hero */}
-      <PageHero
+      <PageHero marquee={1}
+        visual={<ModelPile models={FEATURE_MODELS.index.pile} locale={locale} />}
         pill={idx.hero.pill}
         title={idx.hero.title}
         text={idx.hero.text}
@@ -111,6 +114,10 @@ export default async function FeaturesIndexPage({ params }: Props) {
 
       {/* 3. The same steps after generating */}
       <Section>
+        <ModelSpotlight model={SPOTLIGHT["features"]} locale={locale} />
+      </Section>
+
+      <Section>
         <SectionTitle sub={idx.afterSub}>{idx.afterTitle}</SectionTitle>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
           <Card lift tone="outline" className="space-y-4 md:col-span-2">
@@ -119,7 +126,7 @@ export default async function FeaturesIndexPage({ params }: Props) {
             <p className="text-sm leading-relaxed text-muted">{common.review.text}</p>
             <div aria-hidden="true" className="flex gap-1.5 pt-1">
               {[0, 1, 2, 3, 4].map((i) => (
-                <span key={i} className="flex h-7 w-7 items-center justify-center rounded-lg bg-blood text-white">
+                <span key={i} className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-fill text-white">
                   <Check className="h-4 w-4" />
                 </span>
               ))}
@@ -127,7 +134,7 @@ export default async function FeaturesIndexPage({ params }: Props) {
           </Card>
 
           {/* The one live viewer on this page: a demo sample with the mesh toggle, on the red card. */}
-          <Card tone="red" className="grid grid-cols-1 items-center gap-6 overflow-hidden md:col-span-4 md:p-9">
+          <Card tone="feature" className="grid grid-cols-1 items-center gap-6 overflow-hidden md:col-span-4 md:p-9">
             <div className="flex flex-col items-start space-y-4">
               <Tag>{common.mesh.tag}</Tag>
               <h3 className="text-xl font-semibold leading-tight">{common.mesh.title}</h3>
@@ -208,7 +215,7 @@ export default async function FeaturesIndexPage({ params }: Props) {
 
       <ProductFit locale={locale} />
       <ReadingSuggestions locale={locale} page="features" />
-      <ClosingBanner titleA={idx.closing.titleA} titleB={idx.closing.titleB} cta={common.closingCta} href={create} note={common.closingNote} />
+      <ClosingBanner art={closingArt(0)} titleA={idx.closing.titleA} titleB={idx.closing.titleB} cta={common.closingCta} href={create} note={common.closingNote} />
     </MarketingShell>
   );
 }

@@ -6,11 +6,13 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { billingUnit } from "@/lib/env";
 import { firstModelProgress } from "@/lib/first-model";
 import { ExampleGallery, type GalleryModel } from "@/components/example-gallery";
+import { ModelShelf } from "@/components/marketing/model-shelf";
 import { ProfileForm } from "@/components/profile-form";
-import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { examplePoster } from "@/content/examples";
+import { homeCopy } from "@/content/home-copy";
 import { studioCopy } from "@/content/studio-copy";
 import { refreshEngineSwitches } from "@/lib/jobs";
+import { galleryModels, type ModelCategory } from "@/lib/models";
 import { activeWorkspace, defaultPreset, SHORTCUTS, shortcutsFor } from "@/lib/profiles";
 import { allEngines, availableEngines, toEngineDto } from "@/lib/provider/registry";
 import { requireUser } from "@/lib/require-user";
@@ -22,6 +24,13 @@ import { StudioComposer } from "./studio-composer";
 type Props = { params: Promise<{ locale: string }> };
 
 const GALLERY_SIZE = 8;
+
+/** The model shelf lives here, not on the public home: shown first are a mix of types, so no category fills the row. */
+const SHELF_FEATURED = [
+  "blue-puffer-jacket", "red-dragon", "kitchen-units", "orange-assault-mech", "zip-hoodie", "fantasy-tower", "tufted-sofa", "baby-dragon",
+  "gothic-chapel", "robot-dog", "orange-puffer-vest", "crystal-golem", "t-rex", "stone-cottage", "money-bag", "sci-fi-device-230-parts",
+];
+const SHELF_CATEGORIES: ModelCategory[] = ["apparel", "furniture", "creature", "character", "prop", "architecture"];
 
 export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
@@ -35,6 +44,7 @@ export default async function DashboardOverviewPage({ params }: Props) {
   if (!isLocale(locale)) notFound();
   const dict = forBilling(getDictionary(locale), locale, billingUnit());
   const copy = studioCopy[locale];
+  const shelf = homeCopy[locale].shelf;
   const user = await requireUser(locale);
   const rows = (await store.listModels(user.orgId)).map(toDto);
   const usage = await store.usage(user.orgId);
@@ -64,11 +74,33 @@ export default async function DashboardOverviewPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
-      <StudioComposer locale={locale} engines={engines} catalog={allEngines().map(toEngineDto)} preset={defaultPreset(workspace, profile.experience)} />
+      <section data-tone="violet" className="tone-scope relative isolate -mx-1 overflow-hidden rounded-[var(--radius-card)] border border-line bg-stage px-2 py-6 md:px-6 md:py-10">
+        <div aria-hidden="true" className="aurora">
+          <i className="b1" />
+          <i className="b2" />
+          <i className="b3" />
+        </div>
+        <StudioComposer locale={locale} engines={engines} catalog={allEngines().map(toEngineDto)} preset={defaultPreset(workspace, profile.experience)} />
+      </section>
 
       {!firstModel.complete && <FirstModelCard locale={locale} progress={firstModel} providerReady={engines.length > 0} balance={usage.balance} />}
 
       <ExampleGallery locale={locale} copy={copy.gallery} models={models} />
+
+      <section aria-labelledby="shelf-heading" className="space-y-4" data-testid="dashboard-shelf">
+        <div>
+          <h2 id="shelf-heading" className="font-display text-lg font-semibold">{shelf.title}</h2>
+          <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted">{shelf.sub}</p>
+        </div>
+        <ModelShelf
+          models={galleryModels}
+          featured={SHELF_FEATURED}
+          categories={SHELF_CATEGORIES.filter((cat) => galleryModels.filter((m) => m.category === cat).length >= 2)}
+          locale={locale}
+          copy={shelf}
+          createHref={localePath(locale, "/dashboard/create")}
+        />
+      </section>
 
       <dl className="flex flex-wrap items-baseline gap-x-8 gap-y-2 border-y border-line py-3">
         {stats.map((s) => (
@@ -82,7 +114,7 @@ export default async function DashboardOverviewPage({ params }: Props) {
       </dl>
 
       {showOnboarding && (
-        <section aria-labelledby="onboarding-heading" className="space-y-3 rounded-[24px] border border-line bg-surface p-5" data-testid="onboarding-card">
+        <section aria-labelledby="onboarding-heading" className="space-y-3 rounded-[var(--radius-card)] border border-accent/30 bg-surface-1 p-4 md:p-5" data-testid="onboarding-card">
           <div>
             <h2 id="onboarding-heading" className="font-display text-lg font-semibold">{dict.dash.profile.title}</h2>
             <p className="mt-1 text-xs text-muted">{dict.dash.profile.intro}</p>
@@ -97,7 +129,6 @@ export default async function DashboardOverviewPage({ params }: Props) {
             {workspace ? dict.dash.profile.useCases[workspace] : copy.more}
           </h2>
           <div className="flex flex-wrap items-center gap-4">
-            <WorkspaceSwitcher dict={dict} active={workspace} />
             <Link href={localePath(locale, "/dashboard/explore")} data-testid="explore-all-link" className="text-xs font-medium text-accent hover:underline">
               {dict.dash.profile.exploreAll} →
             </Link>
@@ -106,7 +137,7 @@ export default async function DashboardOverviewPage({ params }: Props) {
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="workspace-shortcuts">
           {shortcuts.map((id) => (
             <li key={id}>
-              <Link href={localePath(locale, SHORTCUTS[id])} data-testid={`shortcut-${id}`} className="group block h-full rounded-[20px] border border-line bg-surface p-4 transition-colors hover:border-accent/50">
+              <Link href={localePath(locale, SHORTCUTS[id])} data-testid={`shortcut-${id}`} className="group block h-full rounded-[var(--radius-card)] border border-line bg-surface-1 p-4 transition-colors hover:border-accent/50">
                 <span className="block text-sm font-semibold text-fg group-hover:text-accent">{dict.dash.profile.shortcuts[id].title}</span>
                 <span className="mt-1 block text-xs leading-relaxed text-muted">{dict.dash.profile.shortcuts[id].text}</span>
               </Link>

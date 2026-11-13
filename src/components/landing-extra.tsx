@@ -55,7 +55,7 @@ export function WorkflowVersus({ locale }: { locale: Locale }) {
             ))}
           </ul>
         </Card>
-        <Card tone="red" className="space-y-5">
+        <Card tone="feature" className="space-y-5">
           <h3 className="text-lg font-semibold">{c.flowTitle}</h3>
           <Checklist items={c.rows.map((r) => r.flow)} />
         </Card>
@@ -77,7 +77,7 @@ export function TrustStrip({ locale }: { locale: Locale }) {
           return (
             <li key={it.title} className="flex">
               <Link href={localePath(locale, legalRoute(it.slug))} className="card card-lift reveal flex w-full flex-col gap-4 p-6">
-                <span aria-hidden="true" className="flex h-11 w-11 items-center justify-center rounded-xl bg-blood text-white">
+                <span aria-hidden="true" className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-fill text-white">
                   <Icon className="h-5 w-5" />
                 </span>
                 <h3 className="text-base font-semibold leading-snug">{it.title}</h3>

@@ -2,54 +2,73 @@
 
 @theme inline {
   --color-bg: var(--bg);
-  --color-surface: var(--surface);
+  --color-stage: var(--stage);
+  --color-surface: var(--surface-1);
+  --color-surface-1: var(--surface-1);
   --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-surface-deep: var(--stage);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-fg: var(--fg);
   --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
-  --color-blood: var(--blood);
+  --color-accent-fill: var(--accent-fill);
   --color-ink: var(--ink);
   --color-danger: var(--danger);
   --color-warn: var(--warn);
   --color-ok: var(--ok);
   --font-sans: var(--font-body);
   --font-display: var(--font-heading);
-  --radius-card: 24px;
-  --radius-ctl: 12px;
+  --font-mono: var(--font-data);
+  --radius-ctl: 8px;
+  --radius-field: 12px;
+  --radius-card: 16px;
+  --radius-panel: 24px;
+  --shadow-menu: 0 12px 32px -8px rgb(4 4 8 / 0.6), 0 2px 6px rgb(4 4 8 / 0.4);
+  --shadow-dialog: 0 32px 80px -16px rgb(4 4 8 / 0.75), 0 4px 12px rgb(4 4 8 / 0.45);
 }
 
 /*
- * Palette: near-black, off-white text, blood red.
- * Contrast (WCAG), measured on --bg: fg 18:1, muted 7.6:1, accent (soft violet, for text and small fills) 5.8:1 (4.7:1 on --surface-2).
- * --blood is a violet fill only: it always carries white text (10:1).
+ * "Estudio en órbita" tokens (docs/PLAN_REDISENO.md §3.1). A neutral graphite ground so the models bring the colour;
+ * violet is the single accent.
+ * Contrast (WCAG), measured on --bg: fg 18:1, muted 7.9:1, subtle 5.2:1 (4.5:1 on --surface-2, so use it from 14px up), accent 7.2:1.
+ * --accent-fill is a fill only: it always carries white text (5.1:1).
  */
 :root {
-  --bg: #0a0912;
-  --surface: #15132a;
-  --surface-2: #1f1c3a;
-  --line: rgb(255 255 255 / 0.09);
-  --fg: #f4f4f5;
-  --muted: #a1a1aa;
-  --accent: #b79cff;
+  --bg: #0b0b0e;
+  --surface: #131318;
+  --surface-1: #131318;
+  --surface-2: #1b1b22;
+  --surface-3: #25252e;
+  --stage: #08080a;
+  --surface-deep: #08080a;
+  --line: rgb(255 255 255 / 0.08);
+  --line-strong: rgb(255 255 255 / 0.16);
+  --fg: #f5f5f7;
+  --muted: #a3a3ad;
+  --subtle: #82828c;
+  --accent: #a78bfa;
   --accent-strong: #cdbbff;
-  --blood: #5b3df5;
-  --blood-hi: #6a4cf7;
+  --accent-fill: #6d4dff;
+  --accent-fill-hi: #7b5dff;
+  --accent-grad: linear-gradient(135deg, #8f6bff, #5b3df5);
   --ink: #0a0a0b;
   --danger: #ff7a7a;
   --warn: #f5b942;
   --ok: #6fcf97;
-  --font-body: "Poppins", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-heading: var(--font-body);
+  --font-body: "Instrument Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Sora", "Instrument Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-data: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Motion: 120 ms micro, 220 ms control, 420 ms panel, 800 ms scene. */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --t-micro: 120ms;
+  --t-control: 220ms;
+  --t-panel: 420ms;
+  --t-scene: 800ms;
   color-scheme: dark;
-}
-
-[data-theme="app"] {
-  --bg: #0a0912;
-  --surface: #15132a;
-  --surface-2: #1f1c3a;
-  --muted: #a1a1aa;
 }
 
 /* Base rules live in @layer base: unlayered CSS beats every Tailwind utility, so e.g. tracking-tight on an h2 would lose. */
@@ -100,7 +119,7 @@
 }
 
 /* ---------- Marketing: background light ---------- */
-/* Soft red pools behind the page. Radial gradients, not blur filters: cheap to paint and no layout cost. */
+/* Soft violet pools behind the page. Radial gradients, not blur filters: cheap to paint and no layout cost. */
 .glow {
   position: absolute;
   border-radius: 999px;
@@ -169,6 +188,43 @@
   }
 }
 
+/* ---------- Closing banner ---------- */
+/* A dark stage with a violet pool at the bottom and a few fixed stars. Only tokens, so a palette change reaches it. */
+.closing-field {
+  background-color: var(--stage);
+  background-image:
+    radial-gradient(ellipse 70% 90% at 50% 120%, color-mix(in srgb, var(--accent-fill) 85%, transparent) 0%, transparent 70%),
+    radial-gradient(1.5px 1.5px at 12% 24%, var(--fg), transparent),
+    radial-gradient(1px 1px at 27% 68%, var(--fg), transparent),
+    radial-gradient(1.5px 1.5px at 41% 15%, var(--fg), transparent),
+    radial-gradient(1px 1px at 58% 78%, var(--fg), transparent),
+    radial-gradient(2px 2px at 73% 30%, var(--fg), transparent),
+    radial-gradient(1px 1px at 86% 62%, var(--fg), transparent),
+    radial-gradient(1.5px 1.5px at 92% 14%, var(--fg), transparent),
+    radial-gradient(1px 1px at 6% 82%, var(--fg), transparent);
+  border: 1px solid var(--line);
+}
+
+/* ---------- Footer wordmark ---------- */
+/* A giant, faint brand word under the links. Drawn with content so it is neither text to read nor text to contrast-check. */
+.footer-word {
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+  margin-bottom: -1.5rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(3rem, 15vw, 12rem);
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+  color: color-mix(in srgb, var(--fg) 5%, transparent);
+}
+.footer-word::before {
+  content: attr(data-word);
+}
+
 /* ---------- Cards ---------- */
 .card {
   background: var(--surface);
@@ -181,7 +237,8 @@
 }
 .card-lift:hover {
   transform: translateY(-3px);
-  border-color: rgb(255 255 255 / 0.18);
+  border-color: color-mix(in srgb, var(--ta, #fff) 55%, transparent);
+  box-shadow: 0 22px 56px -24px color-mix(in srgb, var(--ta, #000) 70%, transparent);
 }
 /* Label pill that sits inside a card, with a square arrow button at its end. */
 .tag-pill {
@@ -202,7 +259,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  background: var(--blood);
+  background: var(--accent-fill);
   color: #fff;
 }
 
@@ -224,7 +281,7 @@
   transform: scale(0.98);
 }
 .btn-solid {
-  background: linear-gradient(135deg, var(--blood-hi), var(--blood));
+  background: var(--accent-grad);
   color: #fff;
 }
 .btn-solid:hover {
@@ -250,11 +307,19 @@
   line-height: 1.02;
   letter-spacing: -0.035em;
 }
-.text-blood-grad {
+.text-accent-grad {
   background: linear-gradient(95deg, #cdbbff 0%, #a78bfa 45%, #7a5cff 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+/* A soft violet pool behind the hero render, like a stage light. Tokens only. */
+.hero-pool {
+  position: absolute;
+  inset: -12% -8%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 60% 55% at 50% 55%, color-mix(in srgb, var(--ta, var(--accent-fill)) 42%, transparent) 0%, transparent 70%);
 }
 /* Wireframe look for the "same model, solid and mesh" pair: a pure CSS grid, not a render. */
 .mesh-lines {
@@ -273,7 +338,7 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(var(--fy, -10px));
   }
 }
 @layer components {
@@ -322,6 +387,70 @@
   }
 }
 
+/* ---------- Home: art ---------- */
+/* The hero model builds itself: mesh first, then clay and texture wiping up from the floor. */
+@keyframes build-wipe {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes build-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes marquee-move {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@layer components {
+  .build-wire {
+    animation: build-fade 0.5s ease-out backwards;
+  }
+  .build-clay {
+    animation: build-wipe 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.45s backwards;
+  }
+  .build-beauty {
+    animation: build-wipe 0.9s cubic-bezier(0.65, 0, 0.35, 1) 1.2s backwards;
+  }
+  .art-float {
+    transition: transform 0.45s cubic-bezier(0.34, 1.4, 0.64, 1);
+  }
+  .card-lift:hover .art-float {
+    transform: translateY(-8px) scale(1.02);
+  }
+  .marquee {
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .marquee-track {
+    animation: marquee-move 32s linear infinite;
+  }
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+  .type-caret {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    background: var(--accent);
+    animation: caret-blink 0.9s step-end infinite;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -334,16 +463,32 @@
     transition-duration: 0.01ms !important;
   }
   .float-slow,
-  .reveal {
+  .reveal,
+  .build-wire,
+  .build-clay,
+  .build-beauty {
     animation: none;
+  }
+  .marquee-track {
+    animation: none;
+    width: auto;
+    flex-wrap: wrap;
+  }
+  .marquee-track > [aria-hidden="true"] {
+    display: none;
+  }
+  .marquee-track > ul {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
   }
 }
 
-/* Loading-state indicator only (a job is running); never decoration. */
+/* Loading-state indicator only (a job is running); never decoration.
+   The dim end of the pulse never drops the text's contrast below AA (0.8 keeps --muted on --stage/--surface-1 at ~5:1). */
 @keyframes os-pulse {
   0%,
   100% {
-    opacity: 0.45;
+    opacity: 0.8;
   }
   50% {
     opacity: 1;
@@ -352,5 +497,340 @@
 @layer components {
   .os-pulse {
     animation: os-pulse 1.6s ease-in-out infinite;
+  }
+}
+
+/* ---------- UI kit: overlays and loading (src/components/ui) ---------- */
+@keyframes ui-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes ui-pop {
+  from {
+    opacity: 0;
+    transform: translate(var(--ui-x, 0), var(--ui-y, 0)) scale(0.96);
+  }
+}
+@keyframes ui-slide {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes ui-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+.ui-overlay[data-state="open"] {
+  animation: ui-fade var(--t-control) var(--ease-out);
+}
+.ui-pop[data-state="open"] {
+  animation: ui-pop var(--t-control) var(--ease-out);
+  /* Dialogs are centred with translate(-50%, -50%); keep it while they scale in. */
+}
+.ui-sheet[data-state="open"] {
+  animation: ui-slide var(--t-panel) var(--ease-out);
+}
+.skeleton {
+  background-image: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.06) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: ui-shimmer 1.6s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+/* ---------- Orbit stage ring (src/components/model/model-stage.tsx) ---------- */
+@keyframes stage-ring {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+.stage-ring {
+  animation: stage-ring 14s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage-ring {
+    animation: none;
+  }
+}
+
+/* ---------- Page tones: each inner page gets its own pair of colours, taken from the models it shows ---------- */
+:root {
+  --ta: #7c5cff;
+  --tb: #c084fc;
+}
+[data-tone="violet"] { --ta: #7c5cff; --tb: #c084fc; }
+[data-tone="cyan"] { --ta: #14b8d4; --tb: #3b82f6; }
+[data-tone="magenta"] { --ta: #e0408f; --tb: #8b5cf6; }
+[data-tone="amber"] { --ta: #f59e0b; --tb: #ef5a3c; }
+[data-tone="emerald"] { --ta: #10b981; --tb: #22d3ee; }
+[data-tone="blue"] { --ta: #3b82f6; --tb: #7c5cff; }
+
+@keyframes aurora-a {
+  to { transform: translate3d(8%, 10%, 0) scale(1.12); }
+}
+@keyframes aurora-b {
+  to { transform: translate3d(-10%, 6%, 0) scale(1.08); }
+}
+@keyframes twinkle {
+  50% { opacity: 0.25; }
+}
+@keyframes orbit-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(44px) scale(0.88); }
+}
+@keyframes text-shimmer {
+  to { background-position: -300% 0; }
+}
+@keyframes ring-pulse {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+
+@layer components {
+  /* Coloured light behind a page hero: three drifting pools and a faint dot field. Radial gradients only, no blur filters. */
+  .aurora {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, #000 72%, transparent);
+  }
+  .aurora > i {
+    position: absolute;
+    display: block;
+    border-radius: 999px;
+    width: min(70vw, 920px);
+    height: min(70vw, 920px);
+    will-change: transform;
+  }
+  .aurora .b1 {
+    left: -14%;
+    top: -34%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--ta) 46%, transparent), transparent);
+    animation: aurora-a 17s ease-in-out infinite alternate;
+  }
+  .aurora .b2 {
+    right: -16%;
+    top: -18%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--tb) 42%, transparent), transparent);
+    animation: aurora-b 21s ease-in-out infinite alternate;
+  }
+  .aurora .b3 {
+    left: 26%;
+    bottom: -52%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--ta) 30%, transparent), transparent);
+    animation: aurora-a 25s ease-in-out infinite alternate-reverse;
+  }
+  .aurora::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgb(255 255 255 / 0.2) 1px, transparent 1.3px);
+    background-size: 30px 30px;
+    mask-image: radial-gradient(ellipse 62% 60% at 50% 46%, #000, transparent 78%);
+  }
+  .aurora::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(2px 2px at 9% 22%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 23% 64%, #fff, transparent),
+      radial-gradient(2px 2px at 38% 12%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 66% 70%, #fff, transparent),
+      radial-gradient(2px 2px at 81% 26%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 93% 58%, #fff, transparent);
+    animation: twinkle 4.5s ease-in-out infinite;
+  }
+
+  /* Colour wash behind alternate sections of a page, so a long page is not one flat dark block. */
+  .tone-scope > section {
+    position: relative;
+    isolation: isolate;
+  }
+  .tone-scope > section:not(.no-wash):nth-of-type(4n + 3)::before,
+  .tone-scope > section:not(.no-wash):nth-of-type(4n + 1)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .tone-scope > section:not(.no-wash):nth-of-type(4n + 3)::before {
+    background: radial-gradient(ellipse 60% 85% at 4% 50%, color-mix(in srgb, var(--ta) 36%, transparent), transparent 74%);
+  }
+  .tone-scope > section:not(.no-wash):nth-of-type(4n + 1)::before {
+    background: radial-gradient(ellipse 60% 85% at 98% 46%, color-mix(in srgb, var(--tb) 34%, transparent), transparent 74%);
+  }
+  .tone-scope > section:not(.no-wash):nth-of-type(4n + 2)::before,
+  .tone-scope > section:not(.no-wash):nth-of-type(4n)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(ellipse 45% 60% at 50% 100%, color-mix(in srgb, var(--ta) 14%, transparent), transparent 75%);
+  }
+  /* Cards on a toned page take a little of its colour, so they are not flat grey blocks. */
+  .tone-scope .card:not(.bg-transparent):not(.bg-stage) {
+    background-image: linear-gradient(155deg, color-mix(in srgb, var(--ta) 13%, transparent), transparent 62%);
+    border-color: color-mix(in srgb, var(--ta) 20%, var(--line));
+  }
+
+  /* The hero pile: renders over an orbit, each floating on its own beat. */
+  .orbit-wrap {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    perspective: 1000px;
+  }
+  .orbit-ring {
+    position: absolute;
+    left: 50%;
+    top: 80%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--ta) 60%, transparent);
+    translate: -50% -50%;
+    transform: rotateX(76deg);
+  }
+  .orbit-ring.r1 { width: 74%; }
+  .orbit-ring.r2 { width: 98%; border-color: color-mix(in srgb, var(--tb) 38%, transparent); border-style: dashed; }
+  .orbit-spin {
+    position: absolute;
+    inset: 0;
+    animation: orbit-spin 14s linear infinite;
+  }
+  .orbit-ring.r2 .orbit-spin { animation-duration: 22s; animation-direction: reverse; }
+  .orbit-dot {
+    position: absolute;
+    left: 50%;
+    top: -6px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--tb);
+    box-shadow: 0 0 16px 5px color-mix(in srgb, var(--tb) 70%, transparent);
+  }
+  .pop-in {
+    animation: pop-in 0.9s cubic-bezier(0.34, 1.3, 0.64, 1) backwards;
+    animation-delay: var(--d, 0s);
+  }
+  .enter {
+    animation: rise-in 0.75s var(--ease-out) backwards;
+    animation-delay: var(--d, 0s);
+  }
+  .float-a { animation: float-y 6.2s ease-in-out infinite; --fy: -14px; }
+  .float-b { animation: float-y 7.6s ease-in-out -2.4s infinite; --fy: -10px; }
+  .float-c { animation: float-y 5.4s ease-in-out -3.8s infinite; --fy: -16px; }
+  .data-chip {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border-radius: 999px;
+    padding: 0.4rem 0.8rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1;
+    color: var(--fg);
+    background: color-mix(in srgb, var(--surface-2) 82%, transparent);
+    border: 1px solid color-mix(in srgb, var(--ta) 50%, var(--line));
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--ta) 70%, transparent);
+  }
+  .data-chip::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--tb);
+    box-shadow: 0 0 10px var(--tb);
+  }
+
+  /* Two rows of renders drifting in opposite directions. Decorative: the whole band is aria-hidden. */
+  .rm-band {
+    mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  }
+  .rm-track {
+    display: flex;
+    width: max-content;
+    animation: marquee-move 70s linear infinite;
+  }
+  .rm-track.rev { animation-direction: reverse; animation-duration: 84s; }
+  .rm-band:hover .rm-track { animation-play-state: paused; }
+  .rm-tile {
+    position: relative;
+    flex: none;
+    margin-right: 14px;
+    width: clamp(112px, 13vw, 168px);
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 22px;
+    border: 1px solid color-mix(in srgb, var(--ta) 38%, var(--line));
+    background:
+      radial-gradient(ellipse 80% 62% at 50% 92%, color-mix(in srgb, var(--ta) 58%, transparent), transparent 72%),
+      linear-gradient(165deg, color-mix(in srgb, var(--tb) 20%, var(--surface-1)), var(--stage));
+    transition: transform 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
+  }
+  .rm-tile:hover { transform: translateY(-6px) scale(1.05); }
+  .rm-tile img { width: 100%; height: 100%; object-fit: contain; padding: 8%; }
+
+  /* A render tile with its own coloured pool (rails and cards). */
+  .tone-pool {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 75% 60% at 50% 92%, color-mix(in srgb, var(--ta) 52%, transparent), transparent 72%),
+      linear-gradient(180deg, color-mix(in srgb, var(--tb) 14%, transparent), transparent 60%);
+  }
+  .rail-tile img {
+    transition: transform 0.5s cubic-bezier(0.34, 1.4, 0.64, 1);
+  }
+  .rail-tile:hover img {
+    transform: translateY(-8px) rotate(-3deg) scale(1.08);
+  }
+  /* A render that breaks out of the corner of a card. The card needs isolate so z-index -1 stays above its own background. */
+  .card-art {
+    position: absolute;
+    bottom: -0.5rem;
+    width: min(44%, 14.5rem);
+    pointer-events: none;
+    z-index: -1;
+  }
+  .card-art::before {
+    content: "";
+    position: absolute;
+    inset: 10% -10% -10%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--ta) 50%, transparent), transparent);
+  }
+  .text-shimmer {
+    background-image: linear-gradient(90deg, var(--fg), var(--tb), var(--ta), var(--fg));
+    background-size: 300% 100%;
+    animation: text-shimmer 7s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora > i,
+  .aurora::after,
+  .orbit-spin,
+  .pop-in,
+  .enter,
+  .float-a,
+  .float-b,
+  .float-c,
+  .rm-track,
+  .text-shimmer {
+    animation: none !important;
   }
 }
