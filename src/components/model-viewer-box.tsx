@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { RotateCcw, Play, Pause, Box, Grid3x3 } from "lucide-react";
+import { RotateCcw, Play, Pause, Box, Grid3x3, Camera, Maximize2, Minimize2 } from "lucide-react";
 
 type Props = {
   src: string;
@@ -17,6 +17,11 @@ type Props = {
   /** Shows a button to see the mesh instead of the surface. Left out on pages where the mesh is of no use. */
   wireframeLabel?: string;
   surfaceLabel?: string;
+  /** Shows a button that saves the current view as a PNG. Left out where a snapshot is of no use (the studio only). */
+  captureLabel?: string;
+  /** Shows a button that puts the box in the browser's own fullscreen. Left out where the chrome around it matters more than the model. */
+  fullscreenLabel?: string;
+  fullscreenOffLabel?: string;
   testId?: string;
   /** When false the wheel scrolls the page instead of zooming (marketing pages). */
   wheelZoom?: boolean;
@@ -80,6 +85,9 @@ export function ModelViewerBox({
   errorLabel = "3D preview unavailable",
   wireframeLabel,
   surfaceLabel,
+  captureLabel,
+  fullscreenLabel,
+  fullscreenOffLabel,
   testId = "model-viewer-box",
   wheelZoom = true,
   bare = false,
@@ -96,6 +104,8 @@ export function ModelViewerBox({
   const [autoRotate, setAutoRotate] = useState(false);
   const [wireframe, setWireframe] = useState(false);
   const [wireframeReady, setWireframeReady] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [capturing, setCapturing] = useState(false);
   const wireframeRef = useRef(false);
   const reducedMotion = useSyncExternalStore(subscribeReducedMotion, getReducedMotion, getReducedMotionOnServer);
   // The viewer (library and GLB) is only started once the box is near the screen, so models below the fold cost nothing.
@@ -238,6 +248,38 @@ export function ModelViewerBox({
     viewerRef.current?.resetTurntableRotation?.();
   }
 
+  // Tracks the real fullscreen state, since the browser (Escape, F11) can leave it without going through the button.
+  useEffect(() => {
+    if (!fullscreenLabel) return;
+    const onChange = () => setFullscreen(document.fullscreenElement === hostRef.current);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, [fullscreenLabel]);
+
+  async function toggleFullscreen() {
+    if (document.fullscreenElement) await document.exitFullscreen().catch(() => undefined);
+    else await hostRef.current?.requestFullscreen?.().catch(() => undefined);
+  }
+
+  async function captureNow() {
+    const el = viewerRef.current;
+    if (!el?.toBlob || capturing) return;
+    setCapturing(true);
+    try {
+      const blob = await el.toBlob({ mimeType: "image/png" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${testId}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      /* no picture this time; the button simply does nothing */
+    } finally {
+      setCapturing(false);
+    }
+  }
+
   return (
     <div
       ref={hostRef}
@@ -296,6 +338,32 @@ export function ModelViewerBox({
             <RotateCcw className="h-3 w-3" aria-hidden="true" />
             <span className="hidden sm:inline">{resetLabel}</span>
           </button>
+          {captureLabel && (
+            <button
+              type="button"
+              onClick={captureNow}
+              disabled={capturing || status !== "ready"}
+              aria-label={captureLabel}
+              data-testid={`${testId}-capture`}
+              className="inline-flex items-center gap-1 rounded-full border border-line bg-bg px-2.5 py-1 text-xs font-medium text-fg hover:border-accent disabled:opacity-50"
+            >
+              <Camera className="h-3 w-3" aria-hidden="true" />
+              <span className="hidden sm:inline">{captureLabel}</span>
+            </button>
+          )}
+          {fullscreenLabel && (
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              aria-pressed={fullscreen}
+              aria-label={fullscreen ? (fullscreenOffLabel ?? fullscreenLabel) : fullscreenLabel}
+              data-testid={`${testId}-fullscreen`}
+              className="inline-flex items-center gap-1 rounded-full border border-line bg-bg px-2.5 py-1 text-xs font-medium text-fg hover:border-accent"
+            >
+              {fullscreen ? <Minimize2 className="h-3 w-3" aria-hidden="true" /> : <Maximize2 className="h-3 w-3" aria-hidden="true" />}
+              <span className="hidden sm:inline">{fullscreen ? (fullscreenOffLabel ?? fullscreenLabel) : fullscreenLabel}</span>
+            </button>
+          )}
         </div>
       </div>
       )}

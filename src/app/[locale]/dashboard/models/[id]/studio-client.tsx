@@ -322,6 +322,9 @@ export function StudioClient({
               errorLabel={t.dash.detail.viewerError}
               wireframeLabel={t.dash.detail.wireframe}
               surfaceLabel={t.dash.detail.surface}
+              captureLabel={t.dash.detail.capture}
+              fullscreenLabel={t.dash.detail.fullscreen}
+              fullscreenOffLabel={t.dash.detail.fullscreenOff}
               testId="studio-viewer"
               heightClass="h-[360px] sm:h-[480px] lg:h-[calc(100dvh-230px)] lg:min-h-[520px]"
               onReady={async (capture) => {

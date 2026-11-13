@@ -276,8 +276,9 @@ export function CreateWizard({
   );
 
   return (
-    <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-8">
-      <form onSubmit={onSubmit} noValidate className="order-1 space-y-6 rounded-[var(--radius-card)] border border-line bg-surface-1 p-5 md:p-6 lg:order-2 lg:sticky lg:top-[72px] lg:max-h-[calc(100dvh-96px)] lg:overflow-y-auto">
+    <form onSubmit={onSubmit} noValidate className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[320px_minmax(0,1fr)_340px] lg:gap-6">
+      {/* Left: product + source. */}
+      <div className="space-y-6 rounded-[var(--radius-card)] border border-line bg-surface-1 p-5 md:p-6 lg:sticky lg:top-[72px] lg:max-h-[calc(100dvh-96px)] lg:overflow-y-auto">
         {/* 1. Product */}
         <fieldset className="space-y-4">
           <legend className="font-display text-lg font-semibold">{c.productTitle}</legend>
@@ -436,146 +437,27 @@ export function CreateWizard({
           )}
 
           {mode === "import" && (
-            <div className="space-y-3">
-              <div className="space-y-1.5">
-                <label htmlFor="create-glb" className="block text-xs font-medium text-fg">
-                  {c.glbFile} *
-                </label>
-                <input
-                  id="create-glb"
-                  name="file"
-                  type="file"
-                  accept=".glb,model/gltf-binary"
-                  onChange={(e) => setGlbFile(e.target.files?.[0] ?? null)}
-                  data-testid="create-glb-input"
-                  className="block w-full rounded-xl border border-line bg-bg px-2.5 py-2 text-xs text-fg file:mr-2 file:rounded-lg file:border-0 file:bg-accent file:px-2.5 file:py-1 file:text-xs file:font-semibold file:text-bg"
-                />
-                <p className="text-xs text-muted">{c.glbHint}</p>
-              </div>
-              <label className="flex items-start gap-2.5 cursor-pointer text-xs">
-                <input type="checkbox" checked={rightsAffirmed} onChange={(e) => setRightsAffirmed(e.target.checked)} data-testid="confirm-rights-checkbox" className="mt-0.5" />
-                <span>{c.rightsImport}</span>
+            <div className="space-y-1.5">
+              <label htmlFor="create-glb" className="block text-xs font-medium text-fg">
+                {c.glbFile} *
               </label>
-            </div>
-          )}
-
-          {(mode === "photos" || mode === "text") && (
-            <div className="space-y-4">
-              {providerReady && (
-                <fieldset className="space-y-2">
-                  <legend className="text-xs font-medium text-fg">{c.presetTitle}</legend>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {GENERATION_PRESETS.map((p) => (
-                      <label key={p} className={`flex cursor-pointer items-start gap-2 rounded-xl border bg-bg p-2.5 text-xs ${preset === p ? "border-accent" : "border-line"}`}>
-                        <input type="radio" name="preset" value={p} checked={preset === p} onChange={() => setPreset(p)} data-testid={`preset-radio-${p}`} className="mt-0.5" />
-                        <span>
-                          <span className="block font-semibold text-fg">{c.presets[p].label}</span>
-                          <span className="block text-muted">{c.presets[p].text}</span>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted">{c.presetNote}</p>
-                </fieldset>
-              )}
-              {preset === "advanced" && compatible.length > 1 && (
-                <div>
-                  <label htmlFor="create-engine" className="block text-xs font-medium text-fg mb-1.5">
-                    {c.engine}
-                  </label>
-                  <select
-                    id="create-engine"
-                    name="engineId"
-                    value={engineId ?? ""}
-                    onChange={(e) => setChosenEngine(e.target.value)}
-                    data-testid="create-engine-select"
-                    className="w-full rounded-xl border border-line bg-bg px-3.5 py-2 text-sm text-fg"
-                  >
-                    {compatible.map((e) => (
-                      <option key={e.id} value={e.id}>
-                        {e.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-              {preset === "advanced" && (
-                <div>
-                  <label htmlFor="create-texture" className="block text-xs font-medium text-fg mb-1.5">
-                    {c.texture}
-                  </label>
-                  <select
-                    id="create-texture"
-                    name="textureResolution"
-                    value={texture}
-                    onChange={(e) => setTextureResolution(e.target.value as TextureResolution)}
-                    className="w-full rounded-xl border border-line bg-bg px-3.5 py-2 text-sm text-fg"
-                  >
-                    {textureOptions.map((tr) => (
-                      <option key={tr} value={tr}>
-                        {c.textures[tr]}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div className="rounded-xl border border-line bg-surface-2 p-4 space-y-2 text-xs">
-                <div className="font-semibold text-fg">{c.costTitle}</div>
-                <p className="text-muted leading-relaxed" data-testid="create-cost-text">
-                  {quote && quote.engineId === engineId ? (quote.unit === "credits" ? c.costTextCredits.replace("{n}", String(quote.charge)) : c.costText.replace("{n}", String(quote.credits))).replace("{engine}", quote.engineLabel) : c.costLoading}
-                </p>
-                <div className="font-medium text-accent">{c.attemptsLeft.replace("{n}", String(attemptsLeft))}</div>
-              </div>
-
-              <div className="space-y-2.5 text-xs">
-                <label className="flex items-start gap-2.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={confirmPaid}
-                    onChange={(e) => setConfirmPaid(e.target.checked)}
-                    data-testid="confirm-paid-checkbox"
-                    className="mt-0.5"
-                  />
-                  <span>{c.confirmPaid}</span>
-                </label>
-                <label className="flex items-start gap-2.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={rightsAffirmed}
-                    onChange={(e) => setRightsAffirmed(e.target.checked)}
-                    data-testid="confirm-rights-checkbox"
-                    className="mt-0.5"
-                  />
-                  <span>{c.rights}</span>
-                </label>
-              </div>
+              <input
+                id="create-glb"
+                name="file"
+                type="file"
+                accept=".glb,model/gltf-binary"
+                onChange={(e) => setGlbFile(e.target.files?.[0] ?? null)}
+                data-testid="create-glb-input"
+                className="block w-full rounded-xl border border-line bg-bg px-2.5 py-2 text-xs text-fg file:mr-2 file:rounded-lg file:border-0 file:bg-accent file:px-2.5 file:py-1 file:text-xs file:font-semibold file:text-bg"
+              />
+              <p className="text-xs text-muted">{c.glbHint}</p>
             </div>
           )}
         </fieldset>
+      </div>
 
-        {error && (
-          <div role="alert" data-testid="create-error-alert" className="rounded-xl border border-danger/50 bg-danger/10 p-3.5 text-xs text-danger space-y-2">
-            <div>{error}</div>
-            {failedModelId && (
-              <Link href={localePath(locale, `/dashboard/models/${failedModelId}`)} className="inline-block font-semibold underline">
-                {c.viewJob} →
-              </Link>
-            )}
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={submitting}
-          data-testid="create-submit-btn"
-          className="sticky bottom-[76px] z-10 w-full rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-bg shadow-[0_-12px_24px_var(--surface-1)] disabled:opacity-50 lg:static lg:shadow-none"
-        >
-          {submitting ? c.submitting : mode === "demo" ? c.submitDemo : mode === "import" ? c.submitImport : c.submitAi}
-        </button>
-      </form>
-
-      <div className="relative isolate order-2 space-y-3 overflow-hidden rounded-[var(--radius-card)] border border-line bg-stage p-3 lg:order-1 lg:sticky lg:top-[72px]">
+      {/* Center: the stage. */}
+      <div className="relative isolate space-y-3 overflow-hidden rounded-[var(--radius-card)] border border-line bg-stage p-3 lg:sticky lg:top-[72px]">
         <div aria-hidden="true" className="aurora">
           <i className="b1" />
           <i className="b2" />
@@ -596,6 +478,130 @@ export function CreateWizard({
         />
         <p className="text-xs text-muted px-1">{c.previewCaption}</p>
       </div>
-    </div>
+
+      {/* Right: settings, cost, confirmation, submit. Sticky on desktop; the button alone stays fixed above the bottom bar on a phone. */}
+      <div className="space-y-5 rounded-[var(--radius-card)] border border-line bg-surface-1 p-5 md:p-6 lg:sticky lg:top-[72px] lg:max-h-[calc(100dvh-96px)] lg:overflow-y-auto">
+        {mode === "import" && (
+          <label className="flex items-start gap-2.5 cursor-pointer text-xs">
+            <input type="checkbox" checked={rightsAffirmed} onChange={(e) => setRightsAffirmed(e.target.checked)} data-testid="confirm-rights-checkbox" className="mt-0.5" />
+            <span>{c.rightsImport}</span>
+          </label>
+        )}
+
+        {(mode === "photos" || mode === "text") && (
+          <div className="space-y-4">
+            {providerReady && (
+              <fieldset className="space-y-2">
+                <legend className="text-xs font-medium text-fg">{c.presetTitle}</legend>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {GENERATION_PRESETS.map((p) => (
+                    <label key={p} className={`flex cursor-pointer items-start gap-2 rounded-xl border bg-bg p-2.5 text-xs ${preset === p ? "border-accent" : "border-line"}`}>
+                      <input type="radio" name="preset" value={p} checked={preset === p} onChange={() => setPreset(p)} data-testid={`preset-radio-${p}`} className="mt-0.5" />
+                      <span>
+                        <span className="block font-semibold text-fg">{c.presets[p].label}</span>
+                        <span className="block text-muted">{c.presets[p].text}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <p className="text-xs text-muted">{c.presetNote}</p>
+              </fieldset>
+            )}
+            {preset === "advanced" && compatible.length > 1 && (
+              <div>
+                <label htmlFor="create-engine" className="block text-xs font-medium text-fg mb-1.5">
+                  {c.engine}
+                </label>
+                <select
+                  id="create-engine"
+                  name="engineId"
+                  value={engineId ?? ""}
+                  onChange={(e) => setChosenEngine(e.target.value)}
+                  data-testid="create-engine-select"
+                  className="w-full rounded-xl border border-line bg-bg px-3.5 py-2 text-sm text-fg"
+                >
+                  {compatible.map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {preset === "advanced" && (
+              <div>
+                <label htmlFor="create-texture" className="block text-xs font-medium text-fg mb-1.5">
+                  {c.texture}
+                </label>
+                <select
+                  id="create-texture"
+                  name="textureResolution"
+                  value={texture}
+                  onChange={(e) => setTextureResolution(e.target.value as TextureResolution)}
+                  className="w-full rounded-xl border border-line bg-bg px-3.5 py-2 text-sm text-fg"
+                >
+                  {textureOptions.map((tr) => (
+                    <option key={tr} value={tr}>
+                      {c.textures[tr]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="rounded-xl border border-line bg-surface-2 p-4 space-y-2 text-xs">
+              <div className="font-semibold text-fg">{c.costTitle}</div>
+              <p className="text-muted leading-relaxed" data-testid="create-cost-text">
+                {quote && quote.engineId === engineId ? (quote.unit === "credits" ? c.costTextCredits.replace("{n}", String(quote.charge)) : c.costText.replace("{n}", String(quote.credits))).replace("{engine}", quote.engineLabel) : c.costLoading}
+              </p>
+              <div className="font-medium text-accent">{c.attemptsLeft.replace("{n}", String(attemptsLeft))}</div>
+            </div>
+
+            <div className="space-y-2.5 text-xs">
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={confirmPaid}
+                  onChange={(e) => setConfirmPaid(e.target.checked)}
+                  data-testid="confirm-paid-checkbox"
+                  className="mt-0.5"
+                />
+                <span>{c.confirmPaid}</span>
+              </label>
+              <label className="flex items-start gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={rightsAffirmed}
+                  onChange={(e) => setRightsAffirmed(e.target.checked)}
+                  data-testid="confirm-rights-checkbox"
+                  className="mt-0.5"
+                />
+                <span>{c.rights}</span>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div role="alert" data-testid="create-error-alert" className="rounded-xl border border-danger/50 bg-danger/10 p-3.5 text-xs text-danger space-y-2">
+            <div>{error}</div>
+            {failedModelId && (
+              <Link href={localePath(locale, `/dashboard/models/${failedModelId}`)} className="inline-block font-semibold underline">
+                {c.viewJob} →
+              </Link>
+            )}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={submitting}
+          data-testid="create-submit-btn"
+          className="sticky bottom-[76px] z-10 w-full rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-bg shadow-[0_-12px_24px_var(--surface-1)] disabled:opacity-50 lg:static lg:shadow-none"
+        >
+          {submitting ? c.submitting : mode === "demo" ? c.submitDemo : mode === "import" ? c.submitImport : c.submitAi}
+        </button>
+      </div>
+    </form>
   );
 }
